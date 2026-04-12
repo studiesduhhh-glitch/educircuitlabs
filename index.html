@@ -1,0 +1,2466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="description" content="Educircuit Labs - Build, simulate and learn engineering projects easily">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EDUCIRCUIT</title>
+  <style>
+    :root{
+      --bg:#f5f7fb;
+      --panel:#ffffff;
+      --line:#dbe3f0;
+      --text:#182230;
+      --muted:#5b6472;
+      --blue:#f97316;
+      --blue2:#fb923c;
+      --green:#16a34a;
+      --green2:#22c55e;
+      --red:#ef4444;
+      --amber:#f59e0b;
+      --shadow:0 10px 30px rgba(27, 31, 41, 0.08);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      height:100%;
+      font-family:Inter,Arial,Helvetica,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      overflow:hidden;
+      user-select:auto;
+    }
+
+    body{
+      background:
+        radial-gradient(circle at top left, rgba(59,130,246,.08), transparent 25%),
+        radial-gradient(circle at top right, rgba(34,197,94,.06), transparent 20%),
+        linear-gradient(180deg,#f9fbff,#f3f6fb);
+    }
+
+    .hidden{display:none !important}
+
+    .app-shell{
+      height:100vh;
+      width:100vw;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .no-select {
+      user-select: none;
+    }
+
+    .project-item{
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:10px 12px;
+      margin-bottom:8px;
+      background:#fff;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .project-info{
+      display:flex;
+      flex-direction:column;
+    }
+
+    .project-name{
+      font-weight:700;
+    }
+
+    .project-date{
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .project-actions{
+      display:flex;
+      gap:6px;
+    }
+
+    .topbar{
+      height:72px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 18px;
+      background:rgba(255,255,255,.8);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--line);
+      z-index:20;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+
+    .brand-logo{
+      width:56px;
+      height:56px;
+      object-fit:contain;
+    }
+
+    .brand-text h1{
+      margin:0;
+      font-size:24px;
+      letter-spacing:-.4px;
+    }
+
+    .brand-text p{
+      opacity:0.7;
+    }
+
+    .brand-text p{
+      margin:3px 0 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:nowrap; /* 🔥 FIX */
+    }
+
+    button, .btn{
+      border:none;
+      border-radius:12px;
+      background:var(--blue);
+      color:#fff;
+      padding:10px 14px;
+      cursor:pointer;
+      font-weight:700;
+
+      height:40px;              /* 🔥 ADD THIS */
+      display:flex;             /* 🔥 ADD */
+      align-items:center;       /* 🔥 ADD */
+      justify-content:center;   /* 🔥 ADD */
+
+      transition:transform .18s ease, box-shadow .18s ease, background .18s ease, opacity .18s ease;
+      box-shadow:0 8px 18px rgba(37,99,235,.16);
+    }
+
+    button:hover, .btn:hover{
+      transform:translateY(-1px);
+      background:var(--blue2);
+    }
+
+    button.secondary{
+      background:#fff;
+      color:var(--text);
+      border:1px solid var(--line);
+      box-shadow:none;
+    }
+
+    button.green{
+      background:var(--green);
+      box-shadow:0 8px 18px rgba(34,197,94,.14);
+    }
+
+    button.red{
+      background:var(--red);
+      box-shadow:0 8px 18px rgba(239,68,68,.14);
+    }
+
+    button.amber{
+      background:var(--amber);
+      box-shadow:0 8px 18px rgba(245,158,11,.14);
+    }
+
+    .layout{
+      flex:1;
+      display:grid;
+      grid-template-columns: 300px 1fr 320px;
+      gap:14px;
+      padding:14px;
+      min-height:0;
+    }
+
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      min-height:0;
+      overflow:hidden;
+    }
+
+    .panel-header{
+      padding:16px 16px 10px;
+      border-bottom:1px solid #eef2f8;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .panel-header h2{
+      margin:0;
+      font-size:20px;
+      letter-spacing:-.3px;
+    }
+
+    .panel-header small{
+      color:var(--muted);
+      display:block;
+      margin-top:3px;
+      font-size:12px;
+    }
+
+    .panel-body{
+      padding:14px;
+      overflow:auto;
+      height:calc(100% - 68px);
+    }
+
+    .left-section-title{
+      margin:10px 0 12px;
+      font-size:14px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-weight:800;
+    }
+
+    .component-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .component-card{
+      background:linear-gradient(180deg,#f8fbff,#eef4ff);
+      border:1px solid #d8e6ff;
+      border-radius:16px;
+      padding:12px;
+      cursor:pointer;
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      position:relative;
+      overflow:hidden;
+      min-height:92px;
+    }
+
+    .component-card:hover{
+      transform:translateY(-2px);
+      box-shadow:0 12px 24px rgba(37,99,235,.12);
+      border-color:#bcd4ff;
+    }
+
+    .component-card::after{
+      content:"";
+      position:absolute;
+      right:-18px;
+      top:-18px;
+      width:56px;
+      height:56px;
+      border-radius:50%;
+      background:rgba(59,130,246,.08);
+    }
+
+    .component-icon{
+      width:36px;
+      height:36px;
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      background:#fff;
+      border:1px solid #dce8ff;
+      color:var(--blue);
+      font-size:18px;
+      margin-bottom:10px;
+    }
+
+    .component-name{
+      font-weight:800;
+      font-size:14px;
+      margin-bottom:4px;
+    }
+
+    .component-meta{
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .example-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .example-item{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      background:#fbfdff;
+      cursor:pointer;
+      transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+
+    .example-item:hover{
+      transform:translateY(-1px);
+      box-shadow:0 10px 18px rgba(24,34,48,.05);
+      border-color:#cdd9ea;
+    }
+
+    .example-item b{
+      display:block;
+      margin-bottom:6px;
+    }
+
+    .canvas-panel{
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+      min-height:0;
+      overflow:hidden;
+    }
+
+    .canvas-toolbar{
+      padding:12px 14px;
+      border-bottom:1px solid #eef2f8;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      background:#fff;
+      z-index:3;
+    }
+
+    .toolbar-group{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .zoom-display{
+      padding:8px 12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:#fff;
+      font-weight:700;
+      color:var(--muted);
+    }
+
+    .workspace-area{
+      position:relative;
+      flex:1;
+      min-height:0;
+      overflow:hidden;
+      background:
+        linear-gradient(to right, rgba(37,99,235,.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(37,99,235,.05) 1px, transparent 1px),
+        linear-gradient(180deg,#fcfdff,#f4f7fb);
+      background-size: 24px 24px, 24px 24px, auto;
+    }
+
+    .canvas-world{
+      position:absolute;
+      inset:0;
+      transform-origin:0 0;
+    }
+
+    .wire-layer{
+      position:absolute;
+      inset:0;
+      pointer-events:auto;
+      overflow:visible;
+    }
+
+    .items-layer{
+      position:absolute;
+      inset:0;
+    }
+
+    .logic-dock{
+      position:absolute;
+      left:16px;
+      right:16px;
+      bottom:16px;
+      min-height:148px;
+      border:1px solid var(--line);
+      border-radius:22px;
+      background:rgba(255,255,255,.9);
+      backdrop-filter: blur(8px);
+      box-shadow:0 16px 32px rgba(24,34,48,.08);
+      padding:14px;
+      z-index:4;
+    }
+
+    .logic-dock h3{
+      margin:0 0 10px;
+      font-size:18px;
+    }
+
+    .logic-list{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      min-height:70px;
+      align-items:flex-start;
+    }
+
+    .logic-chip{
+      background:linear-gradient(180deg,#eff6ff,#dbeafe);
+      color:#1e3a8a;
+      border:1px solid #bfdbfe;
+      border-radius:14px;
+      padding:10px 12px;
+      font-weight:800;
+      font-size:13px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      animation:popIn .22s ease;
+    }
+
+    .logic-chip button{
+      box-shadow:none;
+      padding:5px 8px;
+      border-radius:8px;
+      font-size:12px;
+      background:#fff;
+      color:#1e3a8a;
+      border:1px solid #bfdbfe;
+    }
+
+    @keyframes popIn{
+      from{transform:scale(.92);opacity:0}
+      to{transform:scale(1);opacity:1}
+    }
+
+    .canvas-item{
+      position:absolute;
+      width:120px;
+      min-height:78px;
+      border-radius:20px;
+      background:#fff;
+      border:1px solid #dbe3f0;
+      box-shadow:0 16px 28px rgba(24,34,48,.08);
+      cursor:grab;
+      transition:box-shadow .18s ease, transform .18s ease;
+      overflow:hidden;
+      animation:itemAppear .22s ease;
+    }
+
+    @keyframes itemAppear{
+      from{opacity:0; transform:translateY(8px) scale(.96)}
+      to{opacity:1; transform:translateY(0) scale(1)}
+    }
+
+    .canvas-item.dragging{
+      cursor:grabbing;
+      box-shadow:0 26px 40px rgba(24,34,48,.18);
+      z-index:10;
+    }
+
+    .item-head{
+      padding:10px 12px 8px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      border-bottom:1px solid #eef2f8;
+      background:linear-gradient(180deg,#fff,#fbfdff);
+    }
+
+    .item-head b{
+      font-size:13px;
+      letter-spacing:-.2px;
+    }
+
+    .item-body{
+      padding:10px 12px 14px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .port{
+      position:absolute;
+      width:16px;
+      height:16px;
+      border-radius:50%;
+      background:var(--blue);
+      border:3px solid #fff;
+      box-shadow:0 6px 10px rgba(37,99,235,.22);
+      cursor:pointer;
+      transition:transform .14s ease;
+    }
+
+    .port:hover{
+      transform:scale(1.12);
+    }
+
+    .port.left{left:-8px; top:50%; transform:translateY(-50%)}
+    .port.right{right:-8px; top:50%; transform:translateY(-50%)}
+    .port.top{top:-8px; left:50%; transform:translateX(-50%)}
+    .port.bottom{bottom:-8px; left:50%; transform:translateX(-50%)}
+
+    .led-indicator{
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      background:#141414;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.2);
+      transition:background .18s ease, box-shadow .18s ease;
+    }
+
+    .led-indicator.on{
+      background:#ff3b30;
+      box-shadow:0 0 0 6px rgba(255,59,48,.12), 0 0 18px rgba(255,59,48,.45);
+    }
+
+    .motor-wheel{
+      width:22px;
+      height:22px;
+      border-radius:50%;
+      border:4px solid #475569;
+      border-top-color:#94a3b8;
+      transition:transform .2s linear;
+    }
+
+    .motor-wheel.on{
+      animation:spin .8s linear infinite;
+    }
+
+    @keyframes spin{
+      from{transform:rotate(0)}
+      to{transform:rotate(360deg)}
+    }
+
+    .buzzer-wave{
+      width:18px;
+      height:18px;
+      border-radius:50%;
+      background:#1e293b;
+      position:relative;
+    }
+
+    .buzzer-wave.on::before,
+    .buzzer-wave.on::after{
+      content:"";
+      position:absolute;
+      inset:-4px;
+      border:2px solid rgba(245,158,11,.6);
+      border-radius:50%;
+      animation:pulse 1s infinite;
+    }
+
+    .buzzer-wave.on::after{
+      animation-delay:.3s;
+    }
+
+    @keyframes pulse{
+      from{transform:scale(.8);opacity:1}
+      to{transform:scale(1.8);opacity:0}
+    }
+
+    .dashboard-card{
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      background:#fbfdff;
+      margin-bottom:12px;
+    }
+
+    .stat{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      margin:8px 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .stat b{
+      color:var(--text);
+    }
+
+    .leaderboard{
+      display:grid;
+      gap:8px;
+    }
+
+    .leader-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+      background:#fff;
+    }
+
+    .login-screen{
+      position:fixed;
+      inset:0;
+      z-index:100;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:
+        radial-gradient(circle at 20% 15%, rgba(37,99,235,.18), transparent 20%),
+        radial-gradient(circle at 80% 20%, rgba(34,197,94,.12), transparent 18%),
+        linear-gradient(180deg,#f8fbff,#eff4fb);
+    }
+
+    .login-logo{
+      width:65px;
+      height:65px;
+      object-fit:contain;
+      border-radius:14px;
+    }
+
+    .login-card{
+      width:min(520px,92vw);
+      background:rgba(255,255,255,.92);
+      backdrop-filter: blur(10px);
+      border:1px solid #e5edf8;
+      border-radius:28px;
+      box-shadow:0 30px 80px rgba(37,99,235,.12);
+      padding:26px;
+      animation:rise .28s ease;
+    }
+
+    @keyframes rise{
+      from{transform:translateY(18px);opacity:0}
+      to{transform:translateY(0);opacity:1}
+    }
+
+    .login-top{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .login-badge{
+      width:54px;
+      height:54px;
+      border-radius:18px;
+      background:linear-gradient(135deg,var(--blue),var(--green2));
+      display:grid;
+      place-items:center;
+      color:#fff;
+      font-size:24px;
+      font-weight:900;
+      box-shadow:0 12px 24px rgba(37,99,235,.18);
+    }
+
+    .login-top h2{
+      margin:0;
+      font-size:28px;
+      letter-spacing:-.6px;
+    }
+
+    .login-top p{
+      margin:5px 0 0;
+      color:var(--muted);
+    }
+
+    .field-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:12px;
+    }
+
+    #guidePage div {
+      animation: fadeUp 0.4s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(20px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .field label{
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .field input, .field select, textarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px 14px;
+      background:#fff;
+      color:var(--text);
+      outline:none;
+      font-size:14px;
+      transition:border-color .16s ease, box-shadow .16s ease;
+    }
+
+    .field input:focus, .field select:focus, textarea:focus{
+      border-color:#9ec0ff;
+      box-shadow:0 0 0 4px rgba(37,99,235,.08);
+    }
+
+    .login-actions{
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      margin-top:18px;
+      flex-wrap:wrap;
+    }
+
+    .toast{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      z-index:120;
+      background:#111827;
+      color:#fff;
+      padding:12px 14px;
+      border-radius:14px;
+      box-shadow:0 20px 40px rgba(17,24,39,.25);
+      opacity:0;
+      transform:translateY(8px);
+      pointer-events:none;
+      transition:opacity .22s ease, transform .22s ease;
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    .small-note{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:8px;
+      line-height:1.45;
+    }
+
+    .mini-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+
+    .teacher-area textarea{
+      min-height:90px;
+      resize:vertical;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#eff6ff;
+      color:#1d4ed8;
+      border:1px solid #bfdbfe;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    @media (max-width: 1200px){
+      .layout{
+        grid-template-columns:280px 1fr 300px;
+      }
+    }
+
+    @media (max-width: 1000px){
+      .layout{
+        grid-template-columns:1fr;
+      }
+      .panel{
+        min-height:260px;
+      }
+      html,body{
+        overflow:auto;
+      }
+      .app-shell{
+        height:auto;
+        min-height:100vh;
+      }
+      .workspace-area{
+        height:70vh;
+      }
+    }
+    #deleteBin{
+      position:absolute;
+      right:20px;
+      bottom:20px;
+      width:70px;
+      height:70px;
+      background:#111827;
+      color:#fff;
+      font-size:30px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:15px;
+      z-index:999; /* 🔥 ADD THIS */
+    }
+
+#deleteBin.active{
+  background:red;
+}
+
+input.error {
+    border-color: red !important;
+    box-shadow: 0 0 0 2px rgba(255,0,0,0.1);
+  }
+
+  </style>
+</head>
+<body class="no-select">
+  <!-- 🔥 LANDING PAGE -->
+   <div id="landingPage" style="
+   position:fixed;
+   inset:0;
+   z-index:200;
+   display:flex;
+   align-items:center;
+   justify-content:center;
+   flex-direction:column;
+   background:linear-gradient(135deg,#f97316,#fb923c);
+   color:white;
+   text-align:center;
+   padding:20px;
+   ">
+   
+   <img src="logo.png" style="width:90px; margin-bottom:20px;">
+   
+   <h1 style="font-size:40px; margin:0;">EDUCIRCUIT</h1>
+   <p style="max-width:500px;">
+     Build circuits. Learn engineering. Create real projects.
+   </p>
+   
+   <button onclick="enterLanding()" style="
+     margin-top:20px;
+     padding:12px 20px;
+     border:none;
+     border-radius:12px;
+     font-weight:bold;
+     background:white;
+     color:#f97316;
+     cursor:pointer;
+    ">
+       Get Started 🚀
+    </button>
+
+    <button onclick="openGuide()" style="
+      margin-top:10px;
+      padding:10px 16px;
+      border:none;
+      border-radius:10px;
+      background:#111827;
+      color:white;
+      cursor:pointer;
+    ">
+      How to Use 👀
+    </button>
+
+    <label style="margin-top:15px; font-size:13px;">
+       <input type="checkbox" id="dontShowLanding"> Don't show again
+      </label>
+
+</div>
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-top">
+       <img src="logo.png" class="login-logo" />
+        <div>
+          <h2>EDUCIRCUIT</h2>
+          <p>DIY engineering platform for students and teachers.</p>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="loginName">Full name</label>
+          <input id="loginName" type="text" placeholder="Enter your name">
+        </div>
+        <div class="field">
+          <label for="loginRole">Role</label>
+          <select id="loginRole">
+            <option value="student">Student</option>
+            <option value="teacher">Teacher</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="loginClass">Class / Section</label>
+          <input id="loginClass" type="text" placeholder="10-A">
+        </div>
+        <div class="field">
+          <label for="loginSchool">School</label>
+          <input id="loginSchool" type="text" placeholder="Your school name">
+        </div>
+      </div>
+
+      <div class="small-note">
+        This is a demo startup login screen. It opens the platform locally in one single HTML file.
+      </div>
+
+      <div class="login-actions">
+        <button class="secondary" id="demoStudentBtn">Demo Student</button>
+        <button class="secondary" id="demoTeacherBtn">Demo Teacher</button>
+        <button id="enterBtn">Enter Platform</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- 📘 GUIDE PAGE -->
+   <div id="guidePage" class="hidden" style="
+  position:fixed;
+  inset:0;
+  z-index:300;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: radial-gradient(circle at top, #1e293b, #020617);
+">
+
+  <div style="
+    width:min(900px,90vw);
+    background:rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:25px;
+    padding:30px;
+    color:white;
+  ">
+
+    <!-- 🔥 HEADER -->
+    <div style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
+      <img src="logo.png" style="width:60px;">
+      <div>
+        <h1 style="margin:0;">Educircuit Guide 🚀</h1>
+        <p style="opacity:0.7; margin:0;">Learn in 30 seconds</p>
+      </div>
+    </div>
+
+    <!-- 🎥 VIDEO SECTION -->
+<div style="
+  margin-bottom:25px;
+  border-radius:20px;
+  overflow:hidden;
+  background:#000;
+  border:1px solid rgba(255,255,255,0.1);
+">
+
+  <!-- TEMP PLACEHOLDER -->
+  <div style="
+    width:100%;
+    height:220px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#9ca3af;
+    font-weight:600;
+  ">
+    🎬 Tutorial video coming soon...
+  </div>
+
+  <!-- 👉 LATER replace above with:
+  <video controls width="100%">
+    <source src="your-video.mp4" type="video/mp4">
+  </video>
+  -->
+
+</div>
+
+    <!-- 🔥 STEPS GRID -->
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+      gap:15px;
+    ">
+
+      <div style="background:#111827;padding:15px;border-radius:15px;">
+        <h3>⚡ Add</h3>
+        <p>Click components like Battery, LED, Motor</p>
+      </div>
+
+      <div style="background:#111827;padding:15px;border-radius:15px;">
+        <h3>🔗 Connect</h3>
+        <p>Click ports to wire components</p>
+      </div>
+
+      <div style="background:#111827;padding:15px;border-radius:15px;">
+        <h3>🧠 Logic</h3>
+        <p>Use ON / OFF / WAIT blocks</p>
+      </div>
+
+      <div style="background:#111827;padding:15px;border-radius:15px;">
+        <h3>🚀 Run</h3>
+        <p>Click "Run Logic"</p>
+      </div>
+
+      <div style="background:#111827;padding:15px;border-radius:15px;">
+        <h3>💾 Save</h3>
+        <p>Store your project</p>
+      </div>
+
+    </div>
+
+    <!-- 🔥 BUTTON -->
+    <div style="margin-top:25px; text-align:right;">
+      <button onclick="closeGuide()" style="
+        padding:12px 20px;
+        border:none;
+        border-radius:12px;
+        background:#f97316;
+        color:white;
+        font-weight:bold;
+        cursor:pointer;
+      ">
+        Got it 👍
+      </button>
+    </div>
+
+  </div>
+</div>
+
+  <!-- 🔥 PROJECT PAGE -->
+  <div id="projectsPage" class="hidden" style="
+    display:flex;
+    flex-direction:column;
+    position:fixed;
+    inset:0;
+    background:#f5f7fb;
+    z-index:9999;
+    padding:20px;
+    overflow:auto;
+  ">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h1>My Saved Projects</h1>
+      <button onclick="closeProjectsPage()">⬅ Back</button>
+    </div>
+
+    <div id="projectsPageList" style="
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+      gap:14px;
+    "></div>
+
+  </div>
+
+  <div class="app-shell">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand">
+          <img src="logo.png" class="brand-logo" />
+          <div class="brand-text">
+            <h1>EDUCIRCUIT</h1>
+            <p>Build • Learn • Innovate</p>
+          </div>
+        </div>
+        </div> 
+
+      <div class="top-actions">
+        <span class="pill" id="activeUserPill">Not logged in</span>
+        <button class="secondary" id="studentModeBtn">Student</button>
+        <button class="secondary" id="teacherModeBtn">Teacher</button>
+        <button class="secondary" id="clearBtn">Clear</button>
+        <button class="secondary" id="zoomOutBtn">Zoom −</button>
+        <span class="zoom-display" id="zoomDisplay">100%</span>
+        <button class="secondary" id="zoomInBtn">Zoom +</button>
+        <button class="green" id="saveBtn">Save</button>
+        <button class="secondary" id="langToggleBtn">தமிழ்</button>
+        <button class="red" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Components</h2>
+            <small>Click to add. Drag to move. Click ports to wire.</small>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="left-section-title">DIY Components</div>
+          <div class="component-grid" id="componentGrid"></div>
+
+          <div class="left-section-title">Logic Blocks</div>
+          <div class="example-list" id="logicBlockList"></div>
+
+          <div class="left-section-title">Example Projects</div>
+          <div class="example-list">
+            <div class="example-item" data-example="fan">
+              <b>Mini Fan</b>
+              Battery → Switch → Motor
+            </div>
+            <div class="example-item" data-example="alarm">
+              <b>Door Alarm</b>
+              Battery → Switch → Buzzer
+            </div>
+            <div class="example-item" data-example="traffic">
+              <b>Traffic Light</b>
+              LED sequence logic
+            </div>
+            <div class="example-item" data-example="plant">
+              <b>Smart Plant Watering</b>
+              Soil Sensor → Pump Motor
+            </div>
+            <div class="example-item" data-example="lamp">
+              <b>Smart Lamp</b>
+              Switch logic → LED
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel canvas-panel">
+        <div class="canvas-toolbar">
+          <div class="toolbar-group">
+            <button class="secondary" id="runLogicBtn">Run Logic</button>
+            <button class="secondary" id="stopLogicBtn">Reset Outputs</button>
+            <button class="secondary" id="autoWireBtn">Auto Wire</button>
+            <button class="secondary" id="toggleGridBtn">Toggle Grid</button>
+          </div>
+          <div class="toolbar-group">
+            <span class="pill">Ports: click one component port, then another</span>
+          </div>
+        </div>
+
+        <div class="workspace-area" id="workspaceArea">
+          <div class="canvas-world" id="canvasWorld">
+            <svg class="wire-layer" id="wireLayer"></svg>
+            <div class="items-layer" id="itemsLayer"></div>
+            <div id="deleteBin">🗑️</div>
+
+            <div class="logic-dock">
+              <h3>Logic Workspace</h3>
+              <div class="logic-list" id="logicList"></div>
+              <div class="mini-actions">
+                <button class="secondary" id="clearLogicBtn">Clear Logic</button>
+                <button class="secondary" id="addWaitBtn">Add WAIT 1s</button>
+                <button class="secondary" id="addLedOnBtn">ON</button>
+                <button class="secondary" id="addLedOffBtn">OFF</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Dashboard</h2>
+            <small>Student and teacher controls</small>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div id="studentPanel">
+            <div class="dashboard-card">
+              <h3 style="margin:0 0 10px;">Student Dashboard</h3>
+              <div class="stat"><span>Status</span><b id="statusText">Not Submitted</b></div>
+              <div class="stat"><span>Grade</span><b id="gradeText">Not graded</b></div>
+              <div class="stat"><span>Project</span><b id="projectNameText">Untitled STEM Project</b></div>
+              <div class="mini-actions">
+                <button class="green" id="submitBtn">Submit Project</button>
+                <button class="secondary" id="renameBtn">Rename</button>
+              </div>
+
+              <div class="dashboard-card">
+                <h3 style="margin:0 0 10px;">My Projects</h3>
+                <button onclick="openProjectsPage()" class="secondary">
+                  Open Full Page 🚀
+                </button>
+              </div>
+            </div>
+
+            <div class="dashboard-card">
+              <h3 style="margin:0 0 10px;">Student Projects</h3>
+              <div id="teacherProjectList"></div>
+            </div>
+
+            <div class="dashboard-card">
+              <h3 style="margin:0 0 10px;">Simulation Outputs</h3>
+              <div class="stat">
+                <span>LED State</span>
+                <b style="display:flex;align-items:center;gap:8px;">
+                  <span class="led-indicator" id="dashboardLed"></span>
+                  <span id="ledStateText">OFF</span>
+                </b>
+              </div>
+              <div class="stat">
+                <span>Motor</span>
+                <b style="display:flex;align-items:center;gap:8px;">
+                  <span class="motor-wheel" id="dashboardMotor"></span>
+                  <span id="motorStateText">OFF</span>
+                </b>
+              </div>
+              <div class="stat">
+                <span>Buzzer</span>
+                <b style="display:flex;align-items:center;gap:8px;">
+                  <span class="buzzer-wave" id="dashboardBuzzer"></span>
+                  <span id="buzzerStateText">OFF</span>
+                </b>
+              </div>
+            </div>
+
+            <div class="dashboard-card">
+              <h3 style="margin:0 0 10px;">Goal Leaderboard</h3>
+              <div class="leaderboard" id="leaderboard">
+                <div class="leader-item"><span>Achyuta</span><b>96</b></div>
+                <div class="leader-item"><span>Priya</span><b>94</b></div>
+                <div class="leader-item"><span>vishnu</span><b>91</b></div>
+                <div class="leader-item"><span>Meera</span><b>89</b></div>
+                <div class="leader-item"><span>Nisha</span><b>87</b></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="teacherPanel" class="hidden teacher-area">
+            <div class="dashboard-card">
+              <h3 style="margin:0 0 10px;">Teacher Panel</h3>
+              <div class="field">
+                <label for="teacherGrade">Enter grade</label>
+                <input id="teacherGrade" type="text" placeholder="A+, 95, Excellent">
+              </div>
+              <div class="field" style="margin-top:12px;">
+                <label for="teacherComment">Feedback</label>
+                <textarea id="teacherComment" placeholder="Write comments for the student's project"></textarea>
+              </div>
+              <div class="mini-actions">
+                <button id="applyGradeBtn">Apply Grade</button>
+                <button class="secondary" id="copyProjectBtn">Copy Project Summary</button>
+              </div>
+            </div>
+
+            <div class="dashboard-card">
+              <h3 style="margin:0 0 10px;">Submission Review</h3>
+              <div class="stat"><span>Submission</span><b id="teacherSubmissionState">Pending</b></div>
+              <div class="stat"><span>Current Grade</span><b id="teacherGradeState">Not graded</b></div>
+              <div class="stat"><span>Components</span><b id="teacherComponentCount">0</b></div>
+              <div class="stat"><span>Wires</span><b id="teacherWireCount">0</b></div>
+              <div class="stat"><span>Logic Blocks</span><b id="teacherLogicCount">0</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      schools: {},
+      user: {
+        name: "",
+        role: "student",
+        className: "",
+        school: ""
+      },
+      projectName: "Untitled STEM Project",
+      items: [],
+      wires: [],
+      logic: [],
+      zoom: 1,
+      selectedPort: null,
+      wireDrag: null,
+      drag: null,
+      nextId: 1,
+      gridVisible: true,
+      outputs: {
+        led: false,
+        motor: false,
+        buzzer: false
+      }
+    };
+    state.lang = "en";
+
+    const translations = {
+      ta: {
+        "EDUCIRCUIT": "எடுசர்க்யூட்",
+        "Components": "கூறுகள்",
+        "Logic Blocks": "தருக்க கட்டுகள்",
+        "Example Projects": "உதாரண திட்டங்கள்",
+        "Student Dashboard": "மாணவர் டாஷ்போர்டு",
+        "Teacher Panel": "ஆசிரியர் பகுதி",
+        "Submit Project": "திட்டத்தை சமர்ப்பிக்கவும்",
+        "Rename": "மறுபெயரிடு",
+        "Run Logic": "தருக்கத்தை இயக்கு",
+        "Reset Outputs": "அவுட்புட்களை ரீசெட் செய்",
+        "Auto Wire": "தானியங்கி இணைப்பு",
+        "Toggle Grid": "கிரிட் மாற்று",
+        "Save": "சேமிக்க",
+        "Clear": "அழி",
+        "Student": "மாணவர்",
+        "Teacher": "ஆசிரியர்",
+        "Enter Platform": "பிளாட்பார்மை திற",
+        "Full name": "முழு பெயர்",
+        "School": "பள்ளி",
+        "Class / Section": "வகுப்பு",
+        "Role": "பங்கு",
+        "DIY Components": "DIY கூறுகள்",
+        "Simulation Outputs": "விளைவுகள்",
+        "Dashboard": "டாஷ்போர்டு",
+        "Goal Leaderboard": "முன்னணி பட்டியல்",
+        "Battery": "பேட்டரி",
+        "Motor": "மோட்டார்",
+        "Switch": "சுவிட்ச்",
+        "LED": "எல்இடி",
+        "Buzzer": "பஸர்"
+      }
+    };
+
+function applyLanguage(){
+  const lang = state.lang;
+
+  document.querySelectorAll("[data-en]").forEach(el => {
+    const original = el.getAttribute("data-en");
+
+    if(lang === "ta" && translations.ta[original]){
+      el.textContent = translations.ta[original];
+    } else {
+      el.textContent = original;
+    }
+  });
+}
+
+    const componentCatalog = [
+      { type:"Battery", icon:"🔋", desc:"Power source", color:"#2563eb", ports:["right"] },
+      { type:"LED", icon:"💡", desc:"Visual output", color:"#ef4444", ports:["left","right"] },
+      { type:"Motor", icon:"⚙️", desc:"Rotating output", color:"#16a34a", ports:["left","right"] },
+      { type:"Switch", icon:"🎚️", desc:"Input control", color:"#f59e0b", ports:["left","right"] },
+      { type:"Buzzer", icon:"🔔", desc:"Sound output", color:"#8b5cf6", ports:["left","right"] },
+      { type:"Resistor", icon:"🧱", desc:"Current limiter", color:"#64748b", ports:["left","right"] },
+      { type:"Capacitor", icon:"📦", desc:"Energy storage", color:"#0ea5e9", ports:["left","right"] },
+      { type:"Relay", icon:"📡", desc:"Switching element", color:"#10b981", ports:["left","right"] },
+      { type:"Soil Sensor", icon:"🌱", desc:"Moisture input", color:"#22c55e", ports:["right"] },
+      { type:"Light Sensor", icon:"☀️", desc:"Brightness input", color:"#f59e0b", ports:["right"] },
+      { type:"Temp Sensor", icon:"🌡️", desc:"Temperature input", color:"#ef4444", ports:["right"] },
+      { type:"Pump", icon:"🚰", desc:"Water output", color:"#06b6d4", ports:["left","right"] },
+      { type:"Servo", icon:"🦾", desc:"Angle motor", color:"#3b82f6", ports:["left","right"] }
+    ];
+
+    const logicCatalog = [
+      "ON",
+      "OFF",
+      "WAIT 1s"
+    ];
+
+    const loginScreen = document.getElementById("loginScreen");
+    const loginName = document.getElementById("loginName");
+    const loginRole = document.getElementById("loginRole");
+    const loginClass = document.getElementById("loginClass");
+    const loginSchool = document.getElementById("loginSchool");
+    const enterBtn = document.getElementById("enterBtn");
+    const demoStudentBtn = document.getElementById("demoStudentBtn");
+    const demoTeacherBtn = document.getElementById("demoTeacherBtn");
+    const activeUserPill = document.getElementById("activeUserPill");
+
+    const componentGrid = document.getElementById("componentGrid");
+    const logicBlockList = document.getElementById("logicBlockList");
+    const itemsLayer = document.getElementById("itemsLayer");
+    const deleteBin = document.getElementById("deleteBin");
+    const wireLayer = document.getElementById("wireLayer");
+    const logicList = document.getElementById("logicList");
+    const canvasWorld = document.getElementById("canvasWorld");
+    const workspaceArea = document.getElementById("workspaceArea");
+    const zoomDisplay = document.getElementById("zoomDisplay");
+    const toast = document.getElementById("toast");
+
+    const studentPanel = document.getElementById("studentPanel");
+    const teacherPanel = document.getElementById("teacherPanel");
+    const studentModeBtn = document.getElementById("studentModeBtn");
+    const teacherModeBtn = document.getElementById("teacherModeBtn");
+
+    const statusText = document.getElementById("statusText");
+    const gradeText = document.getElementById("gradeText");
+    const projectNameText = document.getElementById("projectNameText");
+    const dashboardLed = document.getElementById("dashboardLed");
+    const dashboardMotor = document.getElementById("dashboardMotor");
+    const dashboardBuzzer = document.getElementById("dashboardBuzzer");
+    const ledStateText = document.getElementById("ledStateText");
+    const motorStateText = document.getElementById("motorStateText");
+    const buzzerStateText = document.getElementById("buzzerStateText");
+
+    const teacherSubmissionState = document.getElementById("teacherSubmissionState");
+    const teacherGradeState = document.getElementById("teacherGradeState");
+    const teacherComponentCount = document.getElementById("teacherComponentCount");
+    const teacherWireCount = document.getElementById("teacherWireCount");
+    const teacherLogicCount = document.getElementById("teacherLogicCount");
+
+    function showToast(message){
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(showToast.t);
+      showToast.t = setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    function renderComponentCards(){
+      componentGrid.innerHTML = "";
+      componentCatalog.forEach(comp => {
+        const card = document.createElement("div");
+        card.className = "component-card";
+        card.innerHTML = `
+          <div class="component-icon">${comp.icon}</div>
+          <div class="component-name">${comp.type}</div>
+          <div class="component-meta">${comp.desc}</div>
+        `;
+        card.addEventListener("click", () => addComponent(comp.type));
+        componentGrid.appendChild(card);
+      });
+    }
+
+    function renderLogicCards(){
+      logicBlockList.innerHTML = "";
+      logicCatalog.forEach(name => {
+        const item = document.createElement("div");
+        item.className = "example-item";
+        item.innerHTML = `<b>${name}</b>Click to add to logic workspace`;
+        item.addEventListener("click", () => addLogic(name));
+        logicBlockList.appendChild(item);
+      });
+    }
+
+    function getCatalog(type){
+      return componentCatalog.find(c => c.type === type);
+    }
+
+      function renderProjectsPage(){
+        const container = document.getElementById("projectsPageList");
+        container.innerHTML = "";
+
+        const school = state.user.school;
+
+        if(!state.schools[school]) return;
+
+        const student = state.schools[school].students.find(
+          s => s.name === state.user.name
+        );
+
+        if(!student || student.projects.length === 0){
+          container.innerHTML = "<p>No projects yet</p>";
+          return;
+        }
+
+        student.projects.forEach((proj, index) => {
+          const div = document.createElement("div");
+
+           div.style = `
+             background:white;
+             border:1px solid #dbe3f0;
+             border-radius:14px;
+             padding:14px;
+             box-shadow:0 10px 20px rgba(0,0,0,0.05);
+           `;
+
+           div.innerHTML = `
+            <h3>${proj.name}</h3>
+            <p style="color:gray; font-size:12px;">${proj.date}</p>
+
+            <div style="display:flex; gap:8px; margin-top:10px;">
+              <button onclick="loadSavedProject(${index})">Open</button>
+              <button onclick="deleteProject(${index})" class="red">Delete</button>
+            </div>
+           `;
+
+           container.appendChild(div);
+         });
+       }
+
+    function renderProjectList(){
+      const school = state.user.school;
+      const container = document.getElementById("projectList");
+      if(!container) return;
+
+      const student = state.schools[school]?.students.find(
+        s => s.name === state.user.name
+      );
+
+      if(!student || student.projects.length === 0){
+        container.innerHTML = "<p style='color:gray'>No projects yet</p>";
+        return;
+      }
+
+      container.innerHTML = "";
+      student.projects.forEach((proj, index) => {
+        const div = document.createElement("div");
+        div.className = "project-item";
+
+        div.innerHTML = `
+          <div class="project-info">
+            <div class="project-name">${proj.name}</div>
+            <div class="project-date">${proj.date}</div>
+          </div>
+          <div class="project-actions">
+            <button class="secondary" onclick="loadSavedProject(${index})">Open</button>
+            <button class="red" onclick="deleteProject(${index})">Delete</button>
+          </div>
+        `;
+
+        container.appendChild(div);
+      });
+    }
+
+    function renderTeacherProjects(){
+      const school = state.user.school;
+      const container = document.getElementById("teacherProjectList");
+      if(!container) return;
+
+      const schoolData = state.schools[school];
+      if(!schoolData) return;
+
+      container.innerHTML = "";
+      schoolData.students.forEach(student => {
+        student.projects.forEach((proj, index) => {
+          const div = document.createElement("div");
+          div.className = "project-item";
+
+          div.innerHTML = `
+            <div class="project-info">
+              <div class="project-name">${proj.name}</div>
+              <div class="project-date">${student.name} • ${proj.date}</div>
+            </div>
+            <div class="project-actions">
+              <button class="secondary" onclick="teacherOpenProject('${student.name}', ${index})">Open</button>
+            </div>
+          `;
+
+          container.appendChild(div);
+        });
+      });
+    }
+
+    function addComponent(type, x = null, y = null){
+      const cfg = getCatalog(type);
+      if(!cfg) return;
+
+      const item = {
+        id: "item-" + state.nextId++,
+        type,
+        x: x ?? (120 + state.items.length * 26),
+        y: y ?? (100 + state.items.length * 24),
+        ports: cfg.ports.slice(),
+        ledOn: false,
+        motorOn: false,
+        buzzerOn: false
+      };
+
+      state.items.push(item);
+      renderItems();
+      updateTeacherStats();
+      const name = state.lang === "ta" && translations.ta[type] ? translations.ta[type] : type;
+      showToast(name + (state.lang === "ta" ? " சேர்க்கப்பட்டது" : " added"));
+    }
+
+    function renderItems(){
+      itemsLayer.innerHTML = "";
+
+      state.items.forEach(item => {
+        const cfg = getCatalog(item.type);
+        const el = document.createElement("div");
+        el.className = "canvas-item";
+        el.dataset.id = item.id;
+        el.style.left = item.x + "px";
+        el.style.top = item.y + "px";
+
+        let statusHtml = "";
+        if(item.type === "LED"){
+          statusHtml = `<div class="led-indicator ${state.outputs.led ? "on" : ""}"></div>`;
+        } else if(item.type === "Motor" || item.type === "Pump" || item.type === "Servo"){
+          statusHtml = `<div class="motor-wheel ${state.outputs.motor ? "on" : ""}"></div>`;
+        } else if(item.type === "Buzzer"){
+          statusHtml = `<div class="buzzer-wave ${state.outputs.buzzer ? "on" : ""}"></div>`;
+        } else {
+          statusHtml = `<div style="font-size:18px">${cfg.icon}</div>`;
+        }
+
+        el.innerHTML = `
+          <div class="item-head">
+           <b>${cfg.icon} ${translations.ta[item.type] && state.lang === "ta" ? translations.ta[item.type] : item.type}</b>
+            ${statusHtml}
+          </div>
+          <div class="item-body">${cfg.desc}</div>
+        `;
+
+        item.ports.forEach(pos => {
+          const p = document.createElement("div");
+          p.className = "port " + pos;
+          p.dataset.itemId = item.id;
+          p.dataset.port = pos;
+          p.title = "Connect wire";
+          
+          let dragged = false;
+
+           p.addEventListener("mousedown", (ev) => {
+             dragged = false;
+             startWireDrag(item.id, pos, ev);
+           });
+
+           p.addEventListener("mousemove", (e) => {
+             if(Math.abs(e.movementX) > 2 || Math.abs(e.movementY) > 2){
+               dragged = true;
+             }
+           });
+
+           p.addEventListener("click", (ev) => {
+             if(dragged) return; // 🔥 prevents double trigger
+             ev.stopPropagation();
+             handlePortClick(item.id, pos);
+           });
+          el.appendChild(p);
+        });
+
+        el.addEventListener("mousedown", startDragItem);
+        itemsLayer.appendChild(el);
+      });
+
+      drawWires();
+      syncOutputsToCanvas();
+    }
+
+
+    function loadSavedProject(index){
+      const school = state.user.school;
+
+      const student = state.schools[school].students.find(
+        s => s.name === state.user.name
+      );
+
+      const proj = student.projects[index];
+
+      // 🔥 Load into current workspace
+      state.items = proj.items;
+      state.wires = proj.wires;
+      state.logic = proj.logic;
+      state.projectName = proj.name;
+
+      // 🔥 Re-render UI
+      renderItems();
+      renderLogic();
+      drawWires();
+
+      showToast("Project loaded 🚀");
+    }
+
+    function deleteProject(index){
+      const school = state.user.school;
+
+      const student = state.schools[school].students.find(
+        s => s.name === state.user.name
+      );   
+
+      // ❌ Remove project
+      student.projects.splice(index, 1);
+
+      // 💾 Save updated data
+      localStorage.setItem("stem_schools", JSON.stringify(state.schools));
+
+      // 🔄 Refresh UI
+      renderProjectsPage();   // full page  
+
+      showToast("Project deleted ❌");
+    }
+
+    function startDragItem(e){
+  const target = e.currentTarget;
+  const id = target.dataset.id;
+  const item = state.items.find(i => i.id === id);
+  if(!item) return;
+
+  const rect = target.getBoundingClientRect();
+  const worldRect = workspaceArea.getBoundingClientRect();
+
+  // ✅ correct offset (NO JUMP)
+  const offsetX = (e.clientX - rect.left) / state.zoom;
+  const offsetY = (e.clientY - rect.top) / state.zoom;
+
+  state.drag = { id, offsetX, offsetY };
+
+  target.classList.add("dragging");
+
+  function onMove(ev){
+    const x = (ev.clientX - worldRect.left) / state.zoom - offsetX;
+    const y = (ev.clientY - worldRect.top) / state.zoom - offsetY;
+
+    item.x = x;
+    item.y = y;
+
+    target.style.left = x + "px";
+    target.style.top = y + "px";
+
+    // ✅ BIN DETECTION (RESTORED)
+    const bin = deleteBin.getBoundingClientRect();
+
+    if(
+      ev.clientX > bin.left &&
+      ev.clientX < bin.right &&
+      ev.clientY > bin.top &&
+      ev.clientY < bin.bottom
+    ){
+      deleteBin.classList.add("active");
+    } else {
+      deleteBin.classList.remove("active");
+    }
+
+    drawWires();
+  }
+
+  function onUp(ev){
+    const bin = deleteBin.getBoundingClientRect();
+
+    // ✅ DELETE LOGIC (RESTORED)
+    if(
+      ev.clientX > bin.left &&
+      ev.clientX < bin.right &&
+      ev.clientY > bin.top &&
+      ev.clientY < bin.bottom
+    ){
+      state.items = state.items.filter(i => i.id !== id);
+      state.wires = state.wires.filter(w =>
+        w.from.itemId !== id && w.to.itemId !== id
+      );
+      showToast("Deleted 🗑️");
+    }
+
+    deleteBin.classList.remove("active");
+
+    target.classList.remove("dragging");
+    window.removeEventListener("mousemove", onMove);
+    window.removeEventListener("mouseup", onUp);
+
+    state.drag = null;
+
+    renderItems();
+    drawWires();
+  }
+
+  window.addEventListener("mousemove", onMove);
+  window.addEventListener("mouseup", onUp);
+}
+
+    function handlePortClick(itemId, port){
+      if(!state.selectedPort){
+        state.selectedPort = { itemId, port };
+        showToast("First port selected");
+        return;
+      }
+
+      const same = state.selectedPort.itemId === itemId && state.selectedPort.port === port;
+      if(same){
+        state.selectedPort = null;
+        showToast("Selection cancelled");
+        return;
+      }
+
+      state.wires.push({
+        id: "wire-" + Date.now() + "-" + Math.random().toString(16).slice(2),
+        from: { ...state.selectedPort },
+        to: { itemId, port }
+      });
+
+      state.selectedPort = null;
+      drawWires();
+      updateTeacherStats();
+      showToast("Wire connected");
+    }
+
+    function getItemById(id){
+      return state.items.find(i => i.id === id);
+    }
+
+    function getPortPosition(itemId, port){
+      const item = getItemById(itemId);
+      if(!item) return { x:0, y:0 };
+      const w = 120;
+      const h = 78;
+      if(port === "left") return { x:item.x, y:item.y + h / 2 };
+      if(port === "right") return { x:item.x + w, y:item.y + h / 2 };
+      if(port === "top") return { x:item.x + w / 2, y:item.y };
+      if(port === "bottom") return { x:item.x + w / 2, y:item.y + h };
+      return { x:item.x, y:item.y };
+    }
+
+function drawWires(){
+  wireLayer.innerHTML = "";
+
+  // NORMAL WIRES
+  state.wires.forEach(wire => {
+    const a = getPortPosition(wire.from.itemId, wire.from.port);
+    const b = getPortPosition(wire.to.itemId, wire.to.port);
+
+    const dx = Math.abs(b.x - a.x);
+    const c1x = a.x + Math.max(40, dx * 0.35);
+    const c2x = b.x - Math.max(40, dx * 0.35);
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.dataset.id = wire.id;
+    path.style.cursor = "pointer";
+    path.setAttribute("d", `M ${a.x} ${a.y} C ${c1x} ${a.y}, ${c2x} ${b.y}, ${b.x} ${b.y}`);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "#2563eb");
+    path.setAttribute("stroke-width", "4");
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("opacity", "0.95");
+    path.dataset.id = wire.id;
+    path.style.cursor = "pointer";
+    path.addEventListener("click", () => {
+      state.wires = state.wires.filter(w => w.id !== wire.id);
+      drawWires();
+      updateTeacherStats();
+      showToast("Wire deleted ❌");
+    });
+
+
+    path.addEventListener("mouseenter", () => {
+      path.setAttribute("stroke", "#f59e0b");
+      path.setAttribute("stroke-width", "6");
+    });
+
+    path.addEventListener("mouseleave", () => {
+      path.setAttribute("stroke", "#2563eb");
+      path.setAttribute("stroke-width", "4");
+    });  
+
+    wireLayer.appendChild(path);
+
+    const pulse = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    pulse.setAttribute("r", "4");
+    pulse.setAttribute("fill", "#60a5fa");
+    pulse.innerHTML = `<animateMotion dur="2s" repeatCount="indefinite"
+      path="M ${a.x} ${a.y} C ${c1x} ${a.y}, ${c2x} ${b.y}, ${b.x} ${b.y}" />`;
+    wireLayer.appendChild(pulse);
+  });
+
+  // 🔥 DRAG PREVIEW (FIXED)
+  if(state.wireDrag){
+    const a = getPortPosition(
+      state.wireDrag.from.itemId,
+      state.wireDrag.from.port
+    );
+
+    const rect = workspaceArea.getBoundingClientRect();
+
+    const b = {
+      x: (state.wireDrag.x - rect.left) / state.zoom,
+      y: (state.wireDrag.y - rect.top) / state.zoom
+    };
+
+    const dx = Math.abs(b.x - a.x);
+    const c1x = a.x + Math.max(40, dx * 0.35);
+    const c2x = b.x - Math.max(40, dx * 0.35);
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+    path.setAttribute(
+      "d",
+      `M ${a.x} ${a.y} C ${c1x} ${a.y}, ${c2x} ${b.y}, ${b.x} ${b.y}`
+    );
+
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "#94a3b8");
+    path.setAttribute("stroke-width", "3");
+    path.setAttribute("stroke-dasharray", "6,6");
+
+    wireLayer.appendChild(path);
+  }
+}
+   
+
+    function addLogic(name){
+      state.logic.push(name);
+      renderLogic();
+      updateTeacherStats();
+      const label = state.lang === "ta" && translations.ta[name] ? translations.ta[name] : name;
+      showToast(label + (state.lang === "ta" ? " சேர்க்கப்பட்டது" : " added"));
+    }
+
+    function renderLogic(){
+      logicList.innerHTML = "";
+
+      state.logic.forEach((step, index) => {
+        const chip = document.createElement("div");
+        chip.className = "logic-chip";
+
+        const label = state.lang === "ta" && translations.ta[step]
+          ? translations.ta[step]
+          : step;
+
+        chip.innerHTML = `<span>${index + 1}. ${label}</span>`;
+
+        const remove = document.createElement("button");
+        remove.textContent = "×";
+
+        remove.addEventListener("click", () => {
+          state.logic.splice(index, 1);
+          renderLogic();
+          updateTeacherStats();
+        });
+
+        chip.appendChild(remove);
+        logicList.appendChild(chip);
+      });
+    } 
+
+    function setMode(mode){
+      state.user.role = mode;
+
+      const isStudent = mode === "student";
+
+      studentPanel.classList.toggle("hidden", !isStudent);
+      teacherPanel.classList.toggle("hidden", isStudent);
+
+      activeUserPill.textContent = `${state.user.name || "Demo User"} • ${mode}`;
+
+      // 🔥 ADD THIS
+      if(mode === "teacher"){
+        renderTeacherProjects();
+      }
+    }
+
+    function updateOutputs(){
+      dashboardLed.classList.toggle("on", state.outputs.led);
+      dashboardMotor.classList.toggle("on", state.outputs.motor);
+      dashboardBuzzer.classList.toggle("on", state.outputs.buzzer);
+      ledStateText.textContent = state.outputs.led ? "ON" : "OFF";
+      motorStateText.textContent = state.outputs.motor ? "ON" : "OFF";
+      buzzerStateText.textContent = state.outputs.buzzer ? "ON" : "OFF";
+      renderItems();
+    }
+
+    function syncOutputsToCanvas(){
+      const cards = itemsLayer.querySelectorAll(".canvas-item");
+      cards.forEach(card => {
+        const id = card.dataset.id;
+        const item = getItemById(id);
+        if(!item) return;
+      });
+    }
+     function startWireDrag(itemId, port, event){
+  event.stopPropagation();
+  document.body.style.userSelect = "none";
+
+  state.wireDrag = {
+    from: { itemId, port },
+    x: event.clientX,
+    y: event.clientY
+  };
+
+  window.addEventListener("mousemove", onWireMove);
+  window.addEventListener("mouseup", endWireDrag);
+}
+
+function onWireMove(e){
+  if(!state.wireDrag) return;
+
+  state.wireDrag.x = e.clientX;
+  state.wireDrag.y = e.clientY;
+
+  drawWires();
+}
+
+function endWireDrag(e){
+  if(!state.wireDrag) return;
+
+  const target = document.elementFromPoint(e.clientX, e.clientY);
+
+  if(target && target.classList.contains("port")){
+    const toItemId = target.dataset.itemId;
+    const toPort = target.dataset.port;
+
+    if(!(state.wireDrag.from.itemId === toItemId && state.wireDrag.from.port === toPort)){
+      state.wires.push({
+        id: "wire-" + Date.now() + "-" + Math.random().toString(16).slice(2),
+        from: state.wireDrag.from,
+        to: { itemId: toItemId, port: toPort }
+      });
+
+      showToast("Wire connected ⚡");
+    }
+  }
+
+  state.wireDrag = null;
+
+  window.removeEventListener("mousemove", onWireMove);
+  window.removeEventListener("mouseup", endWireDrag);
+
+  drawWires();
+  updateTeacherStats();
+  document.body.style.userSelect = "auto";
+}
+
+    async function runLogic(){
+      resetOutputs(false);
+
+      for(const step of state.logic){
+
+        if(step === "ON"){
+          state.outputs.led = state.wires.some(w =>
+            getItemById(w.to.itemId)?.type === "LED" ||
+            getItemById(w.from.itemId)?.type === "LED"
+          );
+          state.outputs.motor = state.wires.some(w =>
+            ["Motor","Pump","Servo"].includes(getItemById(w.to.itemId)?.type) ||
+            ["Motor","Pump","Servo"].includes(getItemById(w.from.itemId)?.type)
+          );
+          state.outputs.buzzer = state.wires.some(w =>
+            getItemById(w.to.itemId)?.type === "Buzzer" ||
+            getItemById(w.from.itemId)?.type === "Buzzer"
+          );
+        }
+
+        else if(step === "OFF"){
+          state.outputs.led = false;
+          state.outputs.motor = false;
+          state.outputs.buzzer = false;
+        }
+
+        else if(step === "WAIT 1s"){
+          updateOutputs();
+          await wait(1000);
+        }
+
+        updateOutputs();
+        await wait(250);
+      }
+
+      showToast("Logic executed ⚡");
+    }
+
+    function resetOutputs(showMessage = true){
+      state.outputs.led = false;
+      state.outputs.motor = false;
+      state.outputs.buzzer = false;
+      updateOutputs();
+      if(showMessage) showToast("Outputs reset");
+    }
+
+    function wait(ms){
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function updateZoom(){
+      canvasWorld.style.transform = `scale(${state.zoom})`;
+      zoomDisplay.textContent = Math.round(state.zoom * 100) + "%";
+      drawWires();
+    }
+
+    function updateTeacherStats(){
+      teacherComponentCount.textContent = String(state.items.length);
+      teacherWireCount.textContent = String(state.wires.length);
+      teacherLogicCount.textContent = String(state.logic.length);
+    }
+
+    function autoWire(){
+      state.wires = [];
+      for(let i = 0; i < state.items.length - 1; i++){
+        const a = state.items[i];
+        const b = state.items[i + 1];
+        const fromPort = a.ports.includes("right") ? "right" : a.ports[0];
+        const toPort = b.ports.includes("left") ? "left" : b.ports[0];
+        state.wires.push({
+          id: "wire-auto-" + i,
+          from: { itemId:a.id, port:fromPort },
+          to: { itemId:b.id, port:toPort }
+        });
+      }
+      drawWires();
+      updateTeacherStats();
+      showToast("Auto wire completed");
+    }
+
+    function clearProject(){
+      state.items = [];
+      state.wires = [];
+      state.logic = [];
+      state.selectedPort = null;
+      resetOutputs(false);
+      renderItems();
+      renderLogic();
+      updateTeacherStats();
+      showToast("Canvas cleared");
+    }
+
+    function submitProject(){
+      statusText.textContent = "Submitted";
+      teacherSubmissionState.textContent = "Submitted";
+      showToast("Project submitted");
+    }
+
+    function applyGrade(){
+      const value = document.getElementById("teacherGrade").value.trim();
+      if(!value){
+        showToast("Enter a grade first");
+        return;
+      }
+      gradeText.textContent = value;
+      teacherGradeState.textContent = value;
+      showToast("Grade applied");
+    }
+
+    function renameProject(){
+      const next = prompt("Enter project name", state.projectName);
+      if(next && next.trim()){
+        state.projectName = next.trim();
+        projectNameText.textContent = state.projectName;
+        showToast("Project renamed");
+      }
+    }
+
+    function copyProjectSummary(){
+      const text = [
+        "Project: " + state.projectName,
+        "User: " + (state.user.name || "Demo User"),
+        "Role: " + state.user.role,
+        "Components: " + state.items.length,
+        "Wires: " + state.wires.length,
+        "Logic Blocks: " + state.logic.length,
+        "Grade: " + gradeText.textContent,
+        "Status: " + statusText.textContent
+      ].join("\n");
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("Project summary copied");
+      }).catch(() => {
+        showToast("Copy failed");
+      });
+    }
+
+    // 🔥 LANDING CONTROL
+function enterLanding(){
+  const dontShow = document.getElementById("dontShowLanding").checked;
+
+  if(dontShow){
+    localStorage.setItem("hideLanding", "true");
+  }
+
+  document.getElementById("landingPage").style.display = "none";
+}
+
+// 📘 GUIDE CONTROL
+function openGuide(){
+  document.getElementById("guidePage").classList.remove("hidden");
+}
+
+function closeGuide(){
+  document.getElementById("guidePage").classList.add("hidden");
+}
+
+// 🔥 AUTO HIDE LANDING
+if(localStorage.getItem("hideLanding") === "true"){
+  document.getElementById("landingPage").style.display = "none";
+}
+
+    function saveProject(){
+      const payload = {
+        state: {
+          user: state.user,
+          projectName: state.projectName,
+          items: JSON.parse(JSON.stringify(state.items)),
+          wires: state.wires,
+          logic: state.logic,
+          zoom: state.zoom,
+          outputs: state.outputs,
+          status: statusText.textContent,
+          grade: gradeText.textContent
+        }
+      };
+      const school = state.user.school;
+
+      const student = state.schools[school].students.find(
+        s => s.name === state.user.name
+      );
+
+      if(student){
+        student.projects.push({
+          name: state.projectName,
+          items: JSON.parse(JSON.stringify(state.items)),
+          wires: JSON.parse(JSON.stringify(state.wires)),
+          logic: JSON.parse(JSON.stringify(state.logic)),
+          date: new Date().toLocaleString()
+        });
+      }
+
+      // 💾 Save ALL schools
+      localStorage.setItem("stem_schools", JSON.stringify(state.schools));
+
+      showToast("Project saved (multi-user)");
+    }
+
+    function loadProject(){
+      const savedSchools = localStorage.getItem("stem_schools");
+
+      if(savedSchools){
+        state.schools = JSON.parse(savedSchools);
+      }
+    }
+
+    function fillDemo(role){
+      loginName.value = role === "teacher" ? "Demo Teacher" : "Demo Student";
+      loginRole.value = role;
+      loginClass.value = "10-A";
+      loginSchool.value = "STEM Academy";
+    }
+
+    function enterPlatform(){
+
+      // 🔹 Get values from inputs
+      const name = loginName.value.trim();
+      const role = loginRole.value;
+      const className = loginClass.value.trim();
+      const school = loginSchool.value.trim();
+
+
+      // 🔹 Reset borders (important UX)
+      loginName.classList.remove("error");
+      loginClass.classList.remove("error");
+      loginSchool.classList.remove("error");
+
+      let hasError = false;
+
+      // 🚫 VALIDATION
+     if(name.length < 3){
+       loginName.classList.add("error");
+       hasError = true;
+     }
+
+     if(!className){
+       loginClass.classList.add("error");
+       hasError = true;
+      }
+
+     if(!school){
+       loginSchool.classList.add("error");
+       hasError = true;
+      }
+
+     if(hasError){
+       showToast("⚠️ Please fill all fields correctly");
+       return;
+     }
+
+      // ✅ SAVE DATA (only if valid)
+      state.user.name = name;
+      state.user.role = role;
+      state.user.className = className;
+      state.user.school = school;
+      // 🏫 Create school if not exists
+      if(!state.schools[school]){
+        state.schools[school] = { students: [] };
+      }
+
+      // 👤 Find student
+      let student = state.schools[school].students.find(
+        s => s.name === name
+      );
+
+      // ➕ If not exists → create
+      if(!student){
+      student = {
+        name: name,
+        class: className,
+        projects: []
+      };
+
+      state.schools[school].students.push(student);
+      }
+
+      // ✅ UI UPDATE
+      activeUserPill.textContent = `${name} • ${role.charAt(0).toUpperCase() + role.slice(1)}`;
+      loginScreen.classList.add("hidden");
+
+      setMode(role);
+      projectNameText.textContent = state.projectName;
+
+      showToast("Welcome, " + name);
+    }
+
+    const savedUser = localStorage.getItem("stem_user");
+
+    if(savedUser){
+      state.user = JSON.parse(savedUser);
+
+      loginScreen.classList.add("hidden");
+      setMode(state.user.role);
+
+      activeUserPill.textContent = `${state.user.name} • ${state.user.role}`;
+    }
+
+    function openProjectsPage(){
+      document.getElementById("projectsPage").classList.remove("hidden");
+      renderProjectsPage();
+    }
+
+    function closeProjectsPage(){
+      document.getElementById("projectsPage").classList.add("hidden");
+    }
+
+    function loadExample(name){
+      clearProject();
+
+      if(name === "fan"){
+        addComponent("Battery", 100, 120);
+        addComponent("Switch", 280, 120);
+        addComponent("Motor", 470, 120);
+        autoWire();
+        addLogic("ON");
+      } else if(name === "alarm"){
+        addComponent("Battery", 110, 140);
+        addComponent("Switch", 300, 140);
+        addComponent("Buzzer", 500, 140);
+        autoWire();
+        addLogic("ON");
+      } else if(name === "traffic"){
+        addComponent("Battery", 120, 110);
+        addComponent("LED", 320, 110);
+        addComponent("LED", 500, 110);
+        addComponent("LED", 680, 110);
+        autoWire();
+        addLogic("ON");
+        addLogic("WAIT 1s");
+        addLogic("OFF");
+      } else if(name === "plant"){
+        addComponent("Soil Sensor", 130, 150);
+        addComponent("Relay", 340, 150);
+        addComponent("Pump", 560, 150);
+        autoWire();
+        addLogic("ON");
+      } else if(name === "lamp"){
+        addComponent("Battery", 150, 170);
+        addComponent("Switch", 360, 170);
+        addComponent("LED", 560, 170);
+        autoWire();
+        addLogic("ON");
+      }
+
+      showToast("Example loaded");
+    }
+
+    document.getElementById("runLogicBtn").addEventListener("click", runLogic);
+    document.getElementById("stopLogicBtn").addEventListener("click", () => resetOutputs(true));
+    document.getElementById("autoWireBtn").addEventListener("click", autoWire);
+    document.getElementById("toggleGridBtn").addEventListener("click", () => {
+      state.gridVisible = !state.gridVisible;
+      workspaceArea.style.backgroundSize = state.gridVisible ? "24px 24px, 24px 24px, auto" : "0 0, 0 0, auto";
+      showToast(state.gridVisible ? "Grid enabled" : "Grid hidden");
+    });
+
+    document.getElementById("zoomInBtn").addEventListener("click", () => {
+      state.zoom = Math.min(2, +(state.zoom + 0.1).toFixed(2));
+      updateZoom();
+    });
+
+    document.getElementById("zoomOutBtn").addEventListener("click", () => {
+      state.zoom = Math.max(0.5, +(state.zoom - 0.1).toFixed(2));
+      updateZoom();
+    });
+
+    document.getElementById("saveBtn").addEventListener("click", saveProject);
+    document.getElementById("clearBtn").addEventListener("click", clearProject);
+    document.getElementById("submitBtn").addEventListener("click", submitProject);
+    document.getElementById("applyGradeBtn").addEventListener("click", applyGrade);
+    document.getElementById("renameBtn").addEventListener("click", renameProject);
+    document.getElementById("copyProjectBtn").addEventListener("click", copyProjectSummary);
+    document.getElementById("clearLogicBtn").addEventListener("click", () => {
+      state.logic = [];
+      renderLogic();
+      updateTeacherStats();
+      showToast("Logic cleared");
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("stem_user");
+      location.reload();
+    });
+
+    document.getElementById("addWaitBtn").addEventListener("click", () => addLogic("WAIT 1s"));
+    document.getElementById("addLedOnBtn").addEventListener("click", () => addLogic("ON"));
+    document.getElementById("addLedOffBtn").addEventListener("click", () => addLogic("OFF"));
+
+    studentModeBtn.addEventListener("click", () => setMode("student"));
+    teacherModeBtn.addEventListener("click", () => setMode("teacher"));
+
+    demoStudentBtn.addEventListener("click", () => fillDemo("student"));
+    demoTeacherBtn.addEventListener("click", () => fillDemo("teacher"));
+    enterBtn.addEventListener("click", enterPlatform);
+
+    document.querySelectorAll("[data-example]").forEach(el => {
+      el.addEventListener("click", () => loadExample(el.dataset.example));
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Enter" && !loginScreen.classList.contains("hidden")){
+        enterPlatform();
+      }
+    }); 
+
+    loginName.addEventListener("input", () => {
+      loginName.classList.remove("error");
+    });
+
+    loginClass.addEventListener("input", () => {
+      loginClass.classList.remove("error");
+    });
+
+    loginSchool.addEventListener("input", () => {
+      loginSchool.classList.remove("error");
+    });
+     
+  
+    document.getElementById("langToggleBtn").addEventListener("click", () => {
+      state.lang = state.lang === "en" ? "ta" : "en";
+
+      applyLanguage();
+
+      const btn = document.getElementById("langToggleBtn");
+      btn.textContent = state.lang === "en" ? "தமிழ்" : "English";
+
+      showToast(state.lang === "ta" ? "மொழி மாற்றப்பட்டது 🌐" : "Language switched 🌐");
+    });
+
+    workspaceArea.addEventListener("wheel", (e) => {
+      if(!e.ctrlKey) return;
+      e.preventDefault();
+      if(e.deltaY < 0){
+        state.zoom = Math.min(2, +(state.zoom + 0.05).toFixed(2));
+      } else {
+        state.zoom = Math.max(0.5, +(state.zoom - 0.05).toFixed(2));
+      }
+      updateZoom();
+    }, { passive:false });
+
+    function captureText(){
+      document.querySelectorAll("h1, h2, h3, button, label, span, p, b, small").forEach(el => {
+        if(el.children.length === 0){
+          el.setAttribute("data-en", el.textContent.trim());
+       }
+      });
+    }
+
+    renderComponentCards();
+    renderLogicCards();
+    renderLogic();
+    renderItems();
+    captureText();
+    applyLanguage();
+    updateTeacherStats();
+    updateOutputs();
+    updateZoom();
+    loadProject();
+  </script>
+</body>
+</html>
