@@ -940,7 +940,7 @@ input.error {
    <div id="guidePage" class="hidden" style="
   position:fixed;
   inset:0;
-  z-index:300;
+ z-index:9999;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -949,7 +949,7 @@ input.error {
 
   <div style="
     width:min(900px,90vw);
-    background:rgba(255,255,255,0.05);
+    background:#020617;
     backdrop-filter: blur(20px);
     border:1px solid rgba(255,255,255,0.1);
     border-radius:25px;
@@ -967,33 +967,20 @@ input.error {
     </div>
 
     <!-- 🎥 VIDEO SECTION -->
-<div style="
-  margin-bottom:25px;
+<video controls style="
+  width:100%;
   border-radius:20px;
-  overflow:hidden;
-  background:#000;
-  border:1px solid rgba(255,255,255,0.1);
+  max-height:300px;
+  object-fit:cover;
 ">
-
-  <!-- TEMP PLACEHOLDER -->
-  <div style="
-   <video controls style="
+  <source src="video.mp4" type="video/mp4">
+</video>
+    <video autoplay muted loop playsinline style="
   width:100%;
   border-radius:20px;
 ">
   <source src="video.mp4" type="video/mp4">
 </video>
-  ">
-   
-  </div>
-
-  <!-- 👉 LATER replace above with:
-  <video controls width="100%">
-    <source src="your-video.mp4" type="video/mp4">
-  </video>
-  -->
-
-</div>
 
     <!-- 🔥 STEPS GRID -->
     <div style="
