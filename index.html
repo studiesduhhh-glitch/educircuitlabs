@@ -30,10 +30,9 @@
       font-family:Inter,Arial,Helvetica,sans-serif;
       background:var(--bg);
       color:var(--text);
-      overflow:hidden;
-      user-select:auto;
+      overflow:auto;  /* ✅ FIX */
     }
-
+    
     body{
       background:
         radial-gradient(circle at top left, rgba(59,130,246,.08), transparent 25%),
@@ -774,11 +773,11 @@
       font-weight:800;
     }
 
-    @media (max-width: 1200px){
-      .layout{
-        grid-template-columns:280px 1fr 300px;
-      }
-    }
+   @media (max-width: 1200px){
+  .layout{
+    grid-template-columns: 1fr;
+  }
+}
 
     @media (max-width: 1000px){
       .layout{
@@ -825,8 +824,13 @@ input.error {
 
     /* Default = Desktop */
 .container {
-    width: 1200px;
+    max-width: 100%;
+    width: 100%;
     margin: auto;
+    padding: 10px;
+}
+    .topbar {
+  flex-wrap: wrap;
 }
 
 /* Mobile only */
@@ -2461,6 +2465,8 @@ if(localStorage.getItem("hideLanding") === "true"){
     updateOutputs();
     updateZoom();
     loadProject();
+    // 🔥 FIX TOUCH FOR ANDROID WEBVIEW
+    document.addEventListener("touchstart", function(){}, true);
   </script>
 </body>
 </html>
