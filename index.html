@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Educircuit Labs - Build, simulate and learn engineering projects easily">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -821,6 +822,25 @@ input.error {
     border-color: red !important;
     box-shadow: 0 0 0 2px rgba(255,0,0,0.1);
   }
+
+    /* Default = Desktop */
+.container {
+    width: 1200px;
+    margin: auto;
+}
+
+/* Mobile only */
+@media (max-width: 768px) {
+    .container {
+        width: 100%;
+        padding: 10px;
+    }
+
+    button {
+        width: 90%;
+        font-size: 16px;
+    }
+}
 
   </style>
 </head>
