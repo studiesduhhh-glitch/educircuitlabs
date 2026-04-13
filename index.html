@@ -43,11 +43,11 @@
     .hidden{display:none !important}
 
     .app-shell{
-      height:100vh;
-      width:100vw;
-      display:flex;
-      flex-direction:column;
-    }
+  min-height:100vh;
+  width:100%;
+  display:flex;
+  flex-direction:column;
+}
 
     .no-select {
       user-select: none;
@@ -87,6 +87,7 @@
       height:72px;
       display:flex;
       align-items:center;
+      flex-wrap:wrap;
       justify-content:space-between;
       padding:14px 18px;
       background:rgba(255,255,255,.8);
@@ -452,6 +453,38 @@
       animation:itemAppear .22s ease;
     }
 
+    @media (max-width: 768px){
+
+  .panel{
+    border-radius:16px;
+    margin-bottom:10px;
+  }
+
+  .panel-body{
+    padding:10px;
+  }
+
+  .component-card{
+    min-height:80px;
+    padding:10px;
+  }
+
+  .component-name{
+    font-size:13px;
+  }
+
+  .top-actions{
+    width:100%;
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+
+  button{
+    font-size:14px;
+    padding:8px 10px;
+  }
+}
+
     @keyframes itemAppear{
       from{opacity:0; transform:translateY(8px) scale(.96)}
       to{opacity:1; transform:translateY(0) scale(1)}
@@ -775,14 +808,16 @@
 
    @media (max-width: 1200px){
   .layout{
-    grid-template-columns: 1fr;
-  }
+  gap:10px;
+  padding:10px;
+}
 }
 
     @media (max-width: 1000px){
       .layout{
-        grid-template-columns:1fr;
-      }
+  gap:10px;
+  padding:10px;
+}
       .panel{
         min-height:260px;
       }
