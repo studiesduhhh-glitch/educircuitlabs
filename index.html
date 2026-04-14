@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Educircuit Labs - Build, simulate and learn engineering projects easily">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -30,9 +30,10 @@
       font-family:Inter,Arial,Helvetica,sans-serif;
       background:var(--bg);
       color:var(--text);
-      overflow:auto;  /* ✅ FIX */
+      overflow:hidden;
+      user-select:auto;
     }
-    
+
     body{
       background:
         radial-gradient(circle at top left, rgba(59,130,246,.08), transparent 25%),
@@ -43,11 +44,11 @@
     .hidden{display:none !important}
 
     .app-shell{
-  min-height:100vh;
-  width:100%;
-  display:flex;
-  flex-direction:column;
-}
+      height:100vh;
+      width:100vw;
+      display:flex;
+      flex-direction:column;
+    }
 
     .no-select {
       user-select: none;
@@ -87,7 +88,6 @@
       height:72px;
       display:flex;
       align-items:center;
-      flex-wrap:wrap;
       justify-content:space-between;
       padding:14px 18px;
       background:rgba(255,255,255,.8);
@@ -184,7 +184,6 @@
       gap:14px;
       padding:14px;
       min-height:0;
-      height:calc(100vh - 72px); /* 🔥 THIS IS THE MAGIC FIX */
     }
 
     .panel{
@@ -221,6 +220,7 @@
     .panel-body{
       padding:14px;
       overflow:auto;
+      height:calc(100% - 68px);
     }
 
     .left-section-title{
@@ -319,7 +319,6 @@
     .canvas-panel{
       display:flex;
       flex-direction:column;
-      height:100%;
       min-width:0;
       min-height:0;
       overflow:hidden;
@@ -356,7 +355,7 @@
     .workspace-area{
       position:relative;
       flex:1;
-      min-height:500px;
+      min-height:0;
       overflow:hidden;
       background:
         linear-gradient(to right, rgba(37,99,235,.05) 1px, transparent 1px),
@@ -453,38 +452,6 @@
       overflow:hidden;
       animation:itemAppear .22s ease;
     }
-
-    @media (max-width: 768px){
-
-  .panel{
-    border-radius:16px;
-    margin-bottom:10px;
-  }
-
-  .panel-body{
-    padding:10px;
-  }
-
-  .component-card{
-    min-height:80px;
-    padding:10px;
-  }
-
-  .component-name{
-    font-size:13px;
-  }
-
-  .top-actions{
-    width:100%;
-    justify-content:center;
-    flex-wrap:wrap;
-  }
-
-  button{
-    font-size:14px;
-    padding:8px 10px;
-  }
-}
 
     @keyframes itemAppear{
       from{opacity:0; transform:translateY(8px) scale(.96)}
@@ -807,18 +774,16 @@
       font-weight:800;
     }
 
-   @media (max-width: 1200px){
-  .layout{
-  gap:10px;
-  padding:10px;
-}
-}
+    @media (max-width: 1200px){
+      .layout{
+        grid-template-columns:280px 1fr 300px;
+      }
+    }
 
     @media (max-width: 1000px){
       .layout{
-  gap:10px;
-  padding:10px;
-}
+        grid-template-columns:1fr;
+      }
       .panel{
         min-height:260px;
       }
@@ -858,30 +823,6 @@ input.error {
     box-shadow: 0 0 0 2px rgba(255,0,0,0.1);
   }
 
-    /* Default = Desktop */
-.container {
-    max-width: 100%;
-    width: 100%;
-    margin: auto;
-    padding: 10px;
-}
-    .topbar {
-  flex-wrap: wrap;
-}
-
-/* Mobile only */
-@media (max-width: 768px) {
-    .container {
-        width: 100%;
-        padding: 10px;
-    }
-
-    button {
-        width: 90%;
-        font-size: 16px;
-    }
-}
-
   </style>
 </head>
 <body class="no-select">
@@ -899,6 +840,16 @@ input.error {
    text-align:center;
    padding:20px;
    ">
+
+   <video autoplay muted loop playsinline style="
+  width:100%;
+  max-width:600px;
+  margin-top:20px;
+  border-radius:20px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.3);
+">
+  <source src="video.mp4" type="video/mp4">
+</video>
    
    <img src="logo.png" style="width:90px; margin-bottom:20px;">
    
@@ -990,7 +941,7 @@ input.error {
    <div id="guidePage" class="hidden" style="
   position:fixed;
   inset:0;
- z-index:9999;
+  z-index:300;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -999,7 +950,7 @@ input.error {
 
   <div style="
     width:min(900px,90vw);
-    background:#020617;
+    background:rgba(255,255,255,0.05);
     backdrop-filter: blur(20px);
     border:1px solid rgba(255,255,255,0.1);
     border-radius:25px;
@@ -1017,14 +968,32 @@ input.error {
     </div>
 
     <!-- 🎥 VIDEO SECTION -->
-<video controls style="
+<div style="
+  margin-bottom:25px;
+  border-radius:20px;
+  overflow:hidden;
+  background:#000;
+  border:1px solid rgba(255,255,255,0.1);
+">
+
+  <!-- TEMP PLACEHOLDER -->
+  <video controls style="
   width:100%;
   border-radius:20px;
-  max-height:300px;
-  object-fit:cover;
 ">
   <source src="video.mp4" type="video/mp4">
 </video>
+  ">
+   
+  </div>
+
+  <!-- 👉 LATER replace above with:
+  <video controls width="100%">
+    <source src="your-video.mp4" type="video/mp4">
+  </video>
+  -->
+
+</div>
 
     <!-- 🔥 STEPS GRID -->
     <div style="
@@ -1265,9 +1234,9 @@ input.error {
               <div class="leaderboard" id="leaderboard">
                 <div class="leader-item"><span>Achyuta</span><b>96</b></div>
                 <div class="leader-item"><span>Priya</span><b>94</b></div>
-                <div class="leader-item"><span>vishnu</span><b>91</b></div>
+                <div class="leader-item"><span>vishnu</span><b></b></div>
                 <div class="leader-item"><span>Meera</span><b>89</b></div>
-                <div class="leader-item"><span>Nisha</span><b>87</b></div>
+                <div class="leader-item"><span>pranav</span><b>67</b></div>
               </div>
             </div>
           </div>
@@ -2501,8 +2470,6 @@ if(localStorage.getItem("hideLanding") === "true"){
     updateOutputs();
     updateZoom();
     loadProject();
-    // 🔥 FIX TOUCH FOR ANDROID WEBVIEW
-    document.addEventListener("touchstart", function(){}, true);
   </script>
 </body>
 </html>
