@@ -184,6 +184,8 @@
       gap:14px;
       padding:14px;
       min-height:0;
+
+      height:calc(100vh - 72px); /* 🔥 ADD THIS */
     }
 
     .panel{
@@ -778,6 +780,9 @@
       .layout{
         grid-template-columns:280px 1fr 300px;
       }
+      .layout{
+  height:auto; /* 🔥 ADD THIS */
+}
     }
 
     @media (max-width: 1000px){
@@ -785,7 +790,7 @@
         grid-template-columns:1fr;
       }
       .panel{
-        min-height:260px;
+        min-height:0;
       }
       html,body{
         overflow:auto;
