@@ -184,6 +184,7 @@
       gap:14px;
       padding:14px;
       min-height:0;
+      height:calc(100vh - 72px); /* 🔥 THIS IS THE MAGIC FIX */
     }
 
     .panel{
@@ -220,7 +221,6 @@
     .panel-body{
       padding:14px;
       overflow:auto;
-      height:calc(100% - 68px);
     }
 
     .left-section-title{
@@ -319,6 +319,7 @@
     .canvas-panel{
       display:flex;
       flex-direction:column;
+      height:100%;
       min-width:0;
       min-height:0;
       overflow:hidden;
@@ -355,7 +356,7 @@
     .workspace-area{
       position:relative;
       flex:1;
-      min-height:0;
+      min-height:500px;
       overflow:hidden;
       background:
         linear-gradient(to right, rgba(37,99,235,.05) 1px, transparent 1px),
