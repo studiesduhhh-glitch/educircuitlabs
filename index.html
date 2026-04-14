@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Educircuit Labs - Build, simulate and learn engineering projects easily">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -986,6 +987,16 @@ input.error {
    text-align:center;
    padding:20px;
    ">
+
+   <video autoplay muted loop playsinline style="
+  width:100%;
+  max-width:600px;
+  margin-top:20px;
+  border-radius:20px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.3);
+">
+  <source src="video.mp4" type="video/mp4">
+</video>
    
    <img src="logo.png" style="width:90px; margin-bottom:20px;">
    
@@ -993,8 +1004,8 @@ input.error {
    <p style="max-width:500px;">
      Build circuits. Learn engineering. Create real projects.
    </p>
-   
-   <button onclick="enterLanding()" style="
+
+    <button onclick="enterLanding()" style="
      margin-top:20px;
      padding:12px 20px;
      border:none;
@@ -1018,6 +1029,23 @@ input.error {
     ">
       How to Use 👀
     </button>
+
+    <a href="Ethical Considerations of Artificial Intelligence in Modern Society.pdf" target="_blank" rel="noopener" style="
+      margin-top:10px;
+      padding:10px 16px;
+      border:none;
+      border-radius:10px;
+      background:#ffffff;
+      color:#f97316;
+      cursor:pointer;
+      font-weight:700;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    ">
+      Research Paper
+    </a>
 
     <label style="margin-top:15px; font-size:13px;">
        <input type="checkbox" id="dontShowLanding"> Don't show again
@@ -1229,16 +1257,14 @@ input.error {
 ">
 
   <!-- TEMP PLACEHOLDER -->
-  <div style="
-    width:100%;
-    height:220px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:#9ca3af;
-    font-weight:600;
+  <video controls style="
+  width:100%;
+  border-radius:20px;
+">
+  <source src="video.mp4" type="video/mp4">
+</video>
   ">
-    🎬 Tutorial video coming soon...
+   
   </div>
 
   <!-- 👉 LATER replace above with:
@@ -1440,10 +1466,6 @@ input.error {
         <button class="secondary" id="zoomOutBtn">Zoom −</button>
         <span class="zoom-display" id="zoomDisplay">100%</span>
         <button class="secondary" id="zoomInBtn">Zoom +</button>
-<<<<<<< HEAD
-        <button class="secondary" id="aiTeacherBtn">AI Teacher</button>
-=======
->>>>>>> 47c7014 (first commit)
         <button class="green" id="saveBtn">Save</button>
         <button class="secondary" id="langToggleBtn">தமிழ்</button>
         <button class="red" id="logoutBtn">Logout</button>
@@ -1635,9 +1657,9 @@ input.error {
               <div class="leaderboard" id="leaderboard">
                 <div class="leader-item"><span>Achyuta</span><b>96</b></div>
                 <div class="leader-item"><span>Priya</span><b>94</b></div>
-                <div class="leader-item"><span>vishnu</span><b>91</b></div>
+                <div class="leader-item"><span>vishnu</span><b></b></div>
                 <div class="leader-item"><span>Meera</span><b>89</b></div>
-                <div class="leader-item"><span>Nisha</span><b>87</b></div>
+                <div class="leader-item"><span>pranav</span><b>67</b></div>
               </div>
 >>>>>>> 47c7014 (first commit)
             </div>
@@ -2903,4 +2925,3 @@ if(localStorage.getItem("hideLanding") === "true"){
   </script>
 </body>
 </html>
->>>>>>> 47c7014 (first commit)
