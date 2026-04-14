@@ -3534,6 +3534,25 @@ if(localStorage.getItem("hideLanding") === "true"){
       showToast("Project saved (multi-user)");
     }
 
+    async function saveProjectToFirebase() {
+  try {
+    await db.collection("projects").add({
+      name: state.projectName,
+      items: state.items,
+      wires: state.wires,
+      logic: state.logic,
+      createdAt: new Date()
+    });
+
+    showToast("Project saved (multi-user)");
+    console.log("Saved full data ✅");
+
+  } catch (err) {
+    console.error(err);
+    alert("Error saving project");
+  }
+}
+    
     function loadProject(){
       const savedSchools = localStorage.getItem("stem_schools");
 
@@ -3717,7 +3736,9 @@ if(localStorage.getItem("hideLanding") === "true"){
       updateZoom();
     });
 
-    document.getElementById("saveBtn").addEventListener("click", saveProject);
+    document.getElementById("saveBtn").addEventListener("click", () => {
+  saveProjectToFirebase();
+});
     document.getElementById("aiTeacherBtn").addEventListener("click", openAiTeacherPage);
     document.getElementById("clearBtn").addEventListener("click", clearProject);
     document.getElementById("submitBtn").addEventListener("click", submitProject);
