@@ -51,6 +51,20 @@
 
     .no-select {
       user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .component-card,
+    .example-item,
+    .canvas-item,
+    .item-head,
+    .item-body,
+    .logic-chip,
+    .pill,
+    .topbar,
+    .panel-header{
+      user-select:none;
+      -webkit-user-select:none;
     }
 
     .project-item{
@@ -484,6 +498,14 @@
       color:var(--muted);
     }
 
+    .terminal-hint{
+      display:block;
+      margin-top:6px;
+      font-size:11px;
+      font-weight:700;
+      color:#64748b;
+    }
+
     .port{
       position:absolute;
       width:16px;
@@ -504,6 +526,45 @@
     .port.right{right:-8px; top:50%; transform:translateY(-50%)}
     .port.top{top:-8px; left:50%; transform:translateX(-50%)}
     .port.bottom{bottom:-8px; left:50%; transform:translateX(-50%)}
+    .port.negative{
+      left:-8px;
+      top:50%;
+      transform:translateY(-50%);
+      background:#0f172a;
+      box-shadow:0 6px 10px rgba(15,23,42,.24);
+    }
+    .port.positive{
+      right:-8px;
+      top:50%;
+      transform:translateY(-50%);
+      background:#ef4444;
+      box-shadow:0 6px 10px rgba(239,68,68,.24);
+    }
+
+    .port-label{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      font-size:12px;
+      font-weight:900;
+      color:#0f172a;
+      pointer-events:none;
+    }
+
+    .port-label.negative{left:10px;}
+    .port-label.positive{right:10px; color:#b91c1c;}
+
+    .canvas-item.bursting{
+      border-color:#fb7185;
+      box-shadow:0 0 0 4px rgba(251,113,133,.18), 0 24px 42px rgba(239,68,68,.18);
+      animation:burstShake .28s ease infinite alternate;
+    }
+
+    .burst-indicator{
+      font-size:20px;
+      filter:drop-shadow(0 8px 16px rgba(239,68,68,.35));
+      animation:burstPop .45s ease infinite alternate;
+    }
 
     .led-indicator{
       width:18px;
@@ -562,6 +623,16 @@
     @keyframes pulse{
       from{transform:scale(.8);opacity:1}
       to{transform:scale(1.8);opacity:0}
+    }
+
+    @keyframes burstPop{
+      from{transform:scale(.95) rotate(-6deg)}
+      to{transform:scale(1.1) rotate(6deg)}
+    }
+
+    @keyframes burstShake{
+      from{transform:translateX(-2px)}
+      to{transform:translateX(2px)}
     }
 
     .dashboard-card{
@@ -822,6 +893,164 @@ input.error {
     box-shadow: 0 0 0 2px rgba(255,0,0,0.1);
   }
 
+  .guide-shell{
+    width:min(980px, 92vw);
+    max-height:min(90vh, 860px);
+    overflow:auto;
+    background:linear-gradient(180deg, rgba(15,23,42,0.96), rgba(2,6,23,0.98));
+    backdrop-filter: blur(20px);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:28px;
+    padding:30px;
+    color:white;
+    box-shadow:0 30px 80px rgba(2,6,23,0.45);
+  }
+
+  .guide-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    margin-bottom:22px;
+  }
+
+  .guide-title{
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+
+  .guide-title img{
+    width:60px;
+  }
+
+  .guide-title h1{
+    margin:0;
+    font-size:32px;
+  }
+
+  .guide-title p{
+    margin:4px 0 0;
+    color:rgba(255,255,255,0.7);
+  }
+
+  .guide-intro{
+    padding:16px 18px;
+    border-radius:18px;
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.08);
+    color:rgba(255,255,255,0.84);
+    line-height:1.6;
+    margin-bottom:20px;
+  }
+
+  .guide-media{
+    margin-bottom:22px;
+    border-radius:22px;
+    overflow:hidden;
+    background:#000;
+    border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 18px 40px rgba(0,0,0,0.28);
+  }
+
+  .guide-media video{
+    width:100%;
+    max-height:320px;
+    display:block;
+    object-fit:cover;
+  }
+
+  .guide-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));
+    gap:16px;
+  }
+
+  .guide-step{
+    background:linear-gradient(180deg, rgba(15,23,42,0.92), rgba(17,24,39,0.85));
+    padding:18px;
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,0.08);
+  }
+
+  .guide-step .step-number{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:34px;
+    height:34px;
+    border-radius:999px;
+    background:#f97316;
+    color:white;
+    font-weight:800;
+    margin-bottom:12px;
+  }
+
+  .guide-step h3{
+    margin:0 0 8px;
+    font-size:18px;
+  }
+
+  .guide-step p{
+    margin:0;
+    color:rgba(255,255,255,0.72);
+    line-height:1.55;
+  }
+
+  .guide-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-top:24px;
+    flex-wrap:wrap;
+  }
+
+    .guide-footer-note{
+      color:rgba(255,255,255,0.66);
+      font-size:14px;
+    }
+
+    .voltage-input{
+      width:100%;
+      accent-color:#f97316;
+      margin-top:8px;
+    }
+
+    .voltage-chip{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:72px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#fff7ed;
+      color:#c2410c;
+      border:1px solid #fdba74;
+      font-weight:800;
+    }
+
+    .voltage-guide{
+      display:grid;
+      gap:8px;
+    }
+
+    .voltage-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+      background:#fff;
+    }
+
+    .voltage-row span{
+      color:var(--muted);
+      font-size:13px;
+    }
+
   </style>
 </head>
 <body class="no-select">
@@ -846,8 +1075,8 @@ input.error {
    <p style="max-width:500px;">
      Build circuits. Learn engineering. Create real projects.
    </p>
-   
-   <button onclick="enterLanding()" style="
+
+    <button onclick="enterLanding()" style="
      margin-top:20px;
      padding:12px 20px;
      border:none;
@@ -871,6 +1100,23 @@ input.error {
     ">
       How to Use 👀
     </button>
+
+    <a href="Ethical Considerations of Artificial Intelligence in Modern Society.pdf" target="_blank" rel="noopener" style="
+      margin-top:10px;
+      padding:10px 16px;
+      border:none;
+      border-radius:10px;
+      background:#ffffff;
+      color:#f97316;
+      cursor:pointer;
+      font-weight:700;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    ">
+      Research Paper
+    </a>
 
     <label style="margin-top:15px; font-size:13px;">
        <input type="checkbox" id="dontShowLanding"> Don't show again
@@ -930,78 +1176,69 @@ input.error {
    <div id="guidePage" class="hidden" style="
   position:fixed;
   inset:0;
- z-index:9999;
+  z-index:300;
   display:flex;
   align-items:center;
   justify-content:center;
   background: radial-gradient(circle at top, #1e293b, #020617);
 ">
 
-  <div style="
-    width:min(900px,90vw);
-    background:#020617;
-    backdrop-filter: blur(20px);
-    border:1px solid rgba(255,255,255,0.1);
-    border-radius:25px;
-    padding:30px;
-    color:white;
-  ">
+  <div class="guide-shell">
+    <div class="guide-header">
+      <div class="guide-title">
+        <img src="logo.png" alt="Educircuit logo">
+        <div>
+          <h1>Educircuit Guide</h1>
+          <p>Everything a first-time user needs, in one quick walkthrough.</p>
+        </div>
+      </div>
+      <a class="btn secondary" href="Ethical Considerations of Artificial Intelligence in Modern Society.pdf" target="_blank" rel="noopener">Research Paper</a>
+    </div>
 
-    <!-- 🔥 HEADER -->
-    <div style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
-      <img src="logo.png" style="width:60px;">
-      <div>
-        <h1 style="margin:0;">Educircuit Guide 🚀</h1>
-        <p style="opacity:0.7; margin:0;">Learn in 30 seconds</p>
+    <div class="guide-intro">
+      Start by choosing parts from the left panel, place them on the workspace, connect them with wires, and use simple logic blocks to simulate a working circuit.
+    </div>
+
+    <div class="guide-media">
+      <video controls playsinline>
+        <source src="video.mp4" type="video/mp4">
+      </video>
+    </div>
+
+    <div class="guide-grid">
+      <div class="guide-step">
+        <div class="step-number">1</div>
+        <h3>Add Components</h3>
+        <p>Click parts like Battery, LED, Switch, Motor, or Sensor to drop them into the circuit workspace.</p>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-number">2</div>
+        <h3>Connect Ports</h3>
+        <p>Use the ports on each component to create wires. You can also use Auto Wire for a quick starting layout.</p>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-number">3</div>
+        <h3>Build Logic</h3>
+        <p>Add simple blocks like ON, OFF, and WAIT 1s to control how your outputs behave during simulation.</p>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-number">4</div>
+        <h3>Run the Circuit</h3>
+        <p>Click Run Logic to test your circuit, then watch the LED, motor, and buzzer states update in the dashboard.</p>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-number">5</div>
+        <h3>Save and Submit</h3>
+        <p>Save your project to revisit it later, rename it when needed, and submit it for review from the student dashboard.</p>
       </div>
     </div>
 
-    <!-- 🎥 VIDEO SECTION -->
-<video controls style="
-  width:100%;
-  border-radius:20px;
-  max-height:300px;
-  object-fit:cover;
-">
-  <source src="video.mp4" type="video/mp4">
-</video>
-
-    <!-- 🔥 STEPS GRID -->
-    <div style="
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-      gap:15px;
-    ">
-
-      <div style="background:#111827;padding:15px;border-radius:15px;">
-        <h3>⚡ Add</h3>
-        <p>Click components like Battery, LED, Motor</p>
-      </div>
-
-      <div style="background:#111827;padding:15px;border-radius:15px;">
-        <h3>🔗 Connect</h3>
-        <p>Click ports to wire components</p>
-      </div>
-
-      <div style="background:#111827;padding:15px;border-radius:15px;">
-        <h3>🧠 Logic</h3>
-        <p>Use ON / OFF / WAIT blocks</p>
-      </div>
-
-      <div style="background:#111827;padding:15px;border-radius:15px;">
-        <h3>🚀 Run</h3>
-        <p>Click "Run Logic"</p>
-      </div>
-
-      <div style="background:#111827;padding:15px;border-radius:15px;">
-        <h3>💾 Save</h3>
-        <p>Store your project</p>
-      </div>
-
-    </div>
-
-    <!-- 🔥 BUTTON -->
-    <div style="margin-top:25px; text-align:right;">
+    <div class="guide-footer">
+      <div class="guide-footer-note">Tip: the Research Paper button opens your AI ethics paper in a new tab.</div>
       <button onclick="closeGuide()" style="
         padding:12px 20px;
         border:none;
@@ -1014,7 +1251,6 @@ input.error {
         Got it 👍
       </button>
     </div>
-
   </div>
 </div>
 
@@ -1036,6 +1272,30 @@ input.error {
     </div>
 
     <div id="projectsPageList" style="
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+      gap:14px;
+    "></div>
+
+  </div>
+
+  <div id="studentProjectsPage" class="hidden" style="
+    display:flex;
+    flex-direction:column;
+    position:fixed;
+    inset:0;
+    background:#f5f7fb;
+    z-index:9999;
+    padding:20px;
+    overflow:auto;
+  ">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h1>Student Projects</h1>
+      <button onclick="closeStudentProjectsPage()">⬅ Back</button>
+    </div>
+
+    <div id="studentProjectsPageList" style="
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
       gap:14px;
@@ -1172,7 +1432,16 @@ input.error {
 
             <div class="dashboard-card">
               <h3 style="margin:0 0 10px;">Student Projects</h3>
-              <div id="teacherProjectList"></div>
+              <button onclick="openStudentProjectsPage()" class="secondary">
+                Open Full Page 🚀
+              </button>
+            </div>
+
+            <div class="dashboard-card">
+              <h3 style="margin:0 0 10px;">Battery Output</h3>
+              <div class="stat"><span>Current Voltage</span><b id="batteryVoltageValue">5.0V</b></div>
+              <input id="batteryVoltageRange" class="voltage-input" type="range" min="0" max="30" step="0.5" value="5">
+              <div class="small-note">Adjust the battery output voltage for every battery in the workspace.</div>
             </div>
 
             <div class="dashboard-card">
@@ -1201,14 +1470,8 @@ input.error {
             </div>
 
             <div class="dashboard-card">
-              <h3 style="margin:0 0 10px;">Goal Leaderboard</h3>
-              <div class="leaderboard" id="leaderboard">
-                <div class="leader-item"><span>Achyuta</span><b>96</b></div>
-                <div class="leader-item"><span>Priya</span><b>94</b></div>
-                <div class="leader-item"><span>vishnu</span><b>91</b></div>
-                <div class="leader-item"><span>Meera</span><b>89</b></div>
-                <div class="leader-item"><span>Nisha</span><b>87</b></div>
-              </div>
+              <h3 style="margin:0 0 10px;">Know My Voltage</h3>
+              <div id="voltageGuideList" class="voltage-guide"></div>
             </div>
           </div>
 
@@ -1260,13 +1523,20 @@ input.error {
       selectedPort: null,
       wireDrag: null,
       drag: null,
+      currentProjectIndex: null,
+      projectOwnerName: "",
+      logicArmed: false,
       nextId: 1,
       gridVisible: true,
+      defaultBatteryVoltage: 5,
       outputs: {
         led: false,
         motor: false,
-        buzzer: false
-      }
+        buzzer: false,
+        overload: false
+      },
+      activeItems: [],
+      burstItems: []
     };
     state.lang = "en";
 
@@ -1320,19 +1590,19 @@ function applyLanguage(){
 }
 
     const componentCatalog = [
-      { type:"Battery", icon:"🔋", desc:"Power source", color:"#2563eb", ports:["right"] },
-      { type:"LED", icon:"💡", desc:"Visual output", color:"#ef4444", ports:["left","right"] },
-      { type:"Motor", icon:"⚙️", desc:"Rotating output", color:"#16a34a", ports:["left","right"] },
-      { type:"Switch", icon:"🎚️", desc:"Input control", color:"#f59e0b", ports:["left","right"] },
-      { type:"Buzzer", icon:"🔔", desc:"Sound output", color:"#8b5cf6", ports:["left","right"] },
-      { type:"Resistor", icon:"🧱", desc:"Current limiter", color:"#64748b", ports:["left","right"] },
-      { type:"Capacitor", icon:"📦", desc:"Energy storage", color:"#0ea5e9", ports:["left","right"] },
-      { type:"Relay", icon:"📡", desc:"Switching element", color:"#10b981", ports:["left","right"] },
-      { type:"Soil Sensor", icon:"🌱", desc:"Moisture input", color:"#22c55e", ports:["right"] },
-      { type:"Light Sensor", icon:"☀️", desc:"Brightness input", color:"#f59e0b", ports:["right"] },
-      { type:"Temp Sensor", icon:"🌡️", desc:"Temperature input", color:"#ef4444", ports:["right"] },
-      { type:"Pump", icon:"🚰", desc:"Water output", color:"#06b6d4", ports:["left","right"] },
-      { type:"Servo", icon:"🦾", desc:"Angle motor", color:"#3b82f6", ports:["left","right"] }
+      { type:"Battery", icon:"🔋", desc:"Power source with + and - terminals", color:"#2563eb", ports:["negative","positive"], minVoltage:0 },
+      { type:"LED", icon:"💡", desc:"Visual output", color:"#ef4444", ports:["negative","positive"], minVoltage:2 },
+      { type:"Motor", icon:"⚙️", desc:"Rotating output", color:"#16a34a", ports:["negative","positive"], minVoltage:6 },
+      { type:"Switch", icon:"🎚️", desc:"Input control", color:"#f59e0b", ports:["negative","positive"], minVoltage:0 },
+      { type:"Buzzer", icon:"🔔", desc:"Sound output", color:"#8b5cf6", ports:["negative","positive"], minVoltage:3 },
+      { type:"Resistor", icon:"🧱", desc:"Current limiter", color:"#64748b", ports:["negative","positive"], minVoltage:0 },
+      { type:"Capacitor", icon:"📦", desc:"Energy storage", color:"#0ea5e9", ports:["negative","positive"], minVoltage:0 },
+      { type:"Relay", icon:"📡", desc:"Switching element", color:"#10b981", ports:["negative","positive"], minVoltage:5 },
+      { type:"Soil Sensor", icon:"🌱", desc:"Moisture input", color:"#22c55e", ports:["negative","positive"], minVoltage:3.3 },
+      { type:"Light Sensor", icon:"☀️", desc:"Brightness input", color:"#f59e0b", ports:["negative","positive"], minVoltage:3.3 },
+      { type:"Temp Sensor", icon:"🌡️", desc:"Temperature input", color:"#ef4444", ports:["negative","positive"], minVoltage:3.3 },
+      { type:"Pump", icon:"🚰", desc:"Water output", color:"#06b6d4", ports:["negative","positive"], minVoltage:6 },
+      { type:"Servo", icon:"🦾", desc:"Angle motor", color:"#3b82f6", ports:["negative","positive"], minVoltage:5 }
     ];
 
     const logicCatalog = [
@@ -1361,6 +1631,9 @@ function applyLanguage(){
     const workspaceArea = document.getElementById("workspaceArea");
     const zoomDisplay = document.getElementById("zoomDisplay");
     const toast = document.getElementById("toast");
+    const batteryVoltageValue = document.getElementById("batteryVoltageValue");
+    const batteryVoltageRange = document.getElementById("batteryVoltageRange");
+    const voltageGuideList = document.getElementById("voltageGuideList");
 
     const studentPanel = document.getElementById("studentPanel");
     const teacherPanel = document.getElementById("teacherPanel");
@@ -1382,6 +1655,168 @@ function applyLanguage(){
     const teacherComponentCount = document.getElementById("teacherComponentCount");
     const teacherWireCount = document.getElementById("teacherWireCount");
     const teacherLogicCount = document.getElementById("teacherLogicCount");
+    const LOAD_COMPONENTS = {
+      LED: 1,
+      Buzzer: 1,
+      Motor: 2,
+      Pump: 2,
+      Servo: 2
+    };
+    const POWER_FLOW_COMPONENTS = new Set(componentCatalog
+      .filter(component => component.type !== "Battery" && component.ports.length >= 2)
+      .map(component => component.type));
+    const CONDUCTOR_COMPONENTS = new Set(["Switch", "Relay", "Resistor", "Capacitor"]);
+    const HARD_SHORT_COMPONENTS = new Set(["Switch", "Relay", "Capacitor"]);
+
+    function deepClone(value){
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function syncNextId(){
+      const maxId = state.items.reduce((max, item) => {
+        const numericId = Number(String(item.id).replace("item-", ""));
+        return Number.isFinite(numericId) ? Math.max(max, numericId) : max;
+      }, 0);
+      state.nextId = maxId + 1;
+    }
+
+    function getNodeKey(itemId, port){
+      return `${itemId}:${port}`;
+    }
+
+    function connectNodes(graph, a, b){
+      if(!graph.has(a)) graph.set(a, new Set());
+      if(!graph.has(b)) graph.set(b, new Set());
+      graph.get(a).add(b);
+      graph.get(b).add(a);
+    }
+
+    function isComponentClosed(item){
+      if(item.type === "Switch" || item.type === "Relay"){
+        return Boolean(item.isClosed);
+      }
+      return true;
+    }
+
+    function buildConnectionGraph(bridgeTypes){
+      const graph = new Map();
+
+      state.wires.forEach(wire => {
+        connectNodes(
+          graph,
+          getNodeKey(wire.from.itemId, wire.from.port),
+          getNodeKey(wire.to.itemId, wire.to.port)
+        );
+      });
+
+      state.items.forEach(item => {
+        if(!bridgeTypes.has(item.type)) return;
+        if(item.ports.length < 2) return;
+        if(!isComponentClosed(item)) return;
+        connectNodes(
+          graph,
+          getNodeKey(item.id, item.ports[0]),
+          getNodeKey(item.id, item.ports[1])
+        );
+      });
+
+      return graph;
+    }
+
+    function collectReachable(startNodes, graph){
+      const visited = new Set();
+      const queue = [...startNodes];
+
+      while(queue.length){
+        const node = queue.shift();
+        if(visited.has(node)) continue;
+        visited.add(node);
+
+        const neighbors = graph.get(node);
+        if(!neighbors) continue;
+
+        neighbors.forEach(neighbor => {
+          if(!visited.has(neighbor)){
+            queue.push(neighbor);
+          }
+        });
+      }
+
+      return visited;
+    }
+
+    function evaluateCircuitState(){
+      const batteries = state.items.filter(item => item.type === "Battery");
+      if(!batteries.length){
+        return {
+          led:false,
+          motor:false,
+          buzzer:false,
+          overload:false,
+          burstItems:[],
+          message:"Add a battery to power the circuit."
+        };
+      }
+
+      const batteryVoltage = batteries.reduce((max, item) => {
+        const voltage = Number(item.voltage ?? state.defaultBatteryVoltage);
+        return Math.max(max, voltage);
+      }, 0);
+
+      const powerGraph = buildConnectionGraph(POWER_FLOW_COMPONENTS);
+      const shortGraph = buildConnectionGraph(HARD_SHORT_COMPONENTS);
+      const positiveStarts = batteries.map(item => getNodeKey(item.id, "positive"));
+      const negativeStarts = batteries.map(item => getNodeKey(item.id, "negative"));
+      const positiveReachable = collectReachable(positiveStarts, powerGraph);
+      const negativeReachable = collectReachable(negativeStarts, powerGraph);
+      const shortReachable = collectReachable(positiveStarts, shortGraph);
+
+      const activeLoads = [];
+      let totalLoad = 0;
+      const resistorCount = state.items.filter(item => item.type === "Resistor").length;
+
+      state.items.forEach(item => {
+        if(!(item.type in LOAD_COMPONENTS) || item.ports.length < 2) return;
+        const cfg = getCatalog(item.type);
+
+        const positiveTerminal = getNodeKey(item.id, "positive");
+        const negativeTerminal = getNodeKey(item.id, "negative");
+        const positivePowered = positiveReachable.has(positiveTerminal);
+        const negativeReturned = negativeReachable.has(negativeTerminal);
+        const meetsVoltage = batteryVoltage >= (cfg?.minVoltage ?? 0);
+        const isPowered = positivePowered && negativeReturned && meetsVoltage;
+
+        if(isPowered){
+          activeLoads.push(item);
+          totalLoad += LOAD_COMPONENTS[item.type];
+        }
+      });
+
+      const hardShort = negativeStarts.some(node => shortReachable.has(node));
+      const overloadThreshold = 3 + resistorCount * 1.5;
+      const overloadByLoad = totalLoad > overloadThreshold;
+      const overload = hardShort || overloadByLoad;
+      const burstItems = overload
+        ? [...new Set(activeLoads.map(item => item.id))]
+        : [];
+
+      let message = "";
+      if(hardShort){
+        message = "Short circuit detected 💥 Fix the wiring and try again.";
+      } else if(overloadByLoad){
+        message = "The circuit overloaded and burst 💥 Add a resistor or reduce the load.";
+      }
+
+      return {
+        led: activeLoads.some(item => item.type === "LED") && !overload,
+        motor: activeLoads.some(item => ["Motor", "Pump", "Servo"].includes(item.type)) && !overload,
+        buzzer: activeLoads.some(item => item.type === "Buzzer") && !overload,
+        activeItemIds: activeLoads.map(item => item.id),
+        overload,
+        burstItems,
+        message
+      };
+    }
 
     function showToast(message){
       toast.textContent = message;
@@ -1418,6 +1853,77 @@ function applyLanguage(){
 
     function getCatalog(type){
       return componentCatalog.find(c => c.type === type);
+    }
+
+    function syncBatteryVoltageControls(){
+      batteryVoltageValue.textContent = `${state.defaultBatteryVoltage.toFixed(1)}V`;
+      batteryVoltageRange.value = String(state.defaultBatteryVoltage);
+    }
+
+    function syncBatteryVoltageFromItems(){
+      const battery = state.items.find(item => item.type === "Battery");
+      if(battery){
+        state.defaultBatteryVoltage = Number(battery.voltage ?? state.defaultBatteryVoltage);
+      }
+      syncBatteryVoltageControls();
+    }
+
+    function setBatteryVoltage(voltage){
+      state.defaultBatteryVoltage = voltage;
+      state.items.forEach(item => {
+        if(item.type === "Battery"){
+          item.voltage = voltage;
+        }
+      });
+      syncBatteryVoltageControls();
+      const simulation = evaluateCircuitState();
+      state.outputs.led = simulation.led;
+      state.outputs.motor = simulation.motor;
+      state.outputs.buzzer = simulation.buzzer;
+      state.outputs.overload = simulation.overload;
+      state.burstItems = simulation.burstItems;
+      renderItems();
+      updateOutputs();
+    }
+
+    function refreshSimulation(){
+      const simulation = evaluateCircuitState();
+
+      if(state.logicArmed){
+        state.outputs.led = simulation.led;
+        state.outputs.motor = simulation.motor;
+        state.outputs.buzzer = simulation.buzzer;
+        state.outputs.overload = simulation.overload;
+        state.activeItems = simulation.activeItemIds;
+        state.burstItems = simulation.burstItems;
+      } else {
+        state.outputs.led = false;
+        state.outputs.motor = false;
+        state.outputs.buzzer = false;
+        state.outputs.overload = false;
+        state.activeItems = [];
+        state.burstItems = [];
+      }
+
+      updateOutputs();
+      return simulation;
+    }
+
+    function renderVoltageGuide(){
+      if(!voltageGuideList) return;
+      voltageGuideList.innerHTML = "";
+
+      componentCatalog
+        .filter(component => component.type !== "Battery" && component.minVoltage > 0)
+        .forEach(component => {
+          const row = document.createElement("div");
+          row.className = "voltage-row";
+          row.innerHTML = `
+            <span>${component.icon} ${component.type}</span>
+            <b class="voltage-chip">${component.minVoltage}V min</b>
+          `;
+          voltageGuideList.appendChild(row);
+        });
     }
 
       function renderProjectsPage(){
@@ -1496,33 +2002,83 @@ function applyLanguage(){
       });
     }
 
-    function renderTeacherProjects(){
-      const school = state.user.school;
-      const container = document.getElementById("teacherProjectList");
+    function renderStudentProjectsPage(){
+      const container = document.getElementById("studentProjectsPageList");
       if(!container) return;
 
+      const school = state.user.school;
       const schoolData = state.schools[school];
-      if(!schoolData) return;
+      if(!schoolData){
+        container.innerHTML = "<p>No student projects yet</p>";
+        return;
+      }
 
-      container.innerHTML = "";
-      schoolData.students.forEach(student => {
+      const otherStudents = schoolData.students.filter(student => student.name !== state.user.name);
+      const gradedProjects = [];
+
+      otherStudents.forEach(student => {
         student.projects.forEach((proj, index) => {
-          const div = document.createElement("div");
-          div.className = "project-item";
-
-          div.innerHTML = `
-            <div class="project-info">
-              <div class="project-name">${proj.name}</div>
-              <div class="project-date">${student.name} • ${proj.date}</div>
-            </div>
-            <div class="project-actions">
-              <button class="secondary" onclick="teacherOpenProject('${student.name}', ${index})">Open</button>
-            </div>
-          `;
-
-          container.appendChild(div);
+          if(proj.grade && proj.grade !== "Not graded"){
+            gradedProjects.push({ student, proj, index });
+          }
         });
       });
+
+      if(gradedProjects.length === 0){
+        container.innerHTML = "<p>No graded student projects yet</p>";
+        return;
+      }
+
+      container.innerHTML = "";
+      gradedProjects.forEach(({ student, proj, index }) => {
+        const div = document.createElement("div");
+        div.style = `
+          background:white;
+          border:1px solid #dbe3f0;
+          border-radius:14px;
+          padding:14px;
+          box-shadow:0 10px 20px rgba(0,0,0,0.05);
+        `;
+
+        div.innerHTML = `
+          <h3>${proj.name}</h3>
+          <p style="color:gray; font-size:12px; margin:0 0 6px;">${student.name}</p>
+          <p style="color:gray; font-size:12px; margin:0 0 6px;">${proj.date}</p>
+          <p style="font-size:12px; margin:0; color:#16a34a; font-weight:700;">Grade: ${proj.grade}</p>
+
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <button onclick="openStudentProject('${student.name}', ${index})">Open</button>
+          </div>
+        `;
+
+        container.appendChild(div);
+      });
+    }
+
+    function openStudentProject(studentName, index){
+      const school = state.user.school;
+      const student = state.schools[school]?.students.find(s => s.name === studentName);
+      const proj = student?.projects[index];
+      if(!proj) return;
+
+      state.items = deepClone(proj.items);
+      state.wires = deepClone(proj.wires);
+      state.logic = deepClone(proj.logic);
+      state.projectName = `${proj.name}`;
+      state.currentProjectIndex = index;
+      state.projectOwnerName = studentName;
+      state.logicArmed = false;
+      projectNameText.textContent = state.projectName;
+      gradeText.textContent = proj.grade || "Not graded";
+      teacherGradeState.textContent = proj.grade || "Not graded";
+      syncNextId();
+      syncBatteryVoltageFromItems();
+      refreshSimulation();
+      renderItems();
+      renderLogic();
+      drawWires();
+      closeStudentProjectsPage();
+      showToast(`${studentName}'s project loaded 🚀`);
     }
 
     function addComponent(type, x = null, y = null){
@@ -1535,12 +2091,15 @@ function applyLanguage(){
         x: x ?? (120 + state.items.length * 26),
         y: y ?? (100 + state.items.length * 24),
         ports: cfg.ports.slice(),
+        voltage: type === "Battery" ? state.defaultBatteryVoltage : undefined,
+        isClosed: type === "Switch" || type === "Relay" ? false : undefined,
         ledOn: false,
         motorOn: false,
         buzzerOn: false
       };
 
       state.items.push(item);
+      refreshSimulation();
       renderItems();
       updateTeacherStats();
       const name = state.lang === "ta" && translations.ta[type] ? translations.ta[type] : type;
@@ -1554,17 +2113,24 @@ function applyLanguage(){
         const cfg = getCatalog(item.type);
         const el = document.createElement("div");
         el.className = "canvas-item";
+        if(state.burstItems.includes(item.id)){
+          el.classList.add("bursting");
+        }
         el.dataset.id = item.id;
         el.style.left = item.x + "px";
         el.style.top = item.y + "px";
 
         let statusHtml = "";
-        if(item.type === "LED"){
-          statusHtml = `<div class="led-indicator ${state.outputs.led ? "on" : ""}"></div>`;
+        if(state.burstItems.includes(item.id)){
+          statusHtml = `<div class="burst-indicator">💥</div>`;
+        } else if(item.type === "Switch" || item.type === "Relay"){
+          statusHtml = `<div class="pill" style="padding:4px 8px;font-size:11px;">${item.isClosed ? "Closed" : "Open"}</div>`;
+        } else if(item.type === "LED"){
+          statusHtml = `<div class="led-indicator ${state.activeItems.includes(item.id) ? "on" : ""}"></div>`;
         } else if(item.type === "Motor" || item.type === "Pump" || item.type === "Servo"){
-          statusHtml = `<div class="motor-wheel ${state.outputs.motor ? "on" : ""}"></div>`;
+          statusHtml = `<div class="motor-wheel ${state.activeItems.includes(item.id) ? "on" : ""}"></div>`;
         } else if(item.type === "Buzzer"){
-          statusHtml = `<div class="buzzer-wave ${state.outputs.buzzer ? "on" : ""}"></div>`;
+          statusHtml = `<div class="buzzer-wave ${state.activeItems.includes(item.id) ? "on" : ""}"></div>`;
         } else {
           statusHtml = `<div style="font-size:18px">${cfg.icon}</div>`;
         }
@@ -1574,7 +2140,7 @@ function applyLanguage(){
            <b>${cfg.icon} ${translations.ta[item.type] && state.lang === "ta" ? translations.ta[item.type] : item.type}</b>
             ${statusHtml}
           </div>
-          <div class="item-body">${cfg.desc}</div>
+          <div class="item-body">${cfg.desc}${item.type === "Battery" ? `<span class="terminal-hint">${Number(item.voltage ?? state.defaultBatteryVoltage).toFixed(1)}V output</span>` : `<span class="terminal-hint">- left • + right</span>`}</div>
         `;
 
         item.ports.forEach(pos => {
@@ -1603,6 +2169,13 @@ function applyLanguage(){
              handlePortClick(item.id, pos);
            });
           el.appendChild(p);
+
+          if(pos === "positive" || pos === "negative"){
+            const label = document.createElement("span");
+            label.className = `port-label ${pos}`;
+            label.textContent = pos === "positive" ? "+" : "-";
+            el.appendChild(label);
+          }
         });
 
         el.addEventListener("mousedown", startDragItem);
@@ -1624,15 +2197,25 @@ function applyLanguage(){
       const proj = student.projects[index];
 
       // 🔥 Load into current workspace
-      state.items = proj.items;
-      state.wires = proj.wires;
-      state.logic = proj.logic;
+      state.items = deepClone(proj.items);
+      state.wires = deepClone(proj.wires);
+      state.logic = deepClone(proj.logic);
       state.projectName = proj.name;
+      state.currentProjectIndex = index;
+      state.projectOwnerName = state.user.name;
+      state.logicArmed = false;
+      projectNameText.textContent = state.projectName;
+      gradeText.textContent = proj.grade || "Not graded";
+      teacherGradeState.textContent = proj.grade || "Not graded";
+      syncNextId();
+      syncBatteryVoltageFromItems();
+      refreshSimulation();
 
       // 🔥 Re-render UI
       renderItems();
       renderLogic();
       drawWires();
+      closeProjectsPage();
 
       showToast("Project loaded 🚀");
     }
@@ -1647,6 +2230,12 @@ function applyLanguage(){
       // ❌ Remove project
       student.projects.splice(index, 1);
 
+      if(state.currentProjectIndex === index){
+        state.currentProjectIndex = null;
+      } else if(state.currentProjectIndex !== null && state.currentProjectIndex > index){
+        state.currentProjectIndex -= 1;
+      }
+
       // 💾 Save updated data
       localStorage.setItem("stem_schools", JSON.stringify(state.schools));
 
@@ -1657,6 +2246,8 @@ function applyLanguage(){
     }
 
     function startDragItem(e){
+  e.preventDefault();
+  document.body.style.userSelect = "none";
   const target = e.currentTarget;
   const id = target.dataset.id;
   const item = state.items.find(i => i.id === id);
@@ -1724,7 +2315,9 @@ function applyLanguage(){
     window.removeEventListener("mouseup", onUp);
 
     state.drag = null;
+    document.body.style.userSelect = "";
 
+    refreshSimulation();
     renderItems();
     drawWires();
   }
@@ -1755,6 +2348,7 @@ function applyLanguage(){
 
       state.selectedPort = null;
       drawWires();
+      refreshSimulation();
       updateTeacherStats();
       showToast("Wire connected");
     }
@@ -1764,15 +2358,132 @@ function applyLanguage(){
     }
 
     function getPortPosition(itemId, port){
+      const portEl = itemsLayer.querySelector(`.canvas-item[data-id="${itemId}"] .port[data-port="${port}"]`);
+      if(portEl){
+        const portRect = portEl.getBoundingClientRect();
+        const worldRect = workspaceArea.getBoundingClientRect();
+        return {
+          x: (portRect.left + portRect.width / 2 - worldRect.left) / state.zoom,
+          y: (portRect.top + portRect.height / 2 - worldRect.top) / state.zoom
+        };
+      }
+
       const item = getItemById(itemId);
       if(!item) return { x:0, y:0 };
-      const w = 120;
-      const h = 78;
-      if(port === "left") return { x:item.x, y:item.y + h / 2 };
-      if(port === "right") return { x:item.x + w, y:item.y + h / 2 };
-      if(port === "top") return { x:item.x + w / 2, y:item.y };
-      if(port === "bottom") return { x:item.x + w / 2, y:item.y + h };
       return { x:item.x, y:item.y };
+    }
+
+    function getItemBounds(itemId){
+      const itemEl = itemsLayer.querySelector(`.canvas-item[data-id="${itemId}"]`);
+      if(itemEl){
+        const rect = itemEl.getBoundingClientRect();
+        const worldRect = workspaceArea.getBoundingClientRect();
+        return {
+          left: (rect.left - worldRect.left) / state.zoom,
+          right: (rect.right - worldRect.left) / state.zoom,
+          top: (rect.top - worldRect.top) / state.zoom,
+          bottom: (rect.bottom - worldRect.top) / state.zoom
+        };
+      }
+
+      const item = getItemById(itemId);
+      if(!item) return { left:0, right:0, top:0, bottom:0 };
+
+      return {
+        left: item.x,
+        right: item.x + 120,
+        top: item.y,
+        bottom: item.y + 84
+      };
+    }
+
+    function getWorkspaceWorldSize(){
+      return {
+        width: workspaceArea.clientWidth / state.zoom,
+        height: workspaceArea.clientHeight / state.zoom
+      };
+    }
+
+    function clampValue(value, min, max){
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function keepItemsInsideWorkspace(){
+      if(!state.items.length) return;
+
+      const cardWidth = 120;
+      const cardHeight = 92;
+      const padding = 24;
+      const workspace = getWorkspaceWorldSize();
+      if(!workspace.width || !workspace.height) return;
+
+      let minX = Math.min(...state.items.map(item => item.x));
+      let maxX = Math.max(...state.items.map(item => item.x + cardWidth));
+      let minY = Math.min(...state.items.map(item => item.y));
+      let maxY = Math.max(...state.items.map(item => item.y + cardHeight));
+
+      const availableWidth = Math.max(120, workspace.width - padding * 2);
+      const availableHeight = Math.max(120, workspace.height - 190);
+      const contentWidth = Math.max(1, maxX - minX);
+      const contentHeight = Math.max(1, maxY - minY);
+
+      const scaleX = contentWidth > availableWidth ? availableWidth / contentWidth : 1;
+      const scaleY = contentHeight > availableHeight ? availableHeight / contentHeight : 1;
+      const scale = Math.min(scaleX, scaleY);
+
+      if(scale < 1){
+        state.items.forEach(item => {
+          item.x = padding + (item.x - minX) * scale;
+          item.y = padding + (item.y - minY) * scale;
+        });
+      }
+
+      state.items.forEach(item => {
+        item.x = clampValue(item.x, padding, Math.max(padding, workspace.width - cardWidth - padding));
+        item.y = clampValue(item.y, padding, Math.max(padding, workspace.height - cardHeight - 170));
+      });
+    }
+
+    function getPortDirection(port){
+      if(port === "left" || port === "negative") return -1;
+      if(port === "right" || port === "positive") return 1;
+      return 0;
+    }
+
+    function buildWirePath(a, b, fromPort, toPort, fromItemId, toItemId){
+      const dirA = getPortDirection(fromPort) || 1;
+      const dirB = getPortDirection(toPort) || -1;
+      const lead = 12;
+      const pad = 12;
+      const leadA = { x: a.x + dirA * lead, y: a.y };
+      const leadB = { x: b.x - dirB * lead, y: b.y };
+      const fromBounds = getItemBounds(fromItemId);
+      const toBounds = getItemBounds(toItemId);
+      const workspace = getWorkspaceWorldSize();
+      const sameRow = Math.abs(a.y - b.y) < 26;
+      const enoughHorizontalSpace = (dirA === 1 && leadA.x <= leadB.x) || (dirA === -1 && leadA.x >= leadB.x);
+
+      if(sameRow && enoughHorizontalSpace){
+        return [
+          `M ${a.x} ${a.y}`,
+          `L ${leadA.x} ${leadA.y}`,
+          `L ${leadB.x} ${leadB.y}`,
+          `L ${b.x} ${b.y}`
+        ].join(" ");
+      }
+
+      const topLane = clampValue(Math.min(fromBounds.top, toBounds.top) - pad, 18, Math.max(18, workspace.height - 18));
+      const bottomLane = clampValue(Math.max(fromBounds.bottom, toBounds.bottom) + pad, 18, Math.max(18, workspace.height - 18));
+      const laneY = a.y <= b.y ? topLane : bottomLane;
+
+      return [
+        `M ${a.x} ${a.y}`,
+        `L ${leadA.x} ${leadA.y}`,
+        `L ${leadA.x} ${laneY}`,
+        `L ${leadB.x} ${laneY}`,
+        `L ${leadB.x} ${leadB.y}`,
+        `L ${b.x} ${b.y}`
+      ].join(" ");
     }
 
 function drawWires(){
@@ -1782,25 +2493,57 @@ function drawWires(){
   state.wires.forEach(wire => {
     const a = getPortPosition(wire.from.itemId, wire.from.port);
     const b = getPortPosition(wire.to.itemId, wire.to.port);
+    const isPositiveWire = wire.from.port === "positive" && wire.to.port === "positive";
+    const isNegativeWire = wire.from.port === "negative" && wire.to.port === "negative";
+    const stroke = isPositiveWire
+      ? "#ef4444"
+      : (isNegativeWire ? "#2563eb" : "#64748b");
+    const pulseFill = isPositiveWire
+      ? "#f87171"
+      : (isNegativeWire ? "#60a5fa" : "#94a3b8");
+    const pathData = buildWirePath(
+      a,
+      b,
+      wire.from.port,
+      wire.to.port,
+      wire.from.itemId,
+      wire.to.itemId
+    );
 
-    const dx = Math.abs(b.x - a.x);
-    const c1x = a.x + Math.max(40, dx * 0.35);
-    const c2x = b.x - Math.max(40, dx * 0.35);
+    const glowPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    glowPath.setAttribute("d", pathData);
+    glowPath.setAttribute("fill", "none");
+    glowPath.setAttribute("stroke", stroke);
+    glowPath.setAttribute("stroke-width", "8");
+    glowPath.setAttribute("stroke-linecap", "round");
+    glowPath.setAttribute("stroke-linejoin", "round");
+    glowPath.setAttribute("opacity", "0.12");
+    wireLayer.appendChild(glowPath);
+
+    const shadowPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    shadowPath.setAttribute("d", pathData);
+    shadowPath.setAttribute("fill", "none");
+    shadowPath.setAttribute("stroke", "#ffffff");
+    shadowPath.setAttribute("stroke-width", "6");
+    shadowPath.setAttribute("stroke-linecap", "round");
+    shadowPath.setAttribute("stroke-linejoin", "round");
+    shadowPath.setAttribute("opacity", "0.55");
+    wireLayer.appendChild(shadowPath);
 
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.dataset.id = wire.id;
     path.style.cursor = "pointer";
-    path.setAttribute("d", `M ${a.x} ${a.y} C ${c1x} ${a.y}, ${c2x} ${b.y}, ${b.x} ${b.y}`);
+    path.setAttribute("d", pathData);
     path.setAttribute("fill", "none");
-    path.setAttribute("stroke", "#2563eb");
-    path.setAttribute("stroke-width", "4");
+    path.setAttribute("stroke", stroke);
+    path.setAttribute("stroke-width", "3.5");
     path.setAttribute("stroke-linecap", "round");
-    path.setAttribute("opacity", "0.95");
-    path.dataset.id = wire.id;
-    path.style.cursor = "pointer";
+    path.setAttribute("stroke-linejoin", "round");
+    path.setAttribute("opacity", "1");
     path.addEventListener("click", () => {
       state.wires = state.wires.filter(w => w.id !== wire.id);
       drawWires();
+      refreshSimulation();
       updateTeacherStats();
       showToast("Wire deleted ❌");
     });
@@ -1808,21 +2551,39 @@ function drawWires(){
 
     path.addEventListener("mouseenter", () => {
       path.setAttribute("stroke", "#f59e0b");
-      path.setAttribute("stroke-width", "6");
+      path.setAttribute("stroke-width", "4.5");
+      glowPath.setAttribute("opacity", "0.2");
     });
 
     path.addEventListener("mouseleave", () => {
-      path.setAttribute("stroke", "#2563eb");
-      path.setAttribute("stroke-width", "4");
+      path.setAttribute("stroke", stroke);
+      path.setAttribute("stroke-width", "3.5");
+      glowPath.setAttribute("opacity", "0.12");
     });  
 
     wireLayer.appendChild(path);
 
+    const startCap = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    startCap.setAttribute("cx", a.x);
+    startCap.setAttribute("cy", a.y);
+    startCap.setAttribute("r", "2.8");
+    startCap.setAttribute("fill", stroke);
+    startCap.setAttribute("opacity", "0.95");
+    wireLayer.appendChild(startCap);
+
+    const endCap = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    endCap.setAttribute("cx", b.x);
+    endCap.setAttribute("cy", b.y);
+    endCap.setAttribute("r", "2.8");
+    endCap.setAttribute("fill", stroke);
+    endCap.setAttribute("opacity", "0.95");
+    wireLayer.appendChild(endCap);
+
     const pulse = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    pulse.setAttribute("r", "4");
-    pulse.setAttribute("fill", "#60a5fa");
+    pulse.setAttribute("r", "3.5");
+    pulse.setAttribute("fill", pulseFill);
     pulse.innerHTML = `<animateMotion dur="2s" repeatCount="indefinite"
-      path="M ${a.x} ${a.y} C ${c1x} ${a.y}, ${c2x} ${b.y}, ${b.x} ${b.y}" />`;
+      path="${pathData}" />`;
     wireLayer.appendChild(pulse);
   });
 
@@ -1839,22 +2600,30 @@ function drawWires(){
       x: (state.wireDrag.x - rect.left) / state.zoom,
       y: (state.wireDrag.y - rect.top) / state.zoom
     };
-
-    const dx = Math.abs(b.x - a.x);
-    const c1x = a.x + Math.max(40, dx * 0.35);
-    const c2x = b.x - Math.max(40, dx * 0.35);
+    const dirA = getPortDirection(state.wireDrag.from.port) || 1;
+    const lead = 12;
+    const laneY = a.y <= b.y ? Math.min(a.y, b.y) - 12 : Math.max(a.y, b.y) + 12;
+    const leadA = { x: a.x + dirA * lead, y: a.y };
+    const leadB = { x: b.x + (b.x >= a.x ? -lead : lead), y: b.y };
+    const previewPath = [
+      `M ${a.x} ${a.y}`,
+      `L ${leadA.x} ${leadA.y}`,
+      `L ${leadA.x} ${laneY}`,
+      `L ${leadB.x} ${laneY}`,
+      `L ${leadB.x} ${leadB.y}`,
+      `L ${b.x} ${b.y}`
+    ].join(" ");
 
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
 
-    path.setAttribute(
-      "d",
-      `M ${a.x} ${a.y} C ${c1x} ${a.y}, ${c2x} ${b.y}, ${b.x} ${b.y}`
-    );
+    path.setAttribute("d", previewPath);
 
     path.setAttribute("fill", "none");
     path.setAttribute("stroke", "#94a3b8");
     path.setAttribute("stroke-width", "3");
     path.setAttribute("stroke-dasharray", "6,6");
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
 
     wireLayer.appendChild(path);
   }
@@ -1906,9 +2675,8 @@ function drawWires(){
 
       activeUserPill.textContent = `${state.user.name || "Demo User"} • ${mode}`;
 
-      // 🔥 ADD THIS
       if(mode === "teacher"){
-        renderTeacherProjects();
+        renderStudentProjectsPage();
       }
     }
 
@@ -1916,9 +2684,9 @@ function drawWires(){
       dashboardLed.classList.toggle("on", state.outputs.led);
       dashboardMotor.classList.toggle("on", state.outputs.motor);
       dashboardBuzzer.classList.toggle("on", state.outputs.buzzer);
-      ledStateText.textContent = state.outputs.led ? "ON" : "OFF";
-      motorStateText.textContent = state.outputs.motor ? "ON" : "OFF";
-      buzzerStateText.textContent = state.outputs.buzzer ? "ON" : "OFF";
+      ledStateText.textContent = state.outputs.overload ? "BURST 💥" : (state.outputs.led ? "ON" : "OFF");
+      motorStateText.textContent = state.outputs.overload ? "BURST 💥" : (state.outputs.motor ? "ON" : "OFF");
+      buzzerStateText.textContent = state.outputs.overload ? "BURST 💥" : (state.outputs.buzzer ? "ON" : "OFF");
       renderItems();
     }
 
@@ -1931,6 +2699,7 @@ function drawWires(){
       });
     }
      function startWireDrag(itemId, port, event){
+  event.preventDefault();
   event.stopPropagation();
   document.body.style.userSelect = "none";
 
@@ -1979,34 +2748,46 @@ function endWireDrag(e){
   window.removeEventListener("mouseup", endWireDrag);
 
   drawWires();
+  refreshSimulation();
   updateTeacherStats();
-  document.body.style.userSelect = "auto";
+  document.body.style.userSelect = "";
 }
 
     async function runLogic(){
       resetOutputs(false);
+      let executedNormally = true;
 
       for(const step of state.logic){
 
         if(step === "ON"){
-          state.outputs.led = state.wires.some(w =>
-            getItemById(w.to.itemId)?.type === "LED" ||
-            getItemById(w.from.itemId)?.type === "LED"
-          );
-          state.outputs.motor = state.wires.some(w =>
-            ["Motor","Pump","Servo"].includes(getItemById(w.to.itemId)?.type) ||
-            ["Motor","Pump","Servo"].includes(getItemById(w.from.itemId)?.type)
-          );
-          state.outputs.buzzer = state.wires.some(w =>
-            getItemById(w.to.itemId)?.type === "Buzzer" ||
-            getItemById(w.from.itemId)?.type === "Buzzer"
-          );
+          state.logicArmed = true;
+          state.items.forEach(item => {
+            if(item.type === "Switch" || item.type === "Relay"){
+              item.isClosed = true;
+            }
+          });
+          const simulation = refreshSimulation();
+
+          if(simulation.overload){
+            showToast(simulation.message);
+            executedNormally = false;
+            break;
+          }
         }
 
         else if(step === "OFF"){
+          state.logicArmed = false;
+          state.items.forEach(item => {
+            if(item.type === "Switch" || item.type === "Relay"){
+              item.isClosed = false;
+            }
+          });
           state.outputs.led = false;
           state.outputs.motor = false;
           state.outputs.buzzer = false;
+          state.outputs.overload = false;
+          state.activeItems = [];
+          state.burstItems = [];
         }
 
         else if(step === "WAIT 1s"){
@@ -2018,13 +2799,24 @@ function endWireDrag(e){
         await wait(250);
       }
 
-      showToast("Logic executed ⚡");
+      if(executedNormally){
+        showToast("Logic executed ⚡");
+      }
     }
 
     function resetOutputs(showMessage = true){
+      state.logicArmed = false;
+      state.items.forEach(item => {
+        if(item.type === "Switch" || item.type === "Relay"){
+          item.isClosed = false;
+        }
+      });
       state.outputs.led = false;
       state.outputs.motor = false;
       state.outputs.buzzer = false;
+      state.outputs.overload = false;
+      state.activeItems = [];
+      state.burstItems = [];
       updateOutputs();
       if(showMessage) showToast("Outputs reset");
     }
@@ -2047,18 +2839,49 @@ function endWireDrag(e){
 
     function autoWire(){
       state.wires = [];
-      for(let i = 0; i < state.items.length - 1; i++){
-        const a = state.items[i];
-        const b = state.items[i + 1];
-        const fromPort = a.ports.includes("right") ? "right" : a.ports[0];
-        const toPort = b.ports.includes("left") ? "left" : b.ports[0];
+      const battery = state.items.find(item => item.type === "Battery");
+      const loads = state.items.filter(item => item.type !== "Battery");
+
+      if(battery && loads.length){
+        const first = loads[0];
+
         state.wires.push({
-          id: "wire-auto-" + i,
-          from: { itemId:a.id, port:fromPort },
-          to: { itemId:b.id, port:toPort }
+          id: "wire-auto-start",
+          from: { itemId: battery.id, port: "positive" },
+          to: { itemId: first.id, port: "positive" }
         });
+
+        for(let i = 0; i < loads.length - 1; i++){
+          const current = loads[i];
+          const next = loads[i + 1];
+
+          state.wires.push({
+            id: "wire-auto-chain-" + i,
+            from: { itemId: current.id, port: "negative" },
+            to: { itemId: next.id, port: "positive" }
+          });
+        }
+
+        const last = loads[loads.length - 1];
+
+        state.wires.push({
+          id: "wire-auto-return",
+          from: { itemId: last.id, port: "negative" },
+          to: { itemId: battery.id, port: "negative" }
+        });
+      } else if(state.items.length >= 2) {
+        for(let i = 0; i < state.items.length - 1; i++){
+          const a = state.items[i];
+          const b = state.items[i + 1];
+          state.wires.push({
+            id: "wire-auto-" + i,
+            from: { itemId:a.id, port:"negative" },
+            to: { itemId:b.id, port:"positive" }
+          });
+        }
       }
       drawWires();
+      refreshSimulation();
       updateTeacherStats();
       showToast("Auto wire completed");
     }
@@ -2068,7 +2891,11 @@ function endWireDrag(e){
       state.wires = [];
       state.logic = [];
       state.selectedPort = null;
+      state.currentProjectIndex = null;
+      state.projectOwnerName = state.user.name;
       resetOutputs(false);
+      syncBatteryVoltageControls();
+      refreshSimulation();
       renderItems();
       renderLogic();
       updateTeacherStats();
@@ -2078,6 +2905,13 @@ function endWireDrag(e){
     function submitProject(){
       statusText.textContent = "Submitted";
       teacherSubmissionState.textContent = "Submitted";
+      const school = state.user.school;
+      const ownerName = state.projectOwnerName || state.user.name;
+      const student = state.schools[school]?.students.find(s => s.name === ownerName);
+      if(student && state.currentProjectIndex !== null && student.projects[state.currentProjectIndex]){
+        student.projects[state.currentProjectIndex].status = "Submitted";
+        localStorage.setItem("stem_schools", JSON.stringify(state.schools));
+      }
       showToast("Project submitted");
     }
 
@@ -2089,6 +2923,16 @@ function endWireDrag(e){
       }
       gradeText.textContent = value;
       teacherGradeState.textContent = value;
+      const school = state.user.school;
+      const ownerName = state.projectOwnerName || state.user.name;
+      const student = state.schools[school]?.students.find(s => s.name === ownerName);
+      if(student && state.currentProjectIndex !== null && student.projects[state.currentProjectIndex]){
+        student.projects[state.currentProjectIndex].grade = value;
+        student.projects[state.currentProjectIndex].status = "Graded";
+        student.projects[state.currentProjectIndex].gradedAt = new Date().toLocaleString();
+        localStorage.setItem("stem_schools", JSON.stringify(state.schools));
+        renderStudentProjectsPage();
+      }
       showToast("Grade applied");
     }
 
@@ -2146,33 +2990,33 @@ if(localStorage.getItem("hideLanding") === "true"){
 }
 
     function saveProject(){
-      const payload = {
-        state: {
-          user: state.user,
-          projectName: state.projectName,
-          items: JSON.parse(JSON.stringify(state.items)),
-          wires: state.wires,
-          logic: state.logic,
-          zoom: state.zoom,
-          outputs: state.outputs,
-          status: statusText.textContent,
-          grade: gradeText.textContent
-        }
-      };
       const school = state.user.school;
+      const ownerName = state.projectOwnerName || state.user.name;
 
       const student = state.schools[school].students.find(
-        s => s.name === state.user.name
+        s => s.name === ownerName
       );
 
       if(student){
-        student.projects.push({
+        const existingProject = state.currentProjectIndex !== null
+          ? student.projects[state.currentProjectIndex]
+          : null;
+        const projectRecord = {
           name: state.projectName,
-          items: JSON.parse(JSON.stringify(state.items)),
-          wires: JSON.parse(JSON.stringify(state.wires)),
-          logic: JSON.parse(JSON.stringify(state.logic)),
-          date: new Date().toLocaleString()
-        });
+          items: deepClone(state.items),
+          wires: deepClone(state.wires),
+          logic: deepClone(state.logic),
+          date: new Date().toLocaleString(),
+          grade: existingProject?.grade || "Not graded",
+          status: existingProject?.status || statusText.textContent
+        };
+
+        if(state.currentProjectIndex !== null && student.projects[state.currentProjectIndex]){
+          student.projects[state.currentProjectIndex] = projectRecord;
+        } else {
+          student.projects.push(projectRecord);
+          state.currentProjectIndex = student.projects.length - 1;
+        }
       }
 
       // 💾 Save ALL schools
@@ -2238,6 +3082,7 @@ if(localStorage.getItem("hideLanding") === "true"){
       state.user.role = role;
       state.user.className = className;
       state.user.school = school;
+      state.projectOwnerName = name;
       // 🏫 Create school if not exists
       if(!state.schools[school]){
         state.schools[school] = { students: [] };
@@ -2289,6 +3134,15 @@ if(localStorage.getItem("hideLanding") === "true"){
       document.getElementById("projectsPage").classList.add("hidden");
     }
 
+    function openStudentProjectsPage(){
+      document.getElementById("studentProjectsPage").classList.remove("hidden");
+      renderStudentProjectsPage();
+    }
+
+    function closeStudentProjectsPage(){
+      document.getElementById("studentProjectsPage").classList.add("hidden");
+    }
+
     function loadExample(name){
       clearProject();
 
@@ -2314,9 +3168,10 @@ if(localStorage.getItem("hideLanding") === "true"){
         addLogic("WAIT 1s");
         addLogic("OFF");
       } else if(name === "plant"){
-        addComponent("Soil Sensor", 130, 150);
-        addComponent("Relay", 340, 150);
-        addComponent("Pump", 560, 150);
+        addComponent("Battery", 80, 150);
+        addComponent("Soil Sensor", 250, 150);
+        addComponent("Relay", 430, 150);
+        addComponent("Pump", 620, 150);
         autoWire();
         addLogic("ON");
       } else if(name === "lamp"){
@@ -2326,6 +3181,10 @@ if(localStorage.getItem("hideLanding") === "true"){
         autoWire();
         addLogic("ON");
       }
+
+      keepItemsInsideWorkspace();
+      renderItems();
+      drawWires();
 
       showToast("Example loaded");
     }
@@ -2373,6 +3232,9 @@ if(localStorage.getItem("hideLanding") === "true"){
 
     studentModeBtn.addEventListener("click", () => setMode("student"));
     teacherModeBtn.addEventListener("click", () => setMode("teacher"));
+    batteryVoltageRange.addEventListener("input", (e) => {
+      setBatteryVoltage(Number(e.target.value));
+    });
 
     demoStudentBtn.addEventListener("click", () => fillDemo("student"));
     demoTeacherBtn.addEventListener("click", () => fillDemo("teacher"));
@@ -2433,8 +3295,10 @@ if(localStorage.getItem("hideLanding") === "true"){
 
     renderComponentCards();
     renderLogicCards();
+    renderVoltageGuide();
     renderLogic();
     renderItems();
+    syncBatteryVoltageControls();
     captureText();
     applyLanguage();
     updateTeacherStats();
