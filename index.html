@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Educircuit Labs - Build, simulate and learn engineering projects easily">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -184,8 +183,6 @@
       gap:14px;
       padding:14px;
       min-height:0;
-
-      height:calc(100vh - 72px); /* 🔥 ADD THIS */
     }
 
     .panel{
@@ -282,22 +279,6 @@
       margin-bottom:10px;
     }
 
-   #guidePage {
-  .overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-
-  background: rgba(10, 15, 25, 0.9);
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  z-index: 9999;
-}
     .component-name{
       font-weight:800;
       font-size:14px;
@@ -686,12 +667,12 @@
       color:var(--muted);
     }
 
-    .steps-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin-top: 20px;
-}
+    .field-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:12px;
+    }
 
     #guidePage div {
       animation: fadeUp 0.4s ease;
@@ -779,17 +760,6 @@
       resize:vertical;
     }
 
-     .guide-card {
-  width: 520px;
-  max-width: 92%;
-
-  background: #0b1623;
-  border-radius: 20px;
-  padding: 20px;
-
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-}
-
     .pill{
       display:inline-flex;
       align-items:center;
@@ -807,9 +777,6 @@
       .layout{
         grid-template-columns:280px 1fr 300px;
       }
-      .layout{
-  height:auto; /* 🔥 ADD THIS */
-}
     }
 
     @media (max-width: 1000px){
@@ -817,7 +784,7 @@
         grid-template-columns:1fr;
       }
       .panel{
-        min-height:0;
+        min-height:260px;
       }
       html,body{
         overflow:auto;
@@ -858,7 +825,6 @@ input.error {
   </style>
 </head>
 <body class="no-select">
-  
   <!-- 🔥 LANDING PAGE -->
    <div id="landingPage" style="
    position:fixed;
@@ -961,12 +927,19 @@ input.error {
   <div class="toast" id="toast"></div>
 
   <!-- 📘 GUIDE PAGE -->
-   <div id="guidePage" class="hidden">
-   
+   <div id="guidePage" class="hidden" style="
+  position:fixed;
+  inset:0;
+ z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: radial-gradient(circle at top, #1e293b, #020617);
+">
+
   <div style="
-    width:480px;
-    max-width:92%;
-    background:rgba(255,255,255,0.05);
+    width:min(900px,90vw);
+    background:#020617;
     backdrop-filter: blur(20px);
     border:1px solid rgba(255,255,255,0.1);
     border-radius:25px;
@@ -984,31 +957,20 @@ input.error {
     </div>
 
     <!-- 🎥 VIDEO SECTION -->
-<div style="
-  margin-bottom:25px;
+<video controls style="
+  width:100%;
   border-radius:20px;
-  overflow:hidden;
-  background:#000;
-  border:1px solid rgba(255,255,255,0.1);
-">
-
-  <!-- TEMP PLACEHOLDER -->
-  video {
-  width: 100%;
-  border-radius: 14px;
-  display: block;
-}
+  max-height:300px;
+  object-fit:cover;
 ">
   <source src="video.mp4" type="video/mp4">
-  </video>
-  </div>
+</video>
 
     <!-- 🔥 STEPS GRID -->
     <div style="
       display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:16px;
-      margin-top:15px;
+      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+      gap:15px;
     ">
 
       <div style="background:#111827;padding:15px;border-radius:15px;">
@@ -1049,7 +1011,7 @@ input.error {
         font-weight:bold;
         cursor:pointer;
       ">
-        Got it 
+        Got it 👍
       </button>
     </div>
 
@@ -1243,9 +1205,9 @@ input.error {
               <div class="leaderboard" id="leaderboard">
                 <div class="leader-item"><span>Achyuta</span><b>96</b></div>
                 <div class="leader-item"><span>Priya</span><b>94</b></div>
-                <div class="leader-item"><span>vishnu</span><b></b></div>
+                <div class="leader-item"><span>vishnu</span><b>91</b></div>
                 <div class="leader-item"><span>Meera</span><b>89</b></div>
-                <div class="leader-item"><span>pranav</span><b>67</b></div>
+                <div class="leader-item"><span>Nisha</span><b>87</b></div>
               </div>
             </div>
           </div>
