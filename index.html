@@ -3538,9 +3538,9 @@ if(localStorage.getItem("hideLanding") === "true"){
   try {
     await db.collection("projects").add({
       name: state.projectName,
-      items: state.items,
-      wires: state.wires,
-      logic: state.logic,
+      items: JSON.parse(JSON.stringify(state.items)),
+      wires: JSON.parse(JSON.stringify(state.wires)),
+      logic: JSON.parse(JSON.stringify(state.logic)),
       createdAt: new Date()
     });
 
