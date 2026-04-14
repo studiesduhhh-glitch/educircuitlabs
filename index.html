@@ -1369,13 +1369,25 @@ input.error {
         </div>
       </div>
 
+      <div class="field-row">
+        <div class="field">
+          <label for="loginSchoolUser">School Username</label>
+          <input id="loginSchoolUser" type="text" placeholder="school-login">
+        </div>
+        <div class="field">
+          <label for="loginSchoolPass">School Password</label>
+          <input id="loginSchoolPass" type="password" placeholder="Enter school password">
+        </div>
+      </div>
+
       <div class="small-note">
-        This is a demo startup login screen. It opens the platform locally in one single HTML file.
+        Create the school user once, then students and teachers from the same school can sign in with the same school username and password using their own names.
       </div>
 
       <div class="login-actions">
         <button class="secondary" id="demoStudentBtn">Demo Student</button>
         <button class="secondary" id="demoTeacherBtn">Demo Teacher</button>
+        <button class="secondary" id="signUpBtn">Create School User</button>
         <button id="enterBtn">Enter Platform</button>
       </div>
     </div>
@@ -1790,10 +1802,13 @@ input.error {
     const state = {
       schools: {},
       user: {
+        uid: "",
         name: "",
         role: "student",
         className: "",
-        school: ""
+        school: "",
+        schoolKey: "",
+        schoolUsername: ""
       },
       projectName: "Untitled STEM Project",
       items: [],
@@ -1828,13 +1843,12 @@ input.error {
 
     // 🔥 FIREBASE SETUP
 const firebaseConfig = {
-  apiKey: "AIzaSyD1sGDTh1PECJrPXGkmqmP__1nUyBmxNvU",
+  apiKey: "AIzaSyD1sGDTh1PECJrPXGkmqmP-_1nUyBmxNvU",
   authDomain: "educircuitlabs.firebaseapp.com",
   projectId: "educircuitlabs",
   storageBucket: "educircuitlabs.firebasestorage.app",
   messagingSenderId: "1031956078247",
-  appId: "1:1031956078247:web:c4204412d90fd298c98582",
-  measurementId: "G-1FK4XMYLBY"
+  appId: "1:1031956078247:web:3a2c0033f51773b0c98582"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -1920,6 +1934,9 @@ function applyLanguage(){
     const loginRole = document.getElementById("loginRole");
     const loginClass = document.getElementById("loginClass");
     const loginSchool = document.getElementById("loginSchool");
+    const loginSchoolUser = document.getElementById("loginSchoolUser");
+    const loginSchoolPass = document.getElementById("loginSchoolPass");
+    const signUpBtn = document.getElementById("signUpBtn");
     const enterBtn = document.getElementById("enterBtn");
     const demoStudentBtn = document.getElementById("demoStudentBtn");
     const demoTeacherBtn = document.getElementById("demoTeacherBtn");
@@ -1982,6 +1999,269 @@ function applyLanguage(){
 
     function deepClone(value){
       return JSON.parse(JSON.stringify(value));
+    }
+
+    function normalizeKey(value){
+      return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+
+    function buildSchoolAuthEmail({ school, schoolUsername, role, name }){
+      const parts = [
+        normalizeKey(school) || "school",
+        normalizeKey(schoolUsername) || "access",
+        normalizeKey(role) || "student",
+        normalizeKey(name) || "user"
+      ];
+      return `${parts.join(".")}@educircuitlabs.app`;
+    }
+
+    function getSchoolDocId(school){
+      return normalizeKey(school) || "default-school";
+    }
+
+    function ensureSchoolContainer(school){
+      if(!state.schools[school]){
+        state.schools[school] = { students: [], teachers: [] };
+      } else {
+        state.schools[school].students = state.schools[school].students || [];
+        state.schools[school].teachers = state.schools[school].teachers || [];
+      }
+      return state.schools[school];
+    }
+
+    function syncRoleFields(){
+      const isTeacher = loginRole.value === "teacher";
+      loginClass.placeholder = isTeacher ? "Department / Staff (optional)" : "10-A";
+      loginClass.previousElementSibling.textContent = isTeacher ? "Department / Section" : "Class / Section";
+    }
+
+    function clearLoginErrors(){
+      [loginName, loginClass, loginSchool, loginSchoolUser, loginSchoolPass].forEach(input => {
+        input.classList.remove("error");
+      });
+    }
+
+    function getLoginPayload(){
+      return {
+        name: loginName.value.trim(),
+        role: loginRole.value,
+        className: loginClass.value.trim(),
+        school: loginSchool.value.trim(),
+        schoolUsername: loginSchoolUser.value.trim(),
+        schoolPassword: loginSchoolPass.value.trim()
+      };
+    }
+
+    function validateLoginPayload(payload){
+      clearLoginErrors();
+      let hasError = false;
+
+      if(payload.name.length < 3){
+        loginName.classList.add("error");
+        hasError = true;
+      }
+
+      if(!payload.school){
+        loginSchool.classList.add("error");
+        hasError = true;
+      }
+
+      if(!payload.schoolUsername){
+        loginSchoolUser.classList.add("error");
+        hasError = true;
+      }
+
+      if(!payload.schoolPassword){
+        loginSchoolPass.classList.add("error");
+        hasError = true;
+      }
+
+      if(payload.role === "student" && !payload.className){
+        loginClass.classList.add("error");
+        hasError = true;
+      }
+
+      return !hasError;
+    }
+
+    function ensureLocalUserRecord(profile){
+      const schoolBucket = ensureSchoolContainer(profile.school);
+      const collectionName = profile.role === "teacher" ? "teachers" : "students";
+      const userBucket = schoolBucket[collectionName];
+      let userRecord = userBucket.find(person => person.name === profile.name);
+
+      if(!userRecord){
+        userRecord = {
+          name: profile.name,
+          class: profile.className || "",
+          role: profile.role,
+          projects: []
+        };
+        userBucket.push(userRecord);
+        localStorage.setItem("stem_schools", JSON.stringify(state.schools));
+      }
+
+      return userRecord;
+    }
+
+    function applyAuthenticatedProfile(uid, profile){
+      state.user.uid = uid;
+      state.user.name = profile.name;
+      state.user.role = profile.role;
+      state.user.className = profile.className || "";
+      state.user.school = profile.school;
+      state.user.schoolKey = profile.schoolKey || getSchoolDocId(profile.school);
+      state.user.schoolUsername = profile.schoolUsername || "";
+      state.projectOwnerName = profile.name;
+
+      ensureLocalUserRecord(profile);
+
+      activeUserPill.textContent = `${profile.name} • ${profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}`;
+      loginScreen.classList.add("hidden");
+      setMode(profile.role);
+      projectNameText.textContent = state.projectName;
+    }
+
+    async function fetchUserProfile(uid){
+      const doc = await db.collection("users").doc(uid).get();
+      return doc.exists ? doc.data() : null;
+    }
+
+    async function getSchoolAuthRecord(school){
+      const schoolDoc = await db.collection("schools").doc(getSchoolDocId(school)).get();
+      return schoolDoc.exists ? schoolDoc.data() : null;
+    }
+
+    async function signUpUser(){
+      const payload = getLoginPayload();
+      if(!validateLoginPayload(payload)){
+        showToast("Please fill all fields correctly");
+        return;
+      }
+
+      const schoolKey = getSchoolDocId(payload.school);
+      const schoolEmail = buildSchoolAuthEmail(payload);
+
+      try{
+        const schoolRef = db.collection("schools").doc(schoolKey);
+        const schoolDoc = await schoolRef.get();
+
+        if(schoolDoc.exists){
+          const schoolData = schoolDoc.data();
+          if(
+            schoolData.schoolUsername !== payload.schoolUsername ||
+            schoolData.schoolPassword !== payload.schoolPassword
+          ){
+            alert("This school already uses different school credentials.");
+            return;
+          }
+        } else {
+          await schoolRef.set({
+            school: payload.school,
+            schoolKey,
+            schoolUsername: payload.schoolUsername,
+            schoolPassword: payload.schoolPassword,
+            createdAt: new Date()
+          });
+        }
+
+        const cred = await auth.createUserWithEmailAndPassword(schoolEmail, payload.schoolPassword);
+        await db.collection("users").doc(cred.user.uid).set({
+          name: payload.name,
+          role: payload.role,
+          className: payload.className,
+          school: payload.school,
+          schoolKey,
+          schoolUsername: payload.schoolUsername,
+          authEmail: schoolEmail,
+          createdAt: new Date()
+        });
+
+        applyAuthenticatedProfile(cred.user.uid, {
+          ...payload,
+          schoolKey
+        });
+        showToast("School user created");
+      } catch(error){
+        alert(error.message);
+      }
+    }
+
+    async function loginUser(){
+      const payload = getLoginPayload();
+      if(!validateLoginPayload(payload)){
+        showToast("Please fill all fields correctly");
+        return;
+      }
+
+      try{
+        const schoolData = await getSchoolAuthRecord(payload.school);
+        if(!schoolData){
+          alert("This school is not registered yet. Create the school user first.");
+          return;
+        }
+
+        if(
+          schoolData.schoolUsername !== payload.schoolUsername ||
+          schoolData.schoolPassword !== payload.schoolPassword
+        ){
+          alert("School username or password is incorrect.");
+          return;
+        }
+
+        const authEmail = buildSchoolAuthEmail(payload);
+        const cred = await auth.signInWithEmailAndPassword(authEmail, payload.schoolPassword);
+        let profile = await fetchUserProfile(cred.user.uid);
+
+        if(!profile){
+          profile = {
+            name: payload.name,
+            role: payload.role,
+            className: payload.className,
+            school: payload.school,
+            schoolKey: getSchoolDocId(payload.school),
+            schoolUsername: payload.schoolUsername
+          };
+          await db.collection("users").doc(cred.user.uid).set({
+            ...profile,
+            authEmail,
+            createdAt: new Date()
+          });
+        }
+
+        applyAuthenticatedProfile(cred.user.uid, profile);
+        showToast("Welcome, " + profile.name);
+      } catch(error){
+        alert(error.message);
+      }
+    }
+
+    async function logoutUser(){
+      try{
+        await auth.signOut();
+      } catch(error){
+        alert(error.message);
+      }
+    }
+
+    function resetAuthenticatedUser(){
+      state.user.uid = "";
+      state.user.name = "";
+      state.user.role = "student";
+      state.user.className = "";
+      state.user.school = "";
+      state.user.schoolKey = "";
+      state.user.schoolUsername = "";
+      state.projectOwnerName = "";
+      loginRole.value = "student";
+      loginScreen.classList.remove("hidden");
+      activeUserPill.textContent = "Guest • Student";
+      setMode("student");
+      syncRoleFields();
     }
 
     function syncNextId(){
@@ -3537,6 +3817,10 @@ if(localStorage.getItem("hideLanding") === "true"){
     async function saveProjectToFirebase() {
   try {
     await db.collection("projects").add({
+      userId: auth.currentUser ? auth.currentUser.uid : "",
+      schoolId: state.user.schoolKey || getSchoolDocId(state.user.school),
+      userName: state.user.name,
+      role: state.user.role,
       name: state.projectName,
       items: JSON.parse(JSON.stringify(state.items)),
       wires: JSON.parse(JSON.stringify(state.wires)),
@@ -3559,98 +3843,38 @@ if(localStorage.getItem("hideLanding") === "true"){
       if(savedSchools){
         state.schools = JSON.parse(savedSchools);
       }
+
+      auth.onAuthStateChanged(async (firebaseUser) => {
+        if(firebaseUser){
+          try{
+            const profile = await fetchUserProfile(firebaseUser.uid);
+            if(profile){
+              applyAuthenticatedProfile(firebaseUser.uid, profile);
+            } else {
+              resetAuthenticatedUser();
+            }
+          } catch(error){
+            console.error(error);
+            resetAuthenticatedUser();
+          }
+        } else {
+          resetAuthenticatedUser();
+        }
+      });
     }
 
     function fillDemo(role){
       loginName.value = role === "teacher" ? "Demo Teacher" : "Demo Student";
       loginRole.value = role;
-      loginClass.value = "10-A";
+      loginClass.value = role === "teacher" ? "Robotics Lab" : "10-A";
       loginSchool.value = "STEM Academy";
+      loginSchoolUser.value = "stem-academy";
+      loginSchoolPass.value = "School@123";
+      syncRoleFields();
     }
 
     function enterPlatform(){
-
-      // 🔹 Get values from inputs
-      const name = loginName.value.trim();
-      const role = loginRole.value;
-      const className = loginClass.value.trim();
-      const school = loginSchool.value.trim();
-
-
-      // 🔹 Reset borders (important UX)
-      loginName.classList.remove("error");
-      loginClass.classList.remove("error");
-      loginSchool.classList.remove("error");
-
-      let hasError = false;
-
-      // 🚫 VALIDATION
-     if(name.length < 3){
-       loginName.classList.add("error");
-       hasError = true;
-     }
-
-     if(!className){
-       loginClass.classList.add("error");
-       hasError = true;
-      }
-
-     if(!school){
-       loginSchool.classList.add("error");
-       hasError = true;
-      }
-
-     if(hasError){
-       showToast("⚠️ Please fill all fields correctly");
-       return;
-     }
-
-      // ✅ SAVE DATA (only if valid)
-      state.user.name = name;
-      state.user.role = role;
-      state.user.className = className;
-      state.user.school = school;
-      state.projectOwnerName = name;
-      // 🏫 Create school if not exists
-      if(!state.schools[school]){
-        state.schools[school] = { students: [] };
-      }
-
-      // 👤 Find student
-      let student = state.schools[school].students.find(
-        s => s.name === name
-      );
-
-      // ➕ If not exists → create
-      if(!student){
-      student = {
-        name: name,
-        class: className,
-        projects: []
-      };
-
-      state.schools[school].students.push(student);
-      }
-
-      // ✅ UI UPDATE
-      activeUserPill.textContent = `${name} • ${role.charAt(0).toUpperCase() + role.slice(1)}`;
-      loginScreen.classList.add("hidden");
-
-      setMode(role);
-      projectNameText.textContent = state.projectName;
-
-      showToast("Welcome, " + name);
-    }
-
-    const savedUser = localStorage.getItem("stem_user");
-
-    if(savedUser){
-      state.user = JSON.parse(savedUser);
-
-      loginScreen.classList.add("hidden");
-      setMode(state.user.role);
-
-      activeUserPill.textContent = `${state.user.name} • ${state.user.role}`;
+      loginUser();
     }
 
     function openProjectsPage(){
@@ -3753,8 +3977,7 @@ if(localStorage.getItem("hideLanding") === "true"){
     });
 
     document.getElementById("logoutBtn").addEventListener("click", () => {
-      localStorage.removeItem("stem_user");
-      location.reload();
+      logoutUser();
     });
 
     document.getElementById("addWaitBtn").addEventListener("click", () => addLogic("WAIT 1s"));
@@ -3769,6 +3992,7 @@ if(localStorage.getItem("hideLanding") === "true"){
 
     demoStudentBtn.addEventListener("click", () => fillDemo("student"));
     demoTeacherBtn.addEventListener("click", () => fillDemo("teacher"));
+    signUpBtn.addEventListener("click", signUpUser);
     enterBtn.addEventListener("click", enterPlatform);
 
     document.querySelectorAll("[data-example]").forEach(el => {
@@ -3800,6 +4024,16 @@ if(localStorage.getItem("hideLanding") === "true"){
     loginSchool.addEventListener("input", () => {
       loginSchool.classList.remove("error");
     });
+
+    loginSchoolUser.addEventListener("input", () => {
+      loginSchoolUser.classList.remove("error");
+    });
+
+    loginSchoolPass.addEventListener("input", () => {
+      loginSchoolPass.classList.remove("error");
+    });
+
+    loginRole.addEventListener("change", syncRoleFields);
      
   
     document.getElementById("langToggleBtn").addEventListener("click", () => {
@@ -3838,6 +4072,7 @@ if(localStorage.getItem("hideLanding") === "true"){
     renderLogic();
     renderItems();
     syncBatteryVoltageControls();
+    syncRoleFields();
     captureText();
     applyLanguage();
     updateTeacherStats();
