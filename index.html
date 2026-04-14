@@ -282,6 +282,22 @@
       margin-bottom:10px;
     }
 
+    #guidePage {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background: rgba(10, 15, 25, 0.95);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 9999;
+}
+
     .component-name{
       font-weight:800;
       font-size:14px;
@@ -933,15 +949,20 @@ input.error {
   <div class="toast" id="toast"></div>
 
   <!-- 📘 GUIDE PAGE -->
-   <div id="guidePage" class="hidden" style="
-  position:fixed;
-  inset:0;
-  z-index:300;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background: radial-gradient(circle at top, #1e293b, #020617);
-">
+   <div id="guidePage" class="hidden">
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  background: rgba(10, 15, 25, 0.95); /* darker overlay */
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 9999;
+}
 
   <div style="
     width:min(900px,90vw);
