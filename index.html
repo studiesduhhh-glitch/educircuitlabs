@@ -5,153 +5,6 @@
   <meta name="description" content="Educircuit Labs - Build, simulate and learn engineering projects easily">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<<<<<<< HEAD
-  <link rel="stylesheet" href="./styles/upgrade.css" />
-  <title>EDUCIRCUIT</title>
-  <link rel="stylesheet" href="./styles/app.css" />
-</head>
-<body class="no-select">
-  <!-- 🔥 LANDING PAGE -->
-  <div id="landingPage" class="saas-landing">
-    <div class="landing-orb landing-orb-one"></div>
-    <div class="landing-orb landing-orb-two"></div>
-
-    <nav class="landing-nav">
-      <div class="landing-brand">
-        <div class="logo-pulse">
-          <img src="logo.png" alt="Educircuit logo">
-          <span class="lightning-bolt">⚡</span>
-        </div>
-        <div>
-          <b>EDUCIRCUIT</b>
-          <small>Labs for future engineers</small>
-        </div>
-      </div>
-      <div class="landing-nav-actions">
-        <button type="button" class="secondary theme-toggle-btn" data-theme-toggle>Dark Mode</button>
-        <button type="button" class="secondary" data-ui-action="open-guide">How It Works</button>
-      </div>
-    </nav>
-
-    <main class="landing-hero reveal-on-scroll">
-      <section class="landing-copy">
-        <span class="landing-kicker">For curious students and busy STEM teachers</span>
-        <h1>Circuit labs students love, with grading tools teachers trust.</h1>
-        <p>
-          Educircuit turns electronics lessons into interactive build sessions: students simulate,
-          debug, and share circuits while teachers track progress, auto-grade work, and give feedback faster.
-        </p>
-
-        <div class="landing-actions">
-          <button type="button" data-ui-action="enter-landing" class="landing-primary">Launch Student Lab</button>
-          <button type="button" class="landing-secondary" data-scroll-target="#landingTeacherFlow">See Teacher Workflow</button>
-        </div>
-
-        <div class="landing-metrics" aria-label="Platform highlights">
-          <div><b>12k+</b><span>student builds simulated</span></div>
-          <div><b>80+</b><span>school lab pilots</span></div>
-          <div><b>94%</b><span>average project clarity score</span></div>
-        </div>
-      </section>
-
-      <section class="landing-product-card reveal-on-scroll">
-        <div class="product-card-top">
-          <span></span><span></span><span></span>
-        </div>
-        <div class="product-score">
-          <p id="landingLabStatus">Live AI Coach</p>
-          <strong id="landingLabScore">94%</strong>
-          <small id="landingLabHint">Safe loop, correct polarity, logic used</small>
-        </div>
-        <div class="product-circuit">
-          <div class="landing-lab-node active" data-node="battery">Battery</div>
-          <span></span>
-          <div class="landing-lab-node active" data-node="resistor">Resistor</div>
-          <span></span>
-          <div class="landing-lab-node active" data-node="led">LED</div>
-        </div>
-        <div class="product-debug">
-          <b>AI Debugger</b>
-          <p id="landingLabCoach">No short circuit found. LED has protection and voltage is in range.</p>
-        </div>
-        <div class="landing-lab-actions" aria-label="Try Educircuit scenarios">
-          <button type="button" data-landing-lab="safe" class="active">Safe Loop</button>
-          <button type="button" data-landing-lab="warning">Missing Resistor</button>
-          <button type="button" data-landing-lab="teacher">Teacher View</button>
-        </div>
-      </section>
-    </main>
-
-    <section class="landing-social-proof reveal-on-scroll" aria-label="Educircuit social proof">
-      <div class="proof-stat">
-        <b>4.8/5</b>
-        <span>teacher usability rating</span>
-      </div>
-      <blockquote>
-        “Students finally see why a circuit fails instead of guessing. The AI coach turns mistakes into teachable moments.”
-        <cite>STEM coordinator, pilot school</cite>
-      </blockquote>
-      <blockquote>
-        “Auto-grading gives me a fast first pass, then I can focus my feedback on the student’s design thinking.”
-        <cite>Electronics teacher</cite>
-      </blockquote>
-    </section>
-
-    <section class="landing-features reveal-on-scroll" id="landingTeacherFlow">
-      <article>
-        <b>Smart Simulation</b>
-        <span>Voltage propagation, output intensity, and safe wiring checks.</span>
-      </article>
-      <article>
-        <b>Teacher Dashboard</b>
-        <span>Submissions, auto-grades, generated feedback, and class analytics.</span>
-      </article>
-      <article>
-        <b>Project Gallery</b>
-        <span>Publish, like, clone, and learn from school-ready public projects.</span>
-      </article>
-    </section>
-
-    <div class="landing-footer-row">
-      <a href="Ethical Considerations of Artificial Intelligence in Modern Society.pdf" target="_blank" rel="noopener">Research Paper</a>
-      <label><input type="checkbox" id="dontShowLanding"> Don't show again</label>
-    </div>
-  </div>
-  <div class="login-screen" id="loginScreen">
-    <div class="login-card premium-login-card" data-step="1">
-      <div class="login-top">
-       <img src="logo.png" class="login-logo" />
-        <div>
-          <h2>Welcome to Educircuit</h2>
-          <p>Two quick steps to enter your circuit lab.</p>
-        </div>
-      </div>
-
-      <div class="login-progress" aria-label="Login progress">
-        <div class="login-progress-line"><span id="loginProgressFill"></span></div>
-        <div class="login-progress-steps">
-          <span id="loginStepOne" class="active">1. Account</span>
-          <span id="loginStepTwo">2. School</span>
-        </div>
-      </div>
-
-      <div class="login-step active" data-login-step="1">
-        <div class="field-row">
-          <div class="field">
-            <label for="loginName">Full name</label>
-            <input id="loginName" type="text" placeholder="Asha Raman">
-          </div>
-          <div class="field">
-            <label for="loginEmail">Email</label>
-            <input id="loginEmail" type="email" placeholder="you@school.edu">
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="loginRole">Role</label>
-          <select id="loginRole">
-            <option value="admin">School Admin</option>
-=======
   <title>EDUCIRCUIT</title>
   <style>
     :root{
@@ -174,7 +27,7 @@
     html,body{
       margin:0;
       height:100%;
-      font-family:Inter,Arial,Helvetica,sans-serif;
+      font-family:"Avenir Next","SF Pro Display","Segoe UI",Arial,Helvetica,sans-serif;
       background:var(--bg);
       color:var(--text);
       overflow:hidden;
@@ -183,9 +36,40 @@
 
     body{
       background:
-        radial-gradient(circle at top left, rgba(59,130,246,.08), transparent 25%),
-        radial-gradient(circle at top right, rgba(34,197,94,.06), transparent 20%),
-        linear-gradient(180deg,#f9fbff,#f3f6fb);
+        radial-gradient(circle at 12% 8%, rgba(15,98,254,.18), transparent 20%),
+        radial-gradient(circle at 88% 14%, rgba(14,165,233,.14), transparent 18%),
+        radial-gradient(circle at 50% 100%, rgba(99,102,241,.10), transparent 26%),
+        linear-gradient(180deg,#f7faff,#edf2f9 44%,#e7edf6);
+      position:relative;
+    }
+
+    body::before,
+    body::after{
+      content:"";
+      position:fixed;
+      inset:auto;
+      pointer-events:none;
+      z-index:0;
+      filter:blur(24px);
+      opacity:.7;
+    }
+
+    body::before{
+      width:280px;
+      height:280px;
+      top:72px;
+      left:34px;
+      background:radial-gradient(circle, rgba(15,98,254,.18), rgba(15,98,254,0));
+      animation:floatGlow 10s ease-in-out infinite;
+    }
+
+    body::after{
+      width:340px;
+      height:340px;
+      right:40px;
+      bottom:32px;
+      background:radial-gradient(circle, rgba(14,165,233,.16), rgba(14,165,233,0));
+      animation:floatGlow 14s ease-in-out infinite reverse;
     }
 
     .hidden{display:none !important}
@@ -195,10 +79,26 @@
       width:100vw;
       display:flex;
       flex-direction:column;
+      position:relative;
+      z-index:1;
     }
 
     .no-select {
       user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .component-card,
+    .example-item,
+    .canvas-item,
+    .item-head,
+    .item-body,
+    .logic-chip,
+    .pill,
+    .topbar,
+    .panel-header{
+      user-select:none;
+      -webkit-user-select:none;
     }
 
     .project-item{
@@ -231,16 +131,222 @@
       gap:6px;
     }
 
+    .ai-teacher-page{
+      position:fixed;
+      inset:0;
+      z-index:10000;
+      display:flex;
+      flex-direction:column;
+      background:
+        radial-gradient(circle at top left, rgba(15,98,254,.18), transparent 24%),
+        radial-gradient(circle at top right, rgba(14,165,233,.16), transparent 22%),
+        linear-gradient(180deg,#f8fbff,#eef4fb);
+    }
+
+    .ai-topbar{
+      height:76px;
+      padding:14px 18px;
+      border-bottom:1px solid var(--line);
+      background:rgba(247,250,255,.78);
+      backdrop-filter:blur(18px);
+      box-shadow:0 14px 30px rgba(15,23,42,.08);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    .ai-topbar-title{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+
+    .ai-topbar-title h2{
+      margin:0;
+      font-size:24px;
+      letter-spacing:-.4px;
+    }
+
+    .ai-topbar-title p{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .ai-shell{
+      flex:1;
+      min-height:0;
+      display:grid;
+      grid-template-columns:300px 1fr;
+      gap:16px;
+      padding:16px;
+    }
+
+    .ai-sidebar,
+    .ai-chat-panel{
+      background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(242,247,255,.74));
+      border:1px solid var(--line);
+      border-radius:28px;
+      box-shadow:var(--shadow-strong);
+      min-height:0;
+      overflow:hidden;
+    }
+
+    .ai-sidebar{
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .ai-sidebar h3{
+      margin:0 0 8px;
+      font-size:16px;
+    }
+
+    .ai-card{
+      border:1px solid rgba(75,95,130,.12);
+      border-radius:20px;
+      background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(243,248,255,.82));
+      padding:14px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.9), 0 10px 22px rgba(15,23,42,.04);
+    }
+
+    .ai-card p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .ai-chip-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .ai-chip{
+      border:1px solid rgba(15,98,254,.16);
+      background:linear-gradient(180deg,#f5f9ff,#eaf2ff);
+      color:#1d4ed8;
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .ai-chat-panel{
+      display:flex;
+      flex-direction:column;
+    }
+
+    .ai-chat-head{
+      padding:18px 20px 12px;
+      border-bottom:1px solid #eef2f8;
+      background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(241,246,255,.92));
+    }
+
+    .ai-chat-head h3{
+      margin:0;
+      font-size:18px;
+    }
+
+    .ai-chat-head p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .ai-messages{
+      flex:1;
+      min-height:0;
+      overflow:auto;
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      background:
+        linear-gradient(180deg,rgba(249,251,255,.74),rgba(238,244,252,.96)),
+        radial-gradient(circle at top, rgba(15,98,254,.06), transparent 34%);
+    }
+
+    .ai-message{
+      max-width:min(760px,82%);
+      padding:14px 16px;
+      border-radius:20px;
+      line-height:1.55;
+      font-size:14px;
+      white-space:pre-wrap;
+      animation:messageRise .22s ease;
+    }
+
+    .ai-message.teacher{
+      align-self:flex-start;
+      background:linear-gradient(180deg,#ffffff,#f3f8ff);
+      border:1px solid rgba(75,95,130,.12);
+      box-shadow:0 14px 28px rgba(15,23,42,.06);
+    }
+
+    .ai-message.student{
+      align-self:flex-end;
+      background:linear-gradient(135deg,#0f62fe,#3b82f6);
+      color:#fff;
+      box-shadow:0 18px 34px rgba(15,98,254,.22);
+    }
+
+    .ai-inputbar{
+      padding:16px 18px 18px;
+      border-top:1px solid #eef2f8;
+      background:rgba(250,252,255,.92);
+      display:flex;
+      gap:12px;
+      align-items:flex-end;
+    }
+
+    .ai-inputbar textarea{
+      min-height:56px;
+      max-height:160px;
+      resize:vertical;
+      border-radius:18px;
+    }
+
+    .ai-quick-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    @keyframes messageRise{
+      from{opacity:0; transform:translateY(10px)}
+      to{opacity:1; transform:translateY(0)}
+    }
+
     .topbar{
       height:72px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       padding:14px 18px;
-      background:rgba(255,255,255,.8);
-      backdrop-filter: blur(10px);
+      background:rgba(248,251,255,.72);
+      backdrop-filter: blur(18px);
       border-bottom:1px solid var(--line);
       z-index:20;
+      box-shadow:0 14px 34px rgba(15,23,42,.08);
+      overflow:hidden;
+    }
+
+    .topbar::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+      transform:translateX(-100%);
+      animation:topbarSweep 9s linear infinite;
+      pointer-events:none;
     }
 
     .brand{
@@ -258,8 +364,9 @@
 
     .brand-text h1{
       margin:0;
-      font-size:24px;
-      letter-spacing:-.4px;
+      font-size:28px;
+      letter-spacing:-.8px;
+      font-weight:900;
     }
 
     .brand-text p{
@@ -270,6 +377,7 @@
       margin:3px 0 0;
       color:var(--muted);
       font-size:13px;
+      letter-spacing:.02em;
     }
 
     .top-actions{
@@ -281,8 +389,8 @@
 
     button, .btn{
       border:none;
-      border-radius:12px;
-      background:var(--blue);
+      border-radius:14px;
+      background:linear-gradient(135deg,#0f62fe,#3b82f6);
       color:#fff;
       padding:10px 14px;
       cursor:pointer;
@@ -293,20 +401,23 @@
       align-items:center;       /* 🔥 ADD */
       justify-content:center;   /* 🔥 ADD */
 
-      transition:transform .18s ease, box-shadow .18s ease, background .18s ease, opacity .18s ease;
-      box-shadow:0 8px 18px rgba(37,99,235,.16);
+      transition:transform .18s ease, box-shadow .18s ease, background .18s ease, opacity .18s ease, border-color .18s ease;
+      box-shadow:0 14px 28px rgba(15,98,254,.18);
+      position:relative;
+      overflow:hidden;
     }
 
     button:hover, .btn:hover{
       transform:translateY(-1px);
-      background:var(--blue2);
+      background:linear-gradient(135deg,#2563eb,#60a5fa);
+      box-shadow:0 18px 32px rgba(15,98,254,.22);
     }
 
     button.secondary{
-      background:#fff;
+      background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(238,245,255,.84));
       color:var(--text);
       border:1px solid var(--line);
-      box-shadow:none;
+      box-shadow:0 10px 22px rgba(15,23,42,.05);
     }
 
     button.green{
@@ -328,33 +439,44 @@
       flex:1;
       display:grid;
       grid-template-columns: 300px 1fr 320px;
-      gap:14px;
-      padding:14px;
+      gap:18px;
+      padding:18px;
       min-height:0;
     }
 
     .panel{
-      background:var(--panel);
+      background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(243,248,255,.76));
       border:1px solid var(--line);
       border-radius:var(--radius);
-      box-shadow:var(--shadow);
+      box-shadow:var(--shadow-strong);
       min-height:0;
       overflow:hidden;
+      backdrop-filter:blur(18px);
+      position:relative;
+    }
+
+    .panel::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg,rgba(255,255,255,.22),transparent 24%,transparent 76%,rgba(255,255,255,.10));
+      pointer-events:none;
     }
 
     .panel-header{
       padding:16px 16px 10px;
-      border-bottom:1px solid #eef2f8;
+      border-bottom:1px solid rgba(75,95,130,.10);
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
+      background:linear-gradient(180deg,rgba(255,255,255,.84),rgba(240,246,255,.38));
     }
 
     .panel-header h2{
       margin:0;
-      font-size:20px;
-      letter-spacing:-.3px;
+      font-size:22px;
+      letter-spacing:-.5px;
     }
 
     .panel-header small{
@@ -365,7 +487,7 @@
     }
 
     .panel-body{
-      padding:14px;
+      padding:16px;
       overflow:auto;
       height:calc(100% - 68px);
     }
@@ -386,21 +508,22 @@
     }
 
     .component-card{
-      background:linear-gradient(180deg,#f8fbff,#eef4ff);
-      border:1px solid #d8e6ff;
-      border-radius:16px;
-      padding:12px;
+      background:linear-gradient(180deg,#ffffff,#f2f7ff);
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:20px;
+      padding:14px;
       cursor:pointer;
       transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
       position:relative;
       overflow:hidden;
-      min-height:92px;
+      min-height:98px;
+      box-shadow:0 12px 24px rgba(15,23,42,.05);
     }
 
     .component-card:hover{
-      transform:translateY(-2px);
-      box-shadow:0 12px 24px rgba(37,99,235,.12);
-      border-color:#bcd4ff;
+      transform:translateY(-3px);
+      box-shadow:0 18px 30px rgba(15,23,42,.10);
+      border-color:rgba(15,98,254,.18);
     }
 
     .component-card::after{
@@ -408,23 +531,24 @@
       position:absolute;
       right:-18px;
       top:-18px;
-      width:56px;
-      height:56px;
+      width:72px;
+      height:72px;
       border-radius:50%;
-      background:rgba(59,130,246,.08);
+      background:radial-gradient(circle, rgba(15,98,254,.12), rgba(15,98,254,0));
     }
 
     .component-icon{
-      width:36px;
-      height:36px;
-      border-radius:12px;
+      width:42px;
+      height:42px;
+      border-radius:14px;
       display:grid;
       place-items:center;
-      background:#fff;
-      border:1px solid #dce8ff;
+      background:linear-gradient(180deg,#ffffff,#edf5ff);
+      border:1px solid rgba(15,98,254,.12);
       color:var(--blue);
-      font-size:18px;
+      font-size:20px;
       margin-bottom:10px;
+      box-shadow:0 10px 20px rgba(15,98,254,.10);
     }
 
     .component-name{
@@ -444,18 +568,19 @@
     }
 
     .example-item{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px;
-      background:#fbfdff;
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:18px;
+      padding:14px;
+      background:linear-gradient(180deg,#ffffff,#f3f8ff);
       cursor:pointer;
       transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+      box-shadow:0 10px 22px rgba(15,23,42,.04);
     }
 
     .example-item:hover{
-      transform:translateY(-1px);
-      box-shadow:0 10px 18px rgba(24,34,48,.05);
-      border-color:#cdd9ea;
+      transform:translateY(-2px);
+      box-shadow:0 16px 26px rgba(15,23,42,.08);
+      border-color:rgba(15,98,254,.18);
     }
 
     .example-item b{
@@ -473,13 +598,13 @@
 
     .canvas-toolbar{
       padding:12px 14px;
-      border-bottom:1px solid #eef2f8;
+      border-bottom:1px solid rgba(75,95,130,.10);
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
       flex-wrap:wrap;
-      background:#fff;
+      background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(241,246,255,.60));
       z-index:3;
     }
 
@@ -491,12 +616,13 @@
     }
 
     .zoom-display{
-      padding:8px 12px;
+      padding:8px 14px;
       border:1px solid var(--line);
-      border-radius:12px;
-      background:#fff;
+      border-radius:14px;
+      background:rgba(255,255,255,.82);
       font-weight:700;
       color:var(--muted);
+      box-shadow:0 8px 18px rgba(15,23,42,.05);
     }
 
     .workspace-area{
@@ -505,10 +631,12 @@
       min-height:0;
       overflow:hidden;
       background:
-        linear-gradient(to right, rgba(37,99,235,.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(37,99,235,.05) 1px, transparent 1px),
-        linear-gradient(180deg,#fcfdff,#f4f7fb);
+        linear-gradient(to right, rgba(148,163,184,.10) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148,163,184,.10) 1px, transparent 1px),
+        radial-gradient(circle at top, rgba(255,255,255,.74), rgba(237,244,253,.30)),
+        linear-gradient(180deg,#fdfefe,#eef4fb);
       background-size: 24px 24px, 24px 24px, auto;
+      animation:workspaceShift 14s ease-in-out infinite;
     }
 
     .canvas-world{
@@ -535,12 +663,12 @@
       right:16px;
       bottom:16px;
       min-height:148px;
-      border:1px solid var(--line);
-      border-radius:22px;
-      background:rgba(255,255,255,.9);
+      border:1px solid rgba(75,95,130,.12);
+      border-radius:26px;
+      background:rgba(250,252,255,.78);
       backdrop-filter: blur(8px);
-      box-shadow:0 16px 32px rgba(24,34,48,.08);
-      padding:14px;
+      box-shadow:0 22px 36px rgba(15,23,42,.10);
+      padding:16px;
       z-index:4;
     }
 
@@ -558,10 +686,10 @@
     }
 
     .logic-chip{
-      background:linear-gradient(180deg,#eff6ff,#dbeafe);
-      color:#1e3a8a;
-      border:1px solid #bfdbfe;
-      border-radius:14px;
+      background:linear-gradient(180deg,#f5f9ff,#e9f1ff);
+      color:#1d4ed8;
+      border:1px solid rgba(15,98,254,.12);
+      border-radius:16px;
       padding:10px 12px;
       font-weight:800;
       font-size:13px;
@@ -590,10 +718,10 @@
       position:absolute;
       width:120px;
       min-height:78px;
-      border-radius:20px;
-      background:#fff;
-      border:1px solid #dbe3f0;
-      box-shadow:0 16px 28px rgba(24,34,48,.08);
+      border-radius:24px;
+      background:linear-gradient(180deg,#ffffff,#f3f8ff);
+      border:1px solid rgba(75,95,130,.12);
+      box-shadow:0 18px 34px rgba(15,23,42,.10);
       cursor:grab;
       transition:box-shadow .18s ease, transform .18s ease;
       overflow:hidden;
@@ -607,7 +735,7 @@
 
     .canvas-item.dragging{
       cursor:grabbing;
-      box-shadow:0 26px 40px rgba(24,34,48,.18);
+      box-shadow:0 30px 48px rgba(15,23,42,.18);
       z-index:10;
     }
 
@@ -617,8 +745,8 @@
       align-items:center;
       justify-content:space-between;
       gap:8px;
-      border-bottom:1px solid #eef2f8;
-      background:linear-gradient(180deg,#fff,#fbfdff);
+      border-bottom:1px solid rgba(75,95,130,.10);
+      background:linear-gradient(180deg,#ffffff,#f2f7ff);
     }
 
     .item-head b{
@@ -630,6 +758,14 @@
       padding:10px 12px 14px;
       font-size:12px;
       color:var(--muted);
+    }
+
+    .terminal-hint{
+      display:block;
+      margin-top:6px;
+      font-size:11px;
+      font-weight:700;
+      color:#64748b;
     }
 
     .port{
@@ -652,6 +788,45 @@
     .port.right{right:-8px; top:50%; transform:translateY(-50%)}
     .port.top{top:-8px; left:50%; transform:translateX(-50%)}
     .port.bottom{bottom:-8px; left:50%; transform:translateX(-50%)}
+    .port.negative{
+      left:-8px;
+      top:50%;
+      transform:translateY(-50%);
+      background:#0f172a;
+      box-shadow:0 6px 10px rgba(15,23,42,.24);
+    }
+    .port.positive{
+      right:-8px;
+      top:50%;
+      transform:translateY(-50%);
+      background:#ef4444;
+      box-shadow:0 6px 10px rgba(239,68,68,.24);
+    }
+
+    .port-label{
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      font-size:12px;
+      font-weight:900;
+      color:#0f172a;
+      pointer-events:none;
+    }
+
+    .port-label.negative{left:10px;}
+    .port-label.positive{right:10px; color:#b91c1c;}
+
+    .canvas-item.bursting{
+      border-color:#fb7185;
+      box-shadow:0 0 0 4px rgba(251,113,133,.18), 0 24px 42px rgba(239,68,68,.18);
+      animation:burstShake .28s ease infinite alternate;
+    }
+
+    .burst-indicator{
+      font-size:20px;
+      filter:drop-shadow(0 8px 16px rgba(239,68,68,.35));
+      animation:burstPop .45s ease infinite alternate;
+    }
 
     .led-indicator{
       width:18px;
@@ -712,12 +887,92 @@
       to{transform:scale(1.8);opacity:0}
     }
 
+    @keyframes burstPop{
+      from{transform:scale(.95) rotate(-6deg)}
+      to{transform:scale(1.1) rotate(6deg)}
+    }
+
+    @keyframes burstShake{
+      from{transform:translateX(-2px)}
+      to{transform:translateX(2px)}
+    }
+
     .dashboard-card{
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:14px;
-      background:#fbfdff;
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:20px;
+      padding:16px;
+      background:linear-gradient(180deg,#ffffff,#f3f8ff);
       margin-bottom:12px;
+      box-shadow:0 12px 24px rgba(15,23,42,.05);
+    }
+
+    #landingPage{
+      background:
+        radial-gradient(circle at 18% 18%, rgba(96,165,250,.24), transparent 20%),
+        radial-gradient(circle at 82% 12%, rgba(14,165,233,.22), transparent 18%),
+        linear-gradient(145deg,#07111f,#10284a 48%,#123468) !important;
+    }
+
+    #landingPage::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size:28px 28px;
+      opacity:.35;
+      pointer-events:none;
+    }
+
+    .login-screen{
+      background:
+        radial-gradient(circle at 18% 15%, rgba(15,98,254,.22), transparent 20%),
+        radial-gradient(circle at 82% 20%, rgba(14,165,233,.16), transparent 18%),
+        linear-gradient(180deg,#eef4fb,#dfe8f5);
+    }
+
+    .login-card{
+      background:linear-gradient(180deg,rgba(255,255,255,.80),rgba(240,246,255,.72));
+      border:1px solid rgba(75,95,130,.14);
+      box-shadow:0 34px 90px rgba(15,23,42,.16);
+    }
+
+    .guide-shell{
+      background:linear-gradient(180deg, rgba(8,15,30,0.96), rgba(10,20,40,0.96));
+      border:1px solid rgba(96,165,250,0.14);
+      box-shadow:0 34px 90px rgba(2,6,23,0.55);
+    }
+
+    .guide-step{
+      background:linear-gradient(180deg, rgba(11,20,38,0.94), rgba(16,31,57,0.88));
+      border:1px solid rgba(96,165,250,0.10);
+    }
+
+    .guide-step .step-number{
+      background:linear-gradient(135deg,#0f62fe,#38bdf8);
+      box-shadow:0 12px 24px rgba(15,98,254,.28);
+    }
+
+    .ai-shell,
+    .layout{
+      position:relative;
+      z-index:1;
+    }
+
+    @keyframes workspaceShift{
+      0%,100%{background-position:0 0, 0 0, center top, center;}
+      50%{background-position:10px 6px, -8px 10px, center top, center;}
+    }
+
+    @keyframes floatGlow{
+      0%,100%{transform:translate3d(0,0,0) scale(1);}
+      50%{transform:translate3d(12px,-10px,0) scale(1.08);}
+    }
+
+    @keyframes topbarSweep{
+      0%{transform:translateX(-100%);}
+      100%{transform:translateX(100%);}
     }
 
     .stat{
@@ -756,9 +1011,9 @@
       align-items:center;
       justify-content:center;
       background:
-        radial-gradient(circle at 20% 15%, rgba(37,99,235,.18), transparent 20%),
-        radial-gradient(circle at 80% 20%, rgba(34,197,94,.12), transparent 18%),
-        linear-gradient(180deg,#f8fbff,#eff4fb);
+        radial-gradient(circle at 20% 15%, rgba(201,107,44,.22), transparent 20%),
+        radial-gradient(circle at 80% 20%, rgba(23,128,93,.12), transparent 18%),
+        linear-gradient(180deg,#fff9f2,#f4ebe1);
     }
 
     .login-logo{
@@ -770,12 +1025,12 @@
 
     .login-card{
       width:min(520px,92vw);
-      background:rgba(255,255,255,.92);
-      backdrop-filter: blur(10px);
-      border:1px solid #e5edf8;
-      border-radius:28px;
-      box-shadow:0 30px 80px rgba(37,99,235,.12);
-      padding:26px;
+      background:rgba(255,253,249,.88);
+      backdrop-filter: blur(18px);
+      border:1px solid rgba(181,149,121,.18);
+      border-radius:32px;
+      box-shadow:0 34px 90px rgba(61,40,22,.16);
+      padding:30px;
       animation:rise .28s ease;
     }
 
@@ -970,6 +1225,164 @@ input.error {
     box-shadow: 0 0 0 2px rgba(255,0,0,0.1);
   }
 
+  .guide-shell{
+    width:min(980px, 92vw);
+    max-height:min(90vh, 860px);
+    overflow:auto;
+    background:linear-gradient(180deg, rgba(15,23,42,0.96), rgba(2,6,23,0.98));
+    backdrop-filter: blur(20px);
+    border:1px solid rgba(255,255,255,0.12);
+    border-radius:28px;
+    padding:30px;
+    color:white;
+    box-shadow:0 30px 80px rgba(2,6,23,0.45);
+  }
+
+  .guide-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    margin-bottom:22px;
+  }
+
+  .guide-title{
+    display:flex;
+    align-items:center;
+    gap:16px;
+  }
+
+  .guide-title img{
+    width:60px;
+  }
+
+  .guide-title h1{
+    margin:0;
+    font-size:32px;
+  }
+
+  .guide-title p{
+    margin:4px 0 0;
+    color:rgba(255,255,255,0.7);
+  }
+
+  .guide-intro{
+    padding:16px 18px;
+    border-radius:18px;
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.08);
+    color:rgba(255,255,255,0.84);
+    line-height:1.6;
+    margin-bottom:20px;
+  }
+
+  .guide-media{
+    margin-bottom:22px;
+    border-radius:22px;
+    overflow:hidden;
+    background:#000;
+    border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 18px 40px rgba(0,0,0,0.28);
+  }
+
+  .guide-media video{
+    width:100%;
+    max-height:320px;
+    display:block;
+    object-fit:cover;
+  }
+
+  .guide-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));
+    gap:16px;
+  }
+
+  .guide-step{
+    background:linear-gradient(180deg, rgba(15,23,42,0.92), rgba(17,24,39,0.85));
+    padding:18px;
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,0.08);
+  }
+
+  .guide-step .step-number{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:34px;
+    height:34px;
+    border-radius:999px;
+    background:#f97316;
+    color:white;
+    font-weight:800;
+    margin-bottom:12px;
+  }
+
+  .guide-step h3{
+    margin:0 0 8px;
+    font-size:18px;
+  }
+
+  .guide-step p{
+    margin:0;
+    color:rgba(255,255,255,0.72);
+    line-height:1.55;
+  }
+
+  .guide-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-top:24px;
+    flex-wrap:wrap;
+  }
+
+    .guide-footer-note{
+      color:rgba(255,255,255,0.66);
+      font-size:14px;
+    }
+
+    .voltage-input{
+      width:100%;
+      accent-color:#f97316;
+      margin-top:8px;
+    }
+
+    .voltage-chip{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:72px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#fff7ed;
+      color:#c2410c;
+      border:1px solid #fdba74;
+      font-weight:800;
+    }
+
+    .voltage-guide{
+      display:grid;
+      gap:8px;
+    }
+
+    .voltage-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+      background:#fff;
+    }
+
+    .voltage-row span{
+      color:var(--muted);
+      font-size:13px;
+    }
+
   </style>
 </head>
 <body class="no-select">
@@ -987,16 +1400,6 @@ input.error {
    text-align:center;
    padding:20px;
    ">
-
-   <video autoplay muted loop playsinline style="
-  width:100%;
-  max-width:600px;
-  margin-top:20px;
-  border-radius:20px;
-  box-shadow:0 20px 40px rgba(0,0,0,0.3);
-">
-  <source src="video.mp4" type="video/mp4">
-</video>
    
    <img src="logo.png" style="width:90px; margin-bottom:20px;">
    
@@ -1138,14 +1541,24 @@ input.error {
         </div>
       </div>
 
+      <div class="field-row">
+        <div class="field">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" type="email" placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" placeholder="Enter password">
+        </div>
+      </div>
+
       <div class="small-note">
-        This is a demo startup login screen. It opens the platform locally in one single HTML file.
+        Sign up once to create your account, then log in with the same email and password.
       </div>
 
       <div class="login-actions">
         <button class="secondary" id="demoStudentBtn">Demo Student</button>
         <button class="secondary" id="demoTeacherBtn">Demo Teacher</button>
->>>>>>> 47c7014 (first commit)
         <button id="enterBtn">Enter Platform</button>
       </div>
     </div>
@@ -1228,89 +1641,62 @@ input.error {
   background: radial-gradient(circle at top, #1e293b, #020617);
 ">
 
-  <div style="
-    width:min(900px,90vw);
-    background:rgba(255,255,255,0.05);
-    backdrop-filter: blur(20px);
-    border:1px solid rgba(255,255,255,0.1);
-    border-radius:25px;
-    padding:30px;
-    color:white;
-  ">
+  <div class="guide-shell">
+    <div class="guide-header">
+      <div class="guide-title">
+        <img src="logo.png" alt="Educircuit logo">
+        <div>
+          <h1>Educircuit Guide</h1>
+          <p>Everything a first-time user needs, in one quick walkthrough.</p>
+        </div>
+      </div>
+      <a class="btn secondary" href="Ethical Considerations of Artificial Intelligence in Modern Society.pdf" target="_blank" rel="noopener">Research Paper</a>
+    </div>
 
-    <!-- 🔥 HEADER -->
-    <div style="display:flex; align-items:center; gap:15px; margin-bottom:25px;">
-      <img src="logo.png" style="width:60px;">
-      <div>
-        <h1 style="margin:0;">Educircuit Guide 🚀</h1>
-        <p style="opacity:0.7; margin:0;">Learn in 30 seconds</p>
+    <div class="guide-intro">
+      Start by choosing parts from the left panel, place them on the workspace, connect them with wires, and use simple logic blocks to simulate a working circuit.
+    </div>
+
+    <div class="guide-media">
+      <video controls playsinline>
+        <source src="video.mp4" type="video/mp4">
+      </video>
+    </div>
+
+    <div class="guide-grid">
+      <div class="guide-step">
+        <div class="step-number">1</div>
+        <h3>Add Components</h3>
+        <p>Click parts like Battery, LED, Switch, Motor, or Sensor to drop them into the circuit workspace.</p>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-number">2</div>
+        <h3>Connect Ports</h3>
+        <p>Use the ports on each component to create wires. You can also use Auto Wire for a quick starting layout.</p>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-number">3</div>
+        <h3>Build Logic</h3>
+        <p>Add simple blocks like ON, OFF, and WAIT 1s to control how your outputs behave during simulation.</p>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-number">4</div>
+        <h3>Run the Circuit</h3>
+        <p>Click Run Logic to test your circuit, then watch the LED, motor, and buzzer states update in the dashboard.</p>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-number">5</div>
+        <h3>Save and Submit</h3>
+        <p>Save your project to revisit it later, rename it when needed, and submit it for review from the student dashboard.</p>
       </div>
     </div>
 
-    <!-- 🎥 VIDEO SECTION -->
-<div style="
-  margin-bottom:25px;
-  border-radius:20px;
-  overflow:hidden;
-  background:#000;
-  border:1px solid rgba(255,255,255,0.1);
-">
-
-  <!-- TEMP PLACEHOLDER -->
-  <video controls style="
-  width:100%;
-  border-radius:20px;
-">
-  <source src="video.mp4" type="video/mp4">
-</video>
-  ">
-   
-  </div>
-
-  <!-- 👉 LATER replace above with:
-  <video controls width="100%">
-    <source src="your-video.mp4" type="video/mp4">
-  </video>
-  -->
-
-</div>
-
-    <!-- 🔥 STEPS GRID -->
-    <div style="
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-      gap:15px;
-    ">
-
-      <div style="background:#111827;padding:15px;border-radius:15px;">
-        <h3>⚡ Add</h3>
-        <p>Click components like Battery, LED, Motor</p>
-      </div>
-
-      <div style="background:#111827;padding:15px;border-radius:15px;">
-        <h3>🔗 Connect</h3>
-        <p>Click ports to wire components</p>
-      </div>
-
-      <div style="background:#111827;padding:15px;border-radius:15px;">
-        <h3>🧠 Logic</h3>
-        <p>Use ON / OFF / WAIT blocks</p>
-      </div>
-
-      <div style="background:#111827;padding:15px;border-radius:15px;">
-        <h3>🚀 Run</h3>
-        <p>Click "Run Logic"</p>
-      </div>
-
-      <div style="background:#111827;padding:15px;border-radius:15px;">
-        <h3>💾 Save</h3>
-        <p>Store your project</p>
-      </div>
-
-    </div>
-
-    <!-- 🔥 BUTTON -->
-    <div style="margin-top:25px; text-align:right;">
+    <div class="guide-footer">
+      <div class="guide-footer-note">Tip: the Research Paper button opens your AI ethics paper in a new tab.</div>
       <button onclick="closeGuide()" style="
         padding:12px 20px;
         border:none;
@@ -1324,7 +1710,6 @@ input.error {
       </button>
     </div>
 
->>>>>>> 47c7014 (first commit)
   </div>
 </div>
 
@@ -1445,6 +1830,86 @@ input.error {
 
   </div>
 
+  <div id="studentProjectsPage" class="hidden" style="
+    display:flex;
+    flex-direction:column;
+    position:fixed;
+    inset:0;
+    background:#f5f7fb;
+    z-index:9999;
+    padding:20px;
+    overflow:auto;
+  ">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h1>Student Projects</h1>
+      <button onclick="closeStudentProjectsPage()">⬅ Back</button>
+    </div>
+
+    <div id="studentProjectsPageList" style="
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+      gap:14px;
+    "></div>
+
+  </div>
+
+  <div id="aiTeacherPage" class="ai-teacher-page hidden">
+    <div class="ai-topbar">
+      <div class="ai-topbar-title">
+        <img src="logo.png" class="brand-logo" alt="Educircuit logo">
+        <div>
+          <h2>AI Teacher</h2>
+          <p>Ask circuit questions, debug ideas, and get step-by-step explanations.</p>
+        </div>
+      </div>
+      <button class="secondary" onclick="closeAiTeacherPage()">⬅ Back to Simulator</button>
+    </div>
+
+    <div class="ai-shell">
+      <div class="ai-sidebar">
+        <div class="ai-card">
+          <h3>Classroom Help</h3>
+          <p>The AI Teacher explains concepts in a student-friendly way and can also answer questions about the circuit you are building right now.</p>
+          <div class="ai-chip-list">
+            <button class="ai-chip" onclick="askAiTeacherPrompt('Explain my current circuit in simple words')">Explain my circuit</button>
+            <button class="ai-chip" onclick="askAiTeacherPrompt('Why is my circuit not turning on?')">Why not on?</button>
+            <button class="ai-chip" onclick="askAiTeacherPrompt('Teach me voltage and current')">Teach voltage</button>
+          </div>
+        </div>
+
+        <div class="ai-card">
+          <h3>Current Workspace</h3>
+          <p id="aiTeacherContext">No circuit loaded yet.</p>
+        </div>
+
+        <div class="ai-card">
+          <h3>Try Asking</h3>
+          <p>Examples: "Why does my LED need 2V?", "What does a resistor do?", "How do I make a motor circuit?", "What happens in a short circuit?"</p>
+        </div>
+      </div>
+
+      <div class="ai-chat-panel">
+        <div class="ai-chat-head">
+          <h3>Educircuit AI Teacher</h3>
+          <p>Interactive support for students, like a teacher sitting next to you.</p>
+          <div class="ai-quick-row">
+            <button class="secondary" onclick="askAiTeacherPrompt('Teach me how switches work in circuits')">Switches</button>
+            <button class="secondary" onclick="askAiTeacherPrompt('Explain short circuit in easy words')">Short Circuit</button>
+            <button class="secondary" onclick="askAiTeacherPrompt('How much voltage does my circuit need?')">Voltage Help</button>
+          </div>
+        </div>
+
+        <div class="ai-messages" id="aiTeacherMessages"></div>
+
+        <div class="ai-inputbar">
+          <textarea id="aiTeacherInput" placeholder="Ask your AI Teacher anything about circuits, components, voltage, logic, or your current project..."></textarea>
+          <button id="aiTeacherSendBtn">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 >>>>>>> 47c7014 (first commit)
   <div class="app-shell">
     <div class="topbar">
@@ -1466,6 +1931,7 @@ input.error {
         <button class="secondary" id="zoomOutBtn">Zoom −</button>
         <span class="zoom-display" id="zoomDisplay">100%</span>
         <button class="secondary" id="zoomInBtn">Zoom +</button>
+        <a class="btn secondary" href="Ethical Considerations of Artificial Intelligence in Modern Society.pdf" target="_blank" rel="noopener">Research Paper</a>
         <button class="green" id="saveBtn">Save</button>
         <button class="secondary" id="langToggleBtn">தமிழ்</button>
         <button class="red" id="logoutBtn">Logout</button>
@@ -1604,7 +2070,16 @@ input.error {
                 <b class="output-state">
 =======
               <h3 style="margin:0 0 10px;">Student Projects</h3>
-              <div id="teacherProjectList"></div>
+              <button onclick="openStudentProjectsPage()" class="secondary">
+                Open Full Page 🚀
+              </button>
+            </div>
+
+            <div class="dashboard-card">
+              <h3 style="margin:0 0 10px;">Battery Output</h3>
+              <div class="stat"><span>Current Voltage</span><b id="batteryVoltageValue">5.0V</b></div>
+              <input id="batteryVoltageRange" class="voltage-input" type="range" min="0" max="30" step="0.5" value="5">
+              <div class="small-note">Adjust the battery output voltage for every battery in the workspace.</div>
             </div>
 
             <div class="dashboard-card">
@@ -1642,17 +2117,6 @@ input.error {
             </div>
 
             <div class="dashboard-card">
-<<<<<<< HEAD
-              <h3 class="card-title">Circuit Coach</h3>
-              <div class="stat"><span>Status</span><b id="coachStatusText">Ready</b></div>
-              <div class="small-note" id="coachHintText">Build a loop from battery + through your components and return to battery -.</div>
-              <div class="small-note coach-fix-text" id="coachFixText">Correct connection: Battery + -> first component +, each component - -> next component +, then final component - -> Battery -.</div>
-            </div>
-
-            <div class="dashboard-card">
-              <h3 class="card-title">Know My Voltage</h3>
-              <div id="voltageGuideList" class="voltage-guide"></div>
-=======
               <h3 style="margin:0 0 10px;">Goal Leaderboard</h3>
               <div class="leaderboard" id="leaderboard">
                 <div class="leader-item"><span>Achyuta</span><b>96</b></div>
@@ -1661,7 +2125,6 @@ input.error {
                 <div class="leader-item"><span>Meera</span><b>89</b></div>
                 <div class="leader-item"><span>pranav</span><b>67</b></div>
               </div>
->>>>>>> 47c7014 (first commit)
             </div>
           </div>
 
@@ -1708,22 +2171,6 @@ input.error {
     </div>
   </div>
 
-<<<<<<< HEAD
-  <!-- 🔥 FIREBASE (ADD THIS HERE) -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
-  <script src="./src/state/app-state.js"></script>
-  <script src="./src/ui/components.js"></script>
-  <script src="./src/ui/performance.js"></script>
-  <script src="./src/simulation/legacy-simulation.js"></script>
-  <script src="./src/app/runtime.js"></script>
-  <script src="./src/app/landing-fallback.js"></script>
-  <script type="module" src="./src/main.js"></script>
-</body>
-</html>
-=======
   <script>
     const state = {
       schools: {},
