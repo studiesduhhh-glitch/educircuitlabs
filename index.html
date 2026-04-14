@@ -282,14 +282,12 @@
       margin-bottom:10px;
     }
 
-    #guidePage {
+   #guidePage {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
 
-  background: rgba(10, 15, 25, 0.95);
+  background: rgba(10, 15, 25, 0.6);
+  backdrop-filter: blur(10px);
 
   display: flex;
   align-items: center;
@@ -297,7 +295,6 @@
 
   z-index: 9999;
 }
-
     .component-name{
       font-weight:800;
       font-size:14px;
@@ -950,22 +947,10 @@ input.error {
 
   <!-- 📘 GUIDE PAGE -->
    <div id="guidePage" class="hidden">
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-
-  background: rgba(10, 15, 25, 0.95); /* darker overlay */
-  
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  z-index: 9999;
-}
-
+   
   <div style="
-    width:min(900px,90vw);
+    width:480px;
+    max-width:92%;
     background:rgba(255,255,255,0.05);
     backdrop-filter: blur(20px);
     border:1px solid rgba(255,255,255,0.1);
@@ -995,27 +980,18 @@ input.error {
   <!-- TEMP PLACEHOLDER -->
   <video controls style="
   width:100%;
-  border-radius:20px;
+  display:block;
 ">
   <source src="video.mp4" type="video/mp4">
-</video>
-  
-   
-  </div>
-
-  <!-- 👉 LATER replace above with:
-  <video controls width="100%">
-    <source src="your-video.mp4" type="video/mp4">
   </video>
-  -->
-
-</div>
+  </div>
 
     <!-- 🔥 STEPS GRID -->
     <div style="
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-      gap:15px;
+      grid-template-columns:repeat(2,1fr);
+      gap:16px;
+      margin-top:15px;
     ">
 
       <div style="background:#111827;padding:15px;border-radius:15px;">
