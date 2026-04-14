@@ -7,26 +7,30 @@
   <title>EDUCIRCUIT</title>
   <style>
     :root{
-      --bg:#f5f7fb;
-      --panel:#ffffff;
-      --line:#dbe3f0;
-      --text:#182230;
-      --muted:#5b6472;
-      --blue:#f97316;
-      --blue2:#fb923c;
-      --green:#16a34a;
-      --green2:#22c55e;
+      --bg:#e9eef6;
+      --panel:rgba(255,255,255,.74);
+      --panel-strong:#ffffff;
+      --line:rgba(75, 95, 130, 0.16);
+      --text:#0f172a;
+      --muted:#64748b;
+      --blue:#0f62fe;
+      --blue2:#3b82f6;
+      --green:#059669;
+      --green2:#10b981;
       --red:#ef4444;
       --amber:#f59e0b;
-      --shadow:0 10px 30px rgba(27, 31, 41, 0.08);
-      --radius:18px;
+      --navy:#0f172a;
+      --cream:#f8fbff;
+      --shadow:0 20px 50px rgba(15, 23, 42, 0.10);
+      --shadow-strong:0 28px 70px rgba(15, 23, 42, 0.16);
+      --radius:22px;
     }
 
     *{box-sizing:border-box}
     html,body{
       margin:0;
       height:100%;
-      font-family:Inter,Arial,Helvetica,sans-serif;
+      font-family:"Avenir Next","SF Pro Display","Segoe UI",Arial,Helvetica,sans-serif;
       background:var(--bg);
       color:var(--text);
       overflow:hidden;
@@ -35,9 +39,10 @@
 
     body{
       background:
-        radial-gradient(circle at top left, rgba(59,130,246,.08), transparent 25%),
-        radial-gradient(circle at top right, rgba(34,197,94,.06), transparent 20%),
-        linear-gradient(180deg,#f9fbff,#f3f6fb);
+        radial-gradient(circle at 12% 8%, rgba(15,98,254,.18), transparent 20%),
+        radial-gradient(circle at 88% 14%, rgba(14,165,233,.14), transparent 18%),
+        radial-gradient(circle at 50% 100%, rgba(99,102,241,.10), transparent 26%),
+        linear-gradient(180deg,#f7faff,#edf2f9 44%,#e7edf6);
     }
 
     .hidden{display:none !important}
@@ -97,16 +102,211 @@
       gap:6px;
     }
 
+    .ai-teacher-page{
+      position:fixed;
+      inset:0;
+      z-index:10000;
+      display:flex;
+      flex-direction:column;
+      background:
+        radial-gradient(circle at top left, rgba(15,98,254,.18), transparent 24%),
+        radial-gradient(circle at top right, rgba(14,165,233,.16), transparent 22%),
+        linear-gradient(180deg,#f8fbff,#eef4fb);
+    }
+
+    .ai-topbar{
+      height:76px;
+      padding:14px 18px;
+      border-bottom:1px solid var(--line);
+      background:rgba(247,250,255,.78);
+      backdrop-filter:blur(18px);
+      box-shadow:0 14px 30px rgba(15,23,42,.08);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    .ai-topbar-title{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+
+    .ai-topbar-title h2{
+      margin:0;
+      font-size:24px;
+      letter-spacing:-.4px;
+    }
+
+    .ai-topbar-title p{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .ai-shell{
+      flex:1;
+      min-height:0;
+      display:grid;
+      grid-template-columns:300px 1fr;
+      gap:16px;
+      padding:16px;
+    }
+
+    .ai-sidebar,
+    .ai-chat-panel{
+      background:linear-gradient(180deg,rgba(255,255,255,.82),rgba(242,247,255,.74));
+      border:1px solid var(--line);
+      border-radius:28px;
+      box-shadow:var(--shadow-strong);
+      min-height:0;
+      overflow:hidden;
+    }
+
+    .ai-sidebar{
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+
+    .ai-sidebar h3{
+      margin:0 0 8px;
+      font-size:16px;
+    }
+
+    .ai-card{
+      border:1px solid rgba(75,95,130,.12);
+      border-radius:20px;
+      background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(243,248,255,.82));
+      padding:14px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.9), 0 10px 22px rgba(15,23,42,.04);
+    }
+
+    .ai-card p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .ai-chip-list{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .ai-chip{
+      border:1px solid rgba(15,98,254,.16);
+      background:linear-gradient(180deg,#f5f9ff,#eaf2ff);
+      color:#1d4ed8;
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .ai-chat-panel{
+      display:flex;
+      flex-direction:column;
+    }
+
+    .ai-chat-head{
+      padding:18px 20px 12px;
+      border-bottom:1px solid #eef2f8;
+      background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(241,246,255,.92));
+    }
+
+    .ai-chat-head h3{
+      margin:0;
+      font-size:18px;
+    }
+
+    .ai-chat-head p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .ai-messages{
+      flex:1;
+      min-height:0;
+      overflow:auto;
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      background:
+        linear-gradient(180deg,rgba(249,251,255,.74),rgba(238,244,252,.96)),
+        radial-gradient(circle at top, rgba(15,98,254,.06), transparent 34%);
+    }
+
+    .ai-message{
+      max-width:min(760px,82%);
+      padding:14px 16px;
+      border-radius:20px;
+      line-height:1.55;
+      font-size:14px;
+      white-space:pre-wrap;
+      animation:messageRise .22s ease;
+    }
+
+    .ai-message.teacher{
+      align-self:flex-start;
+      background:linear-gradient(180deg,#ffffff,#f3f8ff);
+      border:1px solid rgba(75,95,130,.12);
+      box-shadow:0 14px 28px rgba(15,23,42,.06);
+    }
+
+    .ai-message.student{
+      align-self:flex-end;
+      background:linear-gradient(135deg,#0f62fe,#3b82f6);
+      color:#fff;
+      box-shadow:0 18px 34px rgba(15,98,254,.22);
+    }
+
+    .ai-inputbar{
+      padding:16px 18px 18px;
+      border-top:1px solid #eef2f8;
+      background:rgba(250,252,255,.92);
+      display:flex;
+      gap:12px;
+      align-items:flex-end;
+    }
+
+    .ai-inputbar textarea{
+      min-height:56px;
+      max-height:160px;
+      resize:vertical;
+      border-radius:18px;
+    }
+
+    .ai-quick-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+
+    @keyframes messageRise{
+      from{opacity:0; transform:translateY(10px)}
+      to{opacity:1; transform:translateY(0)}
+    }
+
     .topbar{
       height:72px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       padding:14px 18px;
-      background:rgba(255,255,255,.8);
-      backdrop-filter: blur(10px);
+      background:rgba(248,251,255,.72);
+      backdrop-filter: blur(18px);
       border-bottom:1px solid var(--line);
       z-index:20;
+      box-shadow:0 14px 34px rgba(15,23,42,.08);
     }
 
     .brand{
@@ -124,8 +324,9 @@
 
     .brand-text h1{
       margin:0;
-      font-size:24px;
-      letter-spacing:-.4px;
+      font-size:28px;
+      letter-spacing:-.8px;
+      font-weight:900;
     }
 
     .brand-text p{
@@ -136,6 +337,7 @@
       margin:3px 0 0;
       color:var(--muted);
       font-size:13px;
+      letter-spacing:.02em;
     }
 
     .top-actions{
@@ -147,7 +349,7 @@
 
     button, .btn{
       border:none;
-      border-radius:12px;
+      border-radius:14px;
       background:var(--blue);
       color:#fff;
       padding:10px 14px;
@@ -159,20 +361,21 @@
       align-items:center;       /* 🔥 ADD */
       justify-content:center;   /* 🔥 ADD */
 
-      transition:transform .18s ease, box-shadow .18s ease, background .18s ease, opacity .18s ease;
-      box-shadow:0 8px 18px rgba(37,99,235,.16);
+      transition:transform .18s ease, box-shadow .18s ease, background .18s ease, opacity .18s ease, border-color .18s ease;
+      box-shadow:0 14px 28px rgba(15,98,254,.18);
     }
 
     button:hover, .btn:hover{
       transform:translateY(-1px);
       background:var(--blue2);
+      box-shadow:0 18px 32px rgba(15,98,254,.22);
     }
 
     button.secondary{
-      background:#fff;
+      background:rgba(255,255,255,.82);
       color:var(--text);
       border:1px solid var(--line);
-      box-shadow:none;
+      box-shadow:0 10px 22px rgba(15,23,42,.05);
     }
 
     button.green{
@@ -194,33 +397,35 @@
       flex:1;
       display:grid;
       grid-template-columns: 300px 1fr 320px;
-      gap:14px;
-      padding:14px;
+      gap:18px;
+      padding:18px;
       min-height:0;
     }
 
     .panel{
-      background:var(--panel);
+      background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(243,248,255,.76));
       border:1px solid var(--line);
       border-radius:var(--radius);
-      box-shadow:var(--shadow);
+      box-shadow:var(--shadow-strong);
       min-height:0;
       overflow:hidden;
+      backdrop-filter:blur(18px);
     }
 
     .panel-header{
       padding:16px 16px 10px;
-      border-bottom:1px solid #eef2f8;
+      border-bottom:1px solid rgba(75,95,130,.10);
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
+      background:linear-gradient(180deg,rgba(255,255,255,.84),rgba(240,246,255,.38));
     }
 
     .panel-header h2{
       margin:0;
-      font-size:20px;
-      letter-spacing:-.3px;
+      font-size:22px;
+      letter-spacing:-.5px;
     }
 
     .panel-header small{
@@ -231,7 +436,7 @@
     }
 
     .panel-body{
-      padding:14px;
+      padding:16px;
       overflow:auto;
       height:calc(100% - 68px);
     }
@@ -252,21 +457,22 @@
     }
 
     .component-card{
-      background:linear-gradient(180deg,#f8fbff,#eef4ff);
-      border:1px solid #d8e6ff;
-      border-radius:16px;
-      padding:12px;
+      background:linear-gradient(180deg,#ffffff,#f2f7ff);
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:20px;
+      padding:14px;
       cursor:pointer;
       transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
       position:relative;
       overflow:hidden;
-      min-height:92px;
+      min-height:98px;
+      box-shadow:0 12px 24px rgba(15,23,42,.05);
     }
 
     .component-card:hover{
-      transform:translateY(-2px);
-      box-shadow:0 12px 24px rgba(37,99,235,.12);
-      border-color:#bcd4ff;
+      transform:translateY(-3px);
+      box-shadow:0 18px 30px rgba(15,23,42,.10);
+      border-color:rgba(15,98,254,.18);
     }
 
     .component-card::after{
@@ -274,23 +480,24 @@
       position:absolute;
       right:-18px;
       top:-18px;
-      width:56px;
-      height:56px;
+      width:72px;
+      height:72px;
       border-radius:50%;
-      background:rgba(59,130,246,.08);
+      background:radial-gradient(circle, rgba(15,98,254,.12), rgba(15,98,254,0));
     }
 
     .component-icon{
-      width:36px;
-      height:36px;
-      border-radius:12px;
+      width:42px;
+      height:42px;
+      border-radius:14px;
       display:grid;
       place-items:center;
-      background:#fff;
-      border:1px solid #dce8ff;
+      background:linear-gradient(180deg,#ffffff,#edf5ff);
+      border:1px solid rgba(15,98,254,.12);
       color:var(--blue);
-      font-size:18px;
+      font-size:20px;
       margin-bottom:10px;
+      box-shadow:0 10px 20px rgba(15,98,254,.10);
     }
 
     .component-name{
@@ -310,18 +517,19 @@
     }
 
     .example-item{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:12px;
-      background:#fbfdff;
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:18px;
+      padding:14px;
+      background:linear-gradient(180deg,#ffffff,#f3f8ff);
       cursor:pointer;
       transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+      box-shadow:0 10px 22px rgba(15,23,42,.04);
     }
 
     .example-item:hover{
-      transform:translateY(-1px);
-      box-shadow:0 10px 18px rgba(24,34,48,.05);
-      border-color:#cdd9ea;
+      transform:translateY(-2px);
+      box-shadow:0 16px 26px rgba(15,23,42,.08);
+      border-color:rgba(15,98,254,.18);
     }
 
     .example-item b{
@@ -339,13 +547,13 @@
 
     .canvas-toolbar{
       padding:12px 14px;
-      border-bottom:1px solid #eef2f8;
+      border-bottom:1px solid rgba(75,95,130,.10);
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:10px;
       flex-wrap:wrap;
-      background:#fff;
+      background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(241,246,255,.60));
       z-index:3;
     }
 
@@ -357,12 +565,13 @@
     }
 
     .zoom-display{
-      padding:8px 12px;
+      padding:8px 14px;
       border:1px solid var(--line);
-      border-radius:12px;
-      background:#fff;
+      border-radius:14px;
+      background:rgba(255,255,255,.82);
       font-weight:700;
       color:var(--muted);
+      box-shadow:0 8px 18px rgba(15,23,42,.05);
     }
 
     .workspace-area{
@@ -371,9 +580,10 @@
       min-height:0;
       overflow:hidden;
       background:
-        linear-gradient(to right, rgba(37,99,235,.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(37,99,235,.05) 1px, transparent 1px),
-        linear-gradient(180deg,#fcfdff,#f4f7fb);
+        linear-gradient(to right, rgba(148,163,184,.10) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148,163,184,.10) 1px, transparent 1px),
+        radial-gradient(circle at top, rgba(255,255,255,.74), rgba(237,244,253,.30)),
+        linear-gradient(180deg,#fdfefe,#eef4fb);
       background-size: 24px 24px, 24px 24px, auto;
     }
 
@@ -401,12 +611,12 @@
       right:16px;
       bottom:16px;
       min-height:148px;
-      border:1px solid var(--line);
-      border-radius:22px;
-      background:rgba(255,255,255,.9);
+      border:1px solid rgba(75,95,130,.12);
+      border-radius:26px;
+      background:rgba(250,252,255,.78);
       backdrop-filter: blur(8px);
-      box-shadow:0 16px 32px rgba(24,34,48,.08);
-      padding:14px;
+      box-shadow:0 22px 36px rgba(15,23,42,.10);
+      padding:16px;
       z-index:4;
     }
 
@@ -424,10 +634,10 @@
     }
 
     .logic-chip{
-      background:linear-gradient(180deg,#eff6ff,#dbeafe);
-      color:#1e3a8a;
-      border:1px solid #bfdbfe;
-      border-radius:14px;
+      background:linear-gradient(180deg,#f5f9ff,#e9f1ff);
+      color:#1d4ed8;
+      border:1px solid rgba(15,98,254,.12);
+      border-radius:16px;
       padding:10px 12px;
       font-weight:800;
       font-size:13px;
@@ -456,10 +666,10 @@
       position:absolute;
       width:120px;
       min-height:78px;
-      border-radius:20px;
-      background:#fff;
-      border:1px solid #dbe3f0;
-      box-shadow:0 16px 28px rgba(24,34,48,.08);
+      border-radius:24px;
+      background:linear-gradient(180deg,#ffffff,#f3f8ff);
+      border:1px solid rgba(75,95,130,.12);
+      box-shadow:0 18px 34px rgba(15,23,42,.10);
       cursor:grab;
       transition:box-shadow .18s ease, transform .18s ease;
       overflow:hidden;
@@ -473,7 +683,7 @@
 
     .canvas-item.dragging{
       cursor:grabbing;
-      box-shadow:0 26px 40px rgba(24,34,48,.18);
+      box-shadow:0 30px 48px rgba(15,23,42,.18);
       z-index:10;
     }
 
@@ -483,8 +693,8 @@
       align-items:center;
       justify-content:space-between;
       gap:8px;
-      border-bottom:1px solid #eef2f8;
-      background:linear-gradient(180deg,#fff,#fbfdff);
+      border-bottom:1px solid rgba(75,95,130,.10);
+      background:linear-gradient(180deg,#ffffff,#f2f7ff);
     }
 
     .item-head b{
@@ -636,11 +846,12 @@
     }
 
     .dashboard-card{
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:14px;
-      background:#fbfdff;
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:20px;
+      padding:16px;
+      background:linear-gradient(180deg,#ffffff,#f3f8ff);
       margin-bottom:12px;
+      box-shadow:0 12px 24px rgba(15,23,42,.05);
     }
 
     .stat{
@@ -679,9 +890,9 @@
       align-items:center;
       justify-content:center;
       background:
-        radial-gradient(circle at 20% 15%, rgba(37,99,235,.18), transparent 20%),
-        radial-gradient(circle at 80% 20%, rgba(34,197,94,.12), transparent 18%),
-        linear-gradient(180deg,#f8fbff,#eff4fb);
+        radial-gradient(circle at 20% 15%, rgba(201,107,44,.22), transparent 20%),
+        radial-gradient(circle at 80% 20%, rgba(23,128,93,.12), transparent 18%),
+        linear-gradient(180deg,#fff9f2,#f4ebe1);
     }
 
     .login-logo{
@@ -693,12 +904,12 @@
 
     .login-card{
       width:min(520px,92vw);
-      background:rgba(255,255,255,.92);
-      backdrop-filter: blur(10px);
-      border:1px solid #e5edf8;
-      border-radius:28px;
-      box-shadow:0 30px 80px rgba(37,99,235,.12);
-      padding:26px;
+      background:rgba(255,253,249,.88);
+      backdrop-filter: blur(18px);
+      border:1px solid rgba(181,149,121,.18);
+      border-radius:32px;
+      box-shadow:0 34px 90px rgba(61,40,22,.16);
+      padding:30px;
       animation:rise .28s ease;
     }
 
@@ -1303,6 +1514,62 @@ input.error {
 
   </div>
 
+  <div id="aiTeacherPage" class="ai-teacher-page hidden">
+    <div class="ai-topbar">
+      <div class="ai-topbar-title">
+        <img src="logo.png" class="brand-logo" alt="Educircuit logo">
+        <div>
+          <h2>AI Teacher</h2>
+          <p>Ask circuit questions, debug ideas, and get step-by-step explanations.</p>
+        </div>
+      </div>
+      <button class="secondary" onclick="closeAiTeacherPage()">⬅ Back to Simulator</button>
+    </div>
+
+    <div class="ai-shell">
+      <div class="ai-sidebar">
+        <div class="ai-card">
+          <h3>Classroom Help</h3>
+          <p>The AI Teacher explains concepts in a student-friendly way and can also answer questions about the circuit you are building right now.</p>
+          <div class="ai-chip-list">
+            <button class="ai-chip" onclick="askAiTeacherPrompt('Explain my current circuit in simple words')">Explain my circuit</button>
+            <button class="ai-chip" onclick="askAiTeacherPrompt('Why is my circuit not turning on?')">Why not on?</button>
+            <button class="ai-chip" onclick="askAiTeacherPrompt('Teach me voltage and current')">Teach voltage</button>
+          </div>
+        </div>
+
+        <div class="ai-card">
+          <h3>Current Workspace</h3>
+          <p id="aiTeacherContext">No circuit loaded yet.</p>
+        </div>
+
+        <div class="ai-card">
+          <h3>Try Asking</h3>
+          <p>Examples: "Why does my LED need 2V?", "What does a resistor do?", "How do I make a motor circuit?", "What happens in a short circuit?"</p>
+        </div>
+      </div>
+
+      <div class="ai-chat-panel">
+        <div class="ai-chat-head">
+          <h3>Educircuit AI Teacher</h3>
+          <p>Interactive support for students, like a teacher sitting next to you.</p>
+          <div class="ai-quick-row">
+            <button class="secondary" onclick="askAiTeacherPrompt('Teach me how switches work in circuits')">Switches</button>
+            <button class="secondary" onclick="askAiTeacherPrompt('Explain short circuit in easy words')">Short Circuit</button>
+            <button class="secondary" onclick="askAiTeacherPrompt('How much voltage does my circuit need?')">Voltage Help</button>
+          </div>
+        </div>
+
+        <div class="ai-messages" id="aiTeacherMessages"></div>
+
+        <div class="ai-inputbar">
+          <textarea id="aiTeacherInput" placeholder="Ask your AI Teacher anything about circuits, components, voltage, logic, or your current project..."></textarea>
+          <button id="aiTeacherSendBtn">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="app-shell">
     <div class="topbar">
       <div class="brand">
@@ -1323,6 +1590,7 @@ input.error {
         <button class="secondary" id="zoomOutBtn">Zoom −</button>
         <span class="zoom-display" id="zoomDisplay">100%</span>
         <button class="secondary" id="zoomInBtn">Zoom +</button>
+        <button class="secondary" id="aiTeacherBtn">AI Teacher</button>
         <button class="green" id="saveBtn">Save</button>
         <button class="secondary" id="langToggleBtn">தமிழ்</button>
         <button class="red" id="logoutBtn">Logout</button>
@@ -1470,6 +1738,13 @@ input.error {
             </div>
 
             <div class="dashboard-card">
+              <h3 style="margin:0 0 10px;">Circuit Coach</h3>
+              <div class="stat"><span>Status</span><b id="coachStatusText">Ready</b></div>
+              <div class="small-note" id="coachHintText">Build a loop from battery + through your components and return to battery -.</div>
+              <div class="small-note" id="coachFixText" style="margin-top:10px;color:var(--text);font-weight:700;">Correct connection: Battery + -> component +, then final component - -> Battery -.</div>
+            </div>
+
+            <div class="dashboard-card">
               <h3 style="margin:0 0 10px;">Know My Voltage</h3>
               <div id="voltageGuideList" class="voltage-guide"></div>
             </div>
@@ -1535,7 +1810,13 @@ input.error {
         buzzer: false,
         overload: false
       },
+      coach: {
+        status: "Ready",
+        hint: "Build a loop from battery + through your components and return to battery -.",
+        fix: "Correct connection: Battery + -> component +, then final component - -> Battery -."
+      },
       activeItems: [],
+      aiTeacherMessages: [],
       burstItems: []
     };
     state.lang = "en";
@@ -1634,6 +1915,11 @@ function applyLanguage(){
     const batteryVoltageValue = document.getElementById("batteryVoltageValue");
     const batteryVoltageRange = document.getElementById("batteryVoltageRange");
     const voltageGuideList = document.getElementById("voltageGuideList");
+    const aiTeacherPage = document.getElementById("aiTeacherPage");
+    const aiTeacherMessages = document.getElementById("aiTeacherMessages");
+    const aiTeacherInput = document.getElementById("aiTeacherInput");
+    const aiTeacherSendBtn = document.getElementById("aiTeacherSendBtn");
+    const aiTeacherContext = document.getElementById("aiTeacherContext");
 
     const studentPanel = document.getElementById("studentPanel");
     const teacherPanel = document.getElementById("teacherPanel");
@@ -1649,6 +1935,9 @@ function applyLanguage(){
     const ledStateText = document.getElementById("ledStateText");
     const motorStateText = document.getElementById("motorStateText");
     const buzzerStateText = document.getElementById("buzzerStateText");
+    const coachStatusText = document.getElementById("coachStatusText");
+    const coachHintText = document.getElementById("coachHintText");
+    const coachFixText = document.getElementById("coachFixText");
 
     const teacherSubmissionState = document.getElementById("teacherSubmissionState");
     const teacherGradeState = document.getElementById("teacherGradeState");
@@ -1745,6 +2034,14 @@ function applyLanguage(){
       return visited;
     }
 
+    function getCorrectionGuide(){
+      return "Correct connection: Battery + -> first component + -> next component + through the chain, then final component - -> Battery -.";
+    }
+
+    function buildCoachState(status, hint, fix){
+      return { status, hint, fix };
+    }
+
     function evaluateCircuitState(){
       const batteries = state.items.filter(item => item.type === "Battery");
       if(!batteries.length){
@@ -1754,7 +2051,8 @@ function applyLanguage(){
           buzzer:false,
           overload:false,
           burstItems:[],
-          message:"Add a battery to power the circuit."
+          message:"Add a battery to power the circuit.",
+          coach: buildCoachState("Need Battery", "Your circuit has no power source yet.", "Add a battery, then connect Battery + to a component + and return the final component - to Battery -.")
         };
       }
 
@@ -1770,10 +2068,14 @@ function applyLanguage(){
       const positiveReachable = collectReachable(positiveStarts, powerGraph);
       const negativeReachable = collectReachable(negativeStarts, powerGraph);
       const shortReachable = collectReachable(positiveStarts, shortGraph);
+      const samePolarityWire = state.wires.find(wire =>
+        (wire.from.port === "positive" && wire.to.port === "positive") ||
+        (wire.from.port === "negative" && wire.to.port === "negative")
+      );
 
       const activeLoads = [];
-      let totalLoad = 0;
-      const resistorCount = state.items.filter(item => item.type === "Resistor").length;
+      let totalRequiredVoltage = 0;
+      const voltageCaps = [];
 
       state.items.forEach(item => {
         if(!(item.type in LOAD_COMPONENTS) || item.ports.length < 2) return;
@@ -1788,23 +2090,75 @@ function applyLanguage(){
 
         if(isPowered){
           activeLoads.push(item);
-          totalLoad += LOAD_COMPONENTS[item.type];
+          totalRequiredVoltage += cfg?.minVoltage ?? 0;
+          voltageCaps.push({
+            item,
+            limit: (cfg?.minVoltage ?? 0) * 2
+          });
         }
       });
 
       const hardShort = negativeStarts.some(node => shortReachable.has(node));
-      const overloadThreshold = 3 + resistorCount * 1.5;
-      const overloadByLoad = totalLoad > overloadThreshold;
-      const overload = hardShort || overloadByLoad;
+      const totalVoltageLimit = activeLoads.length > 1
+        ? totalRequiredVoltage * 2
+        : (voltageCaps[0]?.limit ?? Infinity);
+      const componentOverload = activeLoads.length === 1
+        ? voltageCaps.some(entry => batteryVoltage > entry.limit)
+        : false;
+      const combinedOverload = activeLoads.length > 1 && batteryVoltage > totalVoltageLimit;
+      const overload = hardShort || componentOverload || combinedOverload;
       const burstItems = overload
         ? [...new Set(activeLoads.map(item => item.id))]
         : [];
 
       let message = "";
+      let coach = buildCoachState(
+        "Ready",
+        "Your circuit layout looks valid. Run logic to test the outputs.",
+        getCorrectionGuide()
+      );
+
       if(hardShort){
         message = "Short circuit detected 💥 Fix the wiring and try again.";
-      } else if(overloadByLoad){
-        message = "The circuit overloaded and burst 💥 Add a resistor or reduce the load.";
+        coach = buildCoachState(
+          "Short Circuit",
+          samePolarityWire
+            ? "You connected two same-polarity terminals together, which creates a short circuit."
+            : "The circuit path is creating a direct short between battery + and battery -.",
+          getCorrectionGuide()
+        );
+      } else if(componentOverload){
+        const overloaded = voltageCaps.find(entry => batteryVoltage > entry.limit);
+        message = `${overloaded?.item.type || "Component"} overloaded 💥 Battery voltage is above twice its safe requirement.`;
+        coach = buildCoachState(
+          "Component Overload",
+          `${overloaded?.item.type || "This component"} needs about ${overloaded ? overloaded.limit / 2 : 0}V, so more than ${overloaded?.limit || 0}V is too much for it alone.`,
+          `Lower the battery voltage or add more compatible components. Example: a 2V LED should stay at or below 4V when it is the only active load.`
+        );
+      } else if(combinedOverload){
+        message = "The circuit overloaded and burst 💥 The battery voltage is too high for the total active circuit.";
+        coach = buildCoachState(
+          "Total Voltage Too High",
+          `Your active components need about ${totalRequiredVoltage.toFixed(1)}V total, so they are safe up to ${(totalVoltageLimit).toFixed(1)}V together.`,
+          `Reduce the battery below ${(totalVoltageLimit).toFixed(1)}V, or add components that match the higher supply.`
+        );
+      } else if(samePolarityWire){
+        coach = buildCoachState(
+          "Wrong Polarity Link",
+          "You linked + to + or - to -, which is not the normal path for a working circuit.",
+          getCorrectionGuide()
+        );
+      } else if(state.wires.length && activeLoads.length === 0){
+        const hasOpenControl = state.items.some(item => (item.type === "Switch" || item.type === "Relay") && !item.isClosed);
+        coach = buildCoachState(
+          hasOpenControl ? "Control Open" : "Incomplete Loop",
+          hasOpenControl
+            ? "Your switch or relay is still open, so current cannot pass through the circuit yet."
+            : "The circuit does not have a full loop from battery + back to battery -.",
+          hasOpenControl
+            ? "Run ON logic to close the switch/relay, then test the circuit again."
+            : getCorrectionGuide()
+        );
       }
 
       return {
@@ -1814,7 +2168,8 @@ function applyLanguage(){
         activeItemIds: activeLoads.map(item => item.id),
         overload,
         burstItems,
-        message
+        message,
+        coach
       };
     }
 
@@ -1881,6 +2236,8 @@ function applyLanguage(){
       state.outputs.motor = simulation.motor;
       state.outputs.buzzer = simulation.buzzer;
       state.outputs.overload = simulation.overload;
+      state.coach = simulation.coach;
+      state.activeItems = simulation.activeItemIds;
       state.burstItems = simulation.burstItems;
       renderItems();
       updateOutputs();
@@ -1894,6 +2251,7 @@ function applyLanguage(){
         state.outputs.motor = simulation.motor;
         state.outputs.buzzer = simulation.buzzer;
         state.outputs.overload = simulation.overload;
+        state.coach = simulation.coach;
         state.activeItems = simulation.activeItemIds;
         state.burstItems = simulation.burstItems;
       } else {
@@ -1901,11 +2259,13 @@ function applyLanguage(){
         state.outputs.motor = false;
         state.outputs.buzzer = false;
         state.outputs.overload = false;
+        state.coach = simulation.coach;
         state.activeItems = [];
         state.burstItems = [];
       }
 
       updateOutputs();
+      updateAiTeacherContext();
       return simulation;
     }
 
@@ -1924,6 +2284,129 @@ function applyLanguage(){
           `;
           voltageGuideList.appendChild(row);
         });
+    }
+
+    function getCircuitSummary(){
+      if(!state.items.length){
+        return "No components are on the workspace yet.";
+      }
+
+      const counts = {};
+      state.items.forEach(item => {
+        counts[item.type] = (counts[item.type] || 0) + 1;
+      });
+
+      const parts = Object.entries(counts).map(([type, count]) => `${count} ${type}${count > 1 ? "s" : ""}`);
+      return `${parts.join(", ")}. ${state.wires.length} wire${state.wires.length === 1 ? "" : "s"} connected. Battery set to ${state.defaultBatteryVoltage.toFixed(1)}V.`;
+    }
+
+    function updateAiTeacherContext(){
+      if(!aiTeacherContext) return;
+      aiTeacherContext.textContent = getCircuitSummary();
+    }
+
+    function addAiTeacherMessage(role, text){
+      state.aiTeacherMessages.push({ role, text });
+      renderAiTeacherMessages();
+    }
+
+    function renderAiTeacherMessages(){
+      if(!aiTeacherMessages) return;
+      aiTeacherMessages.innerHTML = "";
+
+      state.aiTeacherMessages.forEach(message => {
+        const bubble = document.createElement("div");
+        bubble.className = `ai-message ${message.role}`;
+        bubble.textContent = message.text;
+        aiTeacherMessages.appendChild(bubble);
+      });
+
+      aiTeacherMessages.scrollTop = aiTeacherMessages.scrollHeight;
+      updateAiTeacherContext();
+    }
+
+    function buildAiTeacherReply(question){
+      const q = question.toLowerCase();
+      const battery = state.items.find(item => item.type === "Battery");
+      const switches = state.items.filter(item => item.type === "Switch" || item.type === "Relay");
+      const activeNames = state.items
+        .filter(item => state.activeItems.includes(item.id))
+        .map(item => item.type);
+
+      if(q.includes("my circuit") || q.includes("current circuit")){
+        return `Here is your current circuit in simple words:\n${getCircuitSummary()}\n\nIf you want, I can also explain what each component is doing one by one.`;
+      }
+
+      if(q.includes("voltage") || q.includes("volt")){
+        const needs = componentCatalog
+          .filter(component => component.minVoltage > 0)
+          .map(component => `${component.type}: ${component.minVoltage}V minimum`)
+          .join(", ");
+        return `Voltage is the electrical push from the battery. Right now your battery is set to ${state.defaultBatteryVoltage.toFixed(1)}V.${battery ? ` Your battery component is showing the same output.` : ""}\n\nUseful minimum voltages:\n${needs}\n\nA component only works when it gets enough voltage and a full path from + to -.`;
+      }
+
+      if(q.includes("switch")){
+        return `A switch is like a gate in a circuit. When it is open, current cannot pass. When it is closed, current can flow through the path.\n\nIn Educircuit, the ON logic closes switches and relays, and OFF opens them again.`;
+      }
+
+      if(q.includes("resistor")){
+        return `A resistor limits current. In real circuits, it protects sensitive parts like LEDs from too much current.\n\nIn your simulator, resistors also help reduce overload risk, so they make circuits safer.`;
+      }
+
+      if(q.includes("short circuit") || q.includes("burst") || q.includes("overload")){
+        return `A short circuit happens when electricity finds a very low-resistance path and rushes too fast. That can overheat the circuit and cause a burst.\n\nTo prevent that, make sure your wiring is correct, avoid heavy loads on one battery, and use resistors where needed.`;
+      }
+
+      if(q.includes("led")){
+        return `An LED is a light-emitting diode. It needs correct polarity and enough voltage to glow. In your simulator, an LED needs at least 2V and a complete path from battery + back to battery -.`;
+      }
+
+      if(q.includes("motor") || q.includes("pump") || q.includes("servo")){
+        return `Motors, pumps, and servos are heavier loads than LEDs. They usually need more voltage and more current.\n\nThat means they are more likely to cause overload if too many are connected to one battery without protection.`;
+      }
+
+      if(q.includes("why") && q.includes("not") || q.includes("not turning on")){
+        return `When a circuit does not turn on, check these four things:\n1. Is there a battery?\n2. Is the voltage high enough?\n3. Is there a full path from + to -?\n4. Did you run the logic so switches/relays close?\n\nYour current circuit status: ${activeNames.length ? `${activeNames.join(", ")} is active.` : "No output components are active right now."}`;
+      }
+
+      return `Here’s the teacher explanation:\n${getCircuitSummary()}\n\nYour question was: "${question}"\n\nThink of a circuit like a road for electric charge. For something to work, it needs:\n- a source of voltage\n- a connected path from + to -\n- enough voltage for the component\n- the control logic to allow the path\n\nAsk me about LEDs, motors, switches, resistors, voltage, short circuits, or your current circuit and I’ll explain it step by step.`;
+    }
+
+    function askAiTeacherPrompt(promptText){
+      openAiTeacherPage();
+      aiTeacherInput.value = promptText;
+      sendAiTeacherMessage();
+    }
+
+    function sendAiTeacherMessage(){
+      const question = aiTeacherInput.value.trim();
+      if(!question) return;
+
+      addAiTeacherMessage("student", question);
+      aiTeacherInput.value = "";
+
+      const reply = buildAiTeacherReply(question);
+      setTimeout(() => {
+        addAiTeacherMessage("teacher", reply);
+      }, 280);
+    }
+
+    function openAiTeacherPage(){
+      aiTeacherPage.classList.remove("hidden");
+      updateAiTeacherContext();
+
+      if(state.aiTeacherMessages.length === 0){
+        addAiTeacherMessage(
+          "teacher",
+          "Hello! I’m your AI Teacher. Ask me anything about circuits, voltage, current, components, logic blocks, or the project on your screen, and I’ll explain it step by step."
+        );
+      }
+
+      setTimeout(() => aiTeacherInput.focus(), 50);
+    }
+
+    function closeAiTeacherPage(){
+      aiTeacherPage.classList.add("hidden");
     }
 
       function renderProjectsPage(){
@@ -2687,6 +3170,9 @@ function drawWires(){
       ledStateText.textContent = state.outputs.overload ? "BURST 💥" : (state.outputs.led ? "ON" : "OFF");
       motorStateText.textContent = state.outputs.overload ? "BURST 💥" : (state.outputs.motor ? "ON" : "OFF");
       buzzerStateText.textContent = state.outputs.overload ? "BURST 💥" : (state.outputs.buzzer ? "ON" : "OFF");
+      coachStatusText.textContent = state.coach.status;
+      coachHintText.textContent = state.coach.hint;
+      coachFixText.textContent = state.coach.fix;
       renderItems();
     }
 
@@ -3209,6 +3695,7 @@ if(localStorage.getItem("hideLanding") === "true"){
     });
 
     document.getElementById("saveBtn").addEventListener("click", saveProject);
+    document.getElementById("aiTeacherBtn").addEventListener("click", openAiTeacherPage);
     document.getElementById("clearBtn").addEventListener("click", clearProject);
     document.getElementById("submitBtn").addEventListener("click", submitProject);
     document.getElementById("applyGradeBtn").addEventListener("click", applyGrade);
@@ -3242,6 +3729,14 @@ if(localStorage.getItem("hideLanding") === "true"){
 
     document.querySelectorAll("[data-example]").forEach(el => {
       el.addEventListener("click", () => loadExample(el.dataset.example));
+    });
+
+    aiTeacherSendBtn.addEventListener("click", sendAiTeacherMessage);
+    aiTeacherInput.addEventListener("keydown", (e) => {
+      if(e.key === "Enter" && !e.shiftKey){
+        e.preventDefault();
+        sendAiTeacherMessage();
+      }
     });
 
     document.addEventListener("keydown", (e) => {
