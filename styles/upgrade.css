@@ -245,7 +245,7 @@ html {
 }
 
 .landing-copy h1 {
-  font-size: clamp(44px, 8vw, 82px);
+  font-size: 72px;
   line-height:.94;
   letter-spacing:0;
   margin:20px 0 20px;
@@ -1762,5 +1762,502 @@ body.simulation-flow-error #wireLayer .wire-path-active {
   .layout {
     padding: 14px;
     gap: 14px;
+  }
+}
+
+/* Responsive simulator shell */
+html,
+body {
+  max-width:100%;
+}
+
+body {
+  overflow-x:hidden;
+}
+
+.app-shell,
+.topbar,
+.layout,
+.panel,
+.canvas-panel,
+.workspace-area,
+.dashboard-card,
+.component-card,
+.example-item {
+  min-width:0;
+}
+
+.app-shell {
+  width:100%;
+  min-height:100vh;
+  min-height:100dvh;
+}
+
+.topbar {
+  height:auto;
+  min-height:72px;
+  gap:14px;
+  flex-wrap:wrap;
+}
+
+.brand {
+  flex:1 1 250px;
+  min-width:0;
+}
+
+.brand > .brand {
+  flex:0 1 auto;
+}
+
+.brand-text {
+  min-width:0;
+}
+
+.brand-text h1,
+.panel-header h2,
+.ai-topbar-title h2 {
+  letter-spacing:0;
+  overflow-wrap:anywhere;
+}
+
+.top-actions {
+  flex:2 1 560px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  min-width:0;
+}
+
+.top-actions > *,
+.toolbar-group > *,
+.mini-actions > * {
+  min-width:0;
+}
+
+.top-actions button,
+.top-actions .pill,
+.top-actions .zoom-display {
+  max-width:100%;
+  white-space:nowrap;
+}
+
+.layout {
+  width:100%;
+  grid-template-columns:minmax(230px, 300px) minmax(360px, 1fr) minmax(250px, 320px);
+  grid-template-areas:"components canvas dashboard";
+  align-items:stretch;
+}
+
+.layout > .panel:nth-child(1) {
+  grid-area:components;
+}
+
+.layout > .panel:nth-child(2) {
+  grid-area:canvas;
+}
+
+.layout > .panel:nth-child(3) {
+  grid-area:dashboard;
+}
+
+.panel {
+  display:flex;
+  flex-direction:column;
+}
+
+.panel-header {
+  flex:0 0 auto;
+}
+
+.panel-body {
+  flex:1 1 auto;
+  min-height:0;
+  height:auto;
+}
+
+.stat {
+  align-items:flex-start;
+}
+
+.stat b,
+.card-title,
+.component-name,
+.project-name,
+.pill {
+  overflow-wrap:anywhere;
+}
+
+.mini-actions {
+  align-items:center;
+}
+
+.ai-topbar {
+  height:auto;
+  min-height:76px;
+  flex-wrap:wrap;
+}
+
+.ai-inputbar,
+.guide-header,
+.project-page-header {
+  min-width:0;
+}
+
+@media (max-width: 1320px) {
+  .landing-copy h1 {
+    font-size:64px;
+  }
+
+  .layout {
+    grid-template-columns:minmax(220px, 280px) minmax(340px, 1fr) minmax(230px, 300px);
+  }
+
+  .topbar {
+    padding:12px 14px;
+  }
+}
+
+@media (max-width: 1120px) {
+  html,
+  body {
+    height:auto;
+    min-height:100%;
+    overflow:auto;
+    overflow-x:hidden;
+  }
+
+  .app-shell {
+    height:auto;
+    min-height:100vh;
+    min-height:100dvh;
+  }
+
+  .layout {
+    grid-template-columns:minmax(220px, 280px) minmax(0, 1fr);
+    grid-template-areas:
+      "components canvas"
+      "dashboard dashboard";
+    align-items:stretch;
+  }
+
+  .layout > .panel:nth-child(1),
+  .canvas-panel {
+    height:min(640px, calc(100dvh - 150px));
+    min-height:520px;
+  }
+
+  .workspace-area {
+    min-height:0;
+  }
+
+  .layout > .panel:nth-child(3) {
+    min-height:320px;
+  }
+
+  .top-actions {
+    justify-content:flex-start;
+  }
+}
+
+@media (max-width: 900px) {
+  .landing-copy h1 {
+    font-size:52px;
+    line-height:1;
+  }
+
+  .layout {
+    grid-template-columns:1fr;
+    grid-template-areas:
+      "canvas"
+      "components"
+      "dashboard";
+  }
+
+  .canvas-panel {
+    height:620px;
+    min-height:560px;
+  }
+
+  .workspace-area {
+    height:auto;
+    min-height:0;
+  }
+
+  .layout > .panel:nth-child(1) {
+    height:560px;
+  }
+
+  .panel {
+    min-height:0;
+  }
+
+  .panel-body {
+    max-height:none;
+  }
+}
+
+@media (max-width: 640px) {
+  .saas-landing {
+    padding:14px;
+  }
+
+  .landing-copy h1 {
+    font-size:40px;
+  }
+
+  .landing-copy p {
+    font-size:16px;
+  }
+
+  .landing-actions,
+  .landing-nav-actions,
+  .login-actions,
+  .login-screen .login-demo-row,
+  .project-card-actions {
+    align-items:stretch;
+    flex-direction:column;
+  }
+
+  .landing-actions button,
+  .landing-nav-actions button,
+  .login-actions button,
+  .login-screen .login-demo-row button,
+  .project-card-actions button {
+    width:100%;
+  }
+
+  .topbar {
+    padding:10px;
+  }
+
+  .brand-logo {
+    width:48px;
+    height:48px;
+  }
+
+  .brand-text h1 {
+    font-size:22px;
+  }
+
+  .brand-text p {
+    font-size:12px;
+  }
+
+  .top-actions {
+    display:grid;
+    grid-template-columns:repeat(3, minmax(0, 1fr));
+    width:100%;
+    flex-basis:100%;
+    gap:8px;
+  }
+
+  .top-actions > * {
+    width:100%;
+    justify-content:center;
+  }
+
+  .top-actions button,
+  .top-actions .zoom-display,
+  .top-actions .pill {
+    min-height:36px;
+    height:auto;
+    padding:7px 8px;
+    font-size:12px;
+    line-height:1.2;
+    white-space:normal;
+  }
+
+  #activeUserPill {
+    grid-column:1 / -1;
+  }
+
+  .layout {
+    padding:10px;
+    gap:10px;
+  }
+
+  .panel,
+  .ai-sidebar,
+  .ai-chat-panel,
+  .login-card {
+    border-radius:18px;
+  }
+
+  .panel-header,
+  .panel-body {
+    padding:12px;
+  }
+
+  .panel-header h2 {
+    font-size:20px;
+  }
+
+  .component-grid {
+    gap:8px;
+  }
+
+  body.upgrade-ready .canvas-toolbar .toolbar-group:first-child {
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+  }
+
+  body.upgrade-ready .canvas-toolbar .toolbar-group:first-child button,
+  body.upgrade-ready .canvas-toolbar #runLogicBtn.primary-action {
+    min-width:0;
+    white-space:normal;
+  }
+
+  body.upgrade-ready .canvas-toolbar .toolbar-group:last-child .pill {
+    white-space:normal;
+  }
+
+  .canvas-panel {
+    height:580px;
+    min-height:520px;
+  }
+
+  .workspace-area {
+    min-height:0;
+  }
+
+  .layout > .panel:nth-child(1) {
+    height:520px;
+  }
+
+  #workspaceEmptyState {
+    inset:78px 12px 210px;
+  }
+
+  .workspace-empty-copy b {
+    font-size:20px;
+  }
+
+  .workspace-quick-starts {
+    gap:8px;
+  }
+
+  .workspace-quick-starts button {
+    flex:1 1 130px;
+    min-width:0;
+  }
+
+  .logic-dock {
+    left:10px;
+    right:10px;
+    bottom:10px;
+    min-height:0;
+    max-height:42%;
+    overflow:auto;
+    border-radius:18px;
+    padding:12px;
+  }
+
+  .logic-dock h3 {
+    font-size:16px;
+  }
+
+  .logic-list {
+    min-height:48px;
+  }
+
+  #deleteBin {
+    width:54px;
+    height:54px;
+    right:14px;
+    bottom:168px;
+    font-size:24px;
+    border-radius:12px;
+  }
+
+  .ai-topbar {
+    padding:12px;
+  }
+
+  .ai-shell {
+    padding:10px;
+    gap:10px;
+  }
+
+  .ai-message {
+    max-width:100%;
+  }
+
+  .ai-inputbar {
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .ai-inputbar textarea {
+    min-height:92px;
+  }
+
+  .login-screen {
+    align-items:flex-start;
+    padding:14px;
+    overflow:auto;
+  }
+
+  .login-card {
+    width:100%;
+    max-height:none;
+    padding:18px;
+  }
+
+  .login-top {
+    align-items:flex-start;
+  }
+
+  .login-top h2 {
+    font-size:24px;
+  }
+
+  .guide-page {
+    align-items:stretch;
+    padding:10px;
+  }
+
+  .guide-shell {
+    width:100%;
+    max-height:none;
+    border-radius:18px;
+    padding:18px;
+  }
+
+  .guide-header,
+  .project-page-header {
+    align-items:stretch;
+    flex-direction:column;
+  }
+}
+
+@media (max-width: 420px) {
+  .landing-copy h1 {
+    font-size:34px;
+  }
+
+  .component-grid {
+    grid-template-columns:1fr;
+  }
+
+  .workspace-area {
+    min-height:0;
+  }
+
+  #workspaceEmptyState {
+    inset:70px 10px 230px;
+  }
+
+  .mini-actions {
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+  }
+
+  .mini-actions button {
+    width:100%;
+    padding-inline:8px;
+    white-space:normal;
+  }
+
+  .stat {
+    flex-direction:column;
+    gap:4px;
   }
 }
