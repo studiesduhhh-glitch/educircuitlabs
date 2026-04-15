@@ -51,6 +51,14 @@ test("all static buttons have an event binding path", () => {
   assert.deepEqual(missing.map(button => `${button.index}: ${button.label}`), []);
 });
 
+test("deployed html stays clean and modular", () => {
+  assert.doesNotMatch(indexHtml, /<<<<<<<|=======|>>>>>>>/);
+  assert.doesNotMatch(indexHtml, /<script>\s*const state\s*=/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css" \/>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js"><\/script>/);
+  assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
+});
+
 test("dynamic project and AI buttons are delegated", () => {
   assert.match(runtimeJs, /\[data-project-action\]/);
   assert.match(runtimeJs, /\[data-student-project-action\]/);
@@ -67,7 +75,10 @@ test("login step requires account details and demo buttons do not bypass auth", 
   assert.match(runtimeJs, /const loginEmail = document\.getElementById\("loginEmail"\)/);
   assert.equal(runtimeJs.includes("/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/"), true);
   assert.match(fallbackJs, /validateFallbackStepOne/);
+  assert.match(fallbackJs, /event\.target\.closest\("#loginNextStepBtn"\)/);
+  assert.match(fallbackJs, /handleLoginNextStep\(\)/);
   assert.match(upgradeJs, /fillDemoCredentials/);
+  assert.match(upgradeJs, /loginEmail\.classList\.add\("error"\)/);
   assert.doesNotMatch(upgradeJs, /loaded in demo mode/);
   assert.doesNotMatch(upgradeJs, /applyAuthenticatedProfile\(demoProfile\.uid/);
 });

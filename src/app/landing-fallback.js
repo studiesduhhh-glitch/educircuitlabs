@@ -98,28 +98,41 @@
     return valid;
   }
 
-  document.getElementById("loginNextStepBtn")?.addEventListener("click", (event) => {
+  function handleLoginNextStep(event){
     const stepper = window.EducircuitLoginStepper;
     if(stepper?.handleNextStep){
-      event.stopImmediatePropagation();
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
       stepper.handleNextStep();
       return;
     }
     if(!validateFallbackStepOne()) return;
     goToLoginStep(2);
-  });
-  document.getElementById("loginBackStepBtn")?.addEventListener("click", (event) => {
+  }
+
+  function handleLoginBackStep(event){
     const stepper = window.EducircuitLoginStepper;
     if(stepper?.goToLoginStep){
-      event.stopImmediatePropagation();
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
       stepper.goToLoginStep(1);
       return;
     }
     goToLoginStep(1);
+  }
+
+  document.addEventListener("click", (event) => {
+    if(event.target.closest("#loginNextStepBtn")){
+      handleLoginNextStep(event);
+      return;
+    }
+    if(event.target.closest("#loginBackStepBtn")){
+      handleLoginBackStep(event);
+    }
   });
   window.enterPlatform = function(){
     if(loginCard?.dataset.step === "1"){
-      goToLoginStep(2);
+      handleLoginNextStep();
       return;
     }
     originalEnterPlatform?.();

@@ -538,8 +538,7 @@ function installBrandingAndTheme() {
   }
 
   const savedTheme = localStorage.getItem("educircuit-theme");
-  const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
-  applyTheme(savedTheme || (prefersDark ? "dark" : "light"));
+  applyTheme(savedTheme || "light");
 
   document.querySelectorAll("[data-theme-toggle]").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -1326,10 +1325,29 @@ function installAuthUpgrade(app, services) {
   }
 
   function validateStepOne(payload) {
-    if (!payload.name) throw new Error("Enter the full name for this account.");
-    if (!payload.email) throw new Error("Enter an email address.");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) throw new Error("Enter a valid email address.");
-    if (!payload.role) throw new Error("Choose a role.");
+    [loginName, loginEmail, loginRole].forEach(field => field.classList.remove("error"));
+    const errors = [];
+
+    if (!payload.name) {
+      loginName.classList.add("error");
+      errors.push("Enter the full name for this account.");
+    }
+    if (!payload.email) {
+      loginEmail.classList.add("error");
+      errors.push("Enter an email address.");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
+      loginEmail.classList.add("error");
+      errors.push("Enter a valid email address.");
+    }
+    if (!payload.role) {
+      loginRole.classList.add("error");
+      errors.push("Choose a role.");
+    }
+
+    if (errors.length) {
+      document.querySelector(".login-step.active .error")?.focus?.();
+      throw new Error(errors[0]);
+    }
   }
 
   function validatePayload(payload) {
