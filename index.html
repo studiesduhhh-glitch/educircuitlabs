@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="description" content="Educircuit Labs - Build, simulate and learn engineering projects easily">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="./styles/upgrade.css" />
+  <title>EDUCIRCUIT</title>
+  <link rel="stylesheet" href="./styles/app.css" />
+</head>
+<body class="no-select">
+  <!-- 🔥 LANDING PAGE -->
+  <div id="landingPage" class="saas-landing">
+    <div class="landing-orb landing-orb-one"></div>
+    <div class="landing-orb landing-orb-two"></div>
+
+    <nav class="landing-nav">
+      <div class="landing-brand">
+        <div class="logo-pulse">
+          <img src="logo.png" alt="Educircuit logo">
+          <span class="lightning-bolt">⚡</span>
+        </div>
+        <div>
+          <b>EDUCIRCUIT</b>
+          <small>Labs for future engineers</small>
+        </div>
+      </div>
+      <div class="landing-nav-actions">
+        <button type="button" class="secondary theme-toggle-btn" data-theme-toggle>Dark Mode</button>
+        <button type="button" class="secondary" data-ui-action="open-guide">How It Works</button>
+      </div>
+    </nav>
+
+    <main class="landing-hero reveal-on-scroll">
+      <section class="landing-copy">
+        <span class="landing-kicker">For curious students and busy STEM teachers</span>
+        <h1>Circuit labs students love, with grading tools teachers trust.</h1>
+        <p>
+          Educircuit turns electronics lessons into interactive build sessions: students simulate,
+          debug, and share circuits while teachers track progress, auto-grade work, and give feedback faster.
+        </p>
+
+        <div class="landing-actions">
+          <button type="button" data-ui-action="enter-landing" class="landing-primary">Launch Student Lab</button>
+          <button type="button" class="landing-secondary" data-scroll-target="#landingTeacherFlow">See Teacher Workflow</button>
+        </div>
+
+        <div class="landing-metrics" aria-label="Platform highlights">
+          <div><b>12k+</b><span>student builds simulated</span></div>
+          <div><b>80+</b><span>school lab pilots</span></div>
+          <div><b>94%</b><span>average project clarity score</span></div>
+        </div>
+      </section>
+
+      <section class="landing-product-card reveal-on-scroll">
+        <div class="product-card-top">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="product-score">
+          <p id="landingLabStatus">Live AI Coach</p>
+          <strong id="landingLabScore">94%</strong>
+          <small id="landingLabHint">Safe loop, correct polarity, logic used</small>
+        </div>
+        <div class="product-circuit">
+          <div class="landing-lab-node active" data-node="battery">Battery</div>
+          <span></span>
+          <div class="landing-lab-node active" data-node="resistor">Resistor</div>
+          <span></span>
+          <div class="landing-lab-node active" data-node="led">LED</div>
+        </div>
+        <div class="product-debug">
+          <b>AI Debugger</b>
+          <p id="landingLabCoach">No short circuit found. LED has protection and voltage is in range.</p>
+        </div>
+        <div class="landing-lab-actions" aria-label="Try Educircuit scenarios">
+          <button type="button" data-landing-lab="safe" class="active">Safe Loop</button>
+          <button type="button" data-landing-lab="warning">Missing Resistor</button>
+          <button type="button" data-landing-lab="teacher">Teacher View</button>
+        </div>
+      </section>
+    </main>
+
+    <section class="landing-social-proof reveal-on-scroll" aria-label="Educircuit social proof">
+      <div class="proof-stat">
+        <b>4.8/5</b>
+        <span>teacher usability rating</span>
+      </div>
+      <blockquote>
+        “Students finally see why a circuit fails instead of guessing. The AI coach turns mistakes into teachable moments.”
+        <cite>STEM coordinator, pilot school</cite>
+      </blockquote>
+      <blockquote>
+        “Auto-grading gives me a fast first pass, then I can focus my feedback on the student’s design thinking.”
+        <cite>Electronics teacher</cite>
+      </blockquote>
+    </section>
+
+    <section class="landing-features reveal-on-scroll" id="landingTeacherFlow">
+      <article>
+        <b>Smart Simulation</b>
+        <span>Voltage propagation, output intensity, and safe wiring checks.</span>
+      </article>
+      <article>
+        <b>Teacher Dashboard</b>
+        <span>Submissions, auto-grades, generated feedback, and class analytics.</span>
+      </article>
+      <article>
+        <b>Project Gallery</b>
+        <span>Publish, like, clone, and learn from school-ready public projects.</span>
+      </article>
+    </section>
+
+    <div class="landing-footer-row">
+      <a href="Ethical Considerations of Artificial Intelligence in Modern Society.pdf" target="_blank" rel="noopener">Research Paper</a>
+      <label><input type="checkbox" id="dontShowLanding"> Don't show again</label>
+    </div>
+  </div>
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card premium-login-card" data-step="1">
+      <div class="login-top">
+       <img src="logo.png" class="login-logo" />
+        <div>
+          <h2>Welcome to Educircuit</h2>
+          <p>Two quick steps to enter your circuit lab.</p>
+        </div>
+      </div>
+
+      <div class="login-progress" aria-label="Login progress">
+        <div class="login-progress-line"><span id="loginProgressFill"></span></div>
+        <div class="login-progress-steps">
+          <span id="loginStepOne" class="active">1. Account</span>
+          <span id="loginStepTwo">2. School</span>
+        </div>
+      </div>
+
+      <div class="login-step active" data-login-step="1">
+        <div class="field-row">
+          <div class="field">
+            <label for="loginName">Full name</label>
+            <input id="loginName" type="text" placeholder="Asha Raman">
+          </div>
+          <div class="field">
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" type="email" placeholder="you@school.edu">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="loginRole">Role</label>
+          <select id="loginRole">
+            <option value="admin">School Admin</option>
+            <option value="student">Student</option>
+            <option value="teacher">Teacher</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="login-step" data-login-step="2">
+        <div class="field-row">
+          <div class="field">
+            <label for="loginSchool">School</label>
+            <input id="loginSchool" type="text" placeholder="Your school name">
+          </div>
+          <div class="field">
+            <label for="loginSchoolUser">School Code</label>
+            <input id="loginSchoolUser" type="text" placeholder="stem-academy">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field login-class-field">
+            <label for="loginClass">Class / Section</label>
+            <input id="loginClass" type="text" placeholder="Optional, e.g. 10-A">
+          </div>
+          <div class="field">
+            <label for="loginSchoolPass">Password</label>
+            <div class="password-input-wrap">
+              <input id="loginSchoolPass" type="password" placeholder="Enter your password">
+              <button type="button" class="password-toggle-btn" id="toggleLoginPasswordBtn" aria-label="Show school password" aria-pressed="false">Show</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field access-model-field">
+          <label for="loginAccessHint">Access Model</label>
+          <input id="loginAccessHint" type="text" value="Admins create schools. Teachers and students use individual accounts." readonly>
+        </div>
+      </div>
+
+      <div class="small-note" id="authModeNote">
+        School admins create the school once. Teachers and students then sign up with their own email and password inside that school.
+      </div>
+
+      <div class="login-demo-row">
+        <button class="secondary" id="demoStudentBtn">Demo Student</button>
+        <button class="secondary" id="demoTeacherBtn">Demo Teacher</button>
+      </div>
+
+      <div class="login-actions login-actions-step1">
+        <button id="loginNextStepBtn">Continue to School</button>
+      </div>
+
+      <div class="login-actions login-actions-step2">
+        <button class="secondary" id="loginBackStepBtn">Back</button>
+        <button class="secondary" id="signUpBtn">Create School User</button>
+        <button id="enterBtn">Enter Platform</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- 📘 GUIDE PAGE -->
+   <div id="guidePage" class="hidden guide-page">
+
+  <div class="guide-shell">
+    <div class="guide-header">
+      <div class="guide-title">
+        <img src="logo.png" alt="Educircuit logo">
+        <div>
+          <h1>Educircuit Guide</h1>
+          <p>Everything a first-time user needs, in one quick walkthrough.</p>
+        </div>
+      </div>
+      <a class="btn secondary" href="Ethical Considerations of Artificial Intelligence in Modern Society.pdf" target="_blank" rel="noopener">Research Paper</a>
+    </div>
+
+    <div class="guide-intro">
+      Start by choosing parts from the left panel, place them on the workspace, connect them with wires, and use simple logic blocks to simulate a working circuit.
+    </div>
+
+    <div class="guide-media">
+      <video controls playsinline>
+        <source src="video.mp4" type="video/mp4">
+      </video>
+    </div>
+
+    <div class="guide-grid">
+      <div class="guide-step">
+        <div class="step-number">1</div>
+        <h3>Add Components</h3>
+        <p>Click parts like Battery, LED, Switch, Motor, or Sensor to drop them into the circuit workspace.</p>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-number">2</div>
+        <h3>Connect Ports</h3>
+        <p>Use the ports on each component to create wires. You can also use Auto Wire for a quick starting layout.</p>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-number">3</div>
+        <h3>Build Logic</h3>
+        <p>Add simple blocks like ON, OFF, and WAIT 1s to control how your outputs behave during simulation.</p>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-number">4</div>
+        <h3>Run the Circuit</h3>
+        <p>Click Run Logic to test your circuit, then watch the LED, motor, and buzzer states update in the dashboard.</p>
+      </div>
+
+      <div class="guide-step">
+        <div class="step-number">5</div>
+        <h3>Save and Submit</h3>
+        <p>Save your project to revisit it later, rename it when needed, and submit it for review from the student dashboard.</p>
+      </div>
+    </div>
+
+    <div class="guide-footer">
+      <div class="guide-footer-note">Tip: the Research Paper button opens your AI ethics paper in a new tab.</div>
+      <button type="button" class="guide-close-btn" data-ui-action="close-guide">
+        Got it 👍
+      </button>
+    </div>
+  </div>
+</div>
+
+  <!-- 🔥 PROJECT PAGE -->
+  <div id="projectsPage" class="hidden project-page">
+
+    <div class="project-page-header">
+      <h1>My Saved Projects</h1>
+      <button type="button" data-ui-action="close-projects">⬅ Back</button>
+    </div>
+
+    <div id="projectsPageList" class="project-page-grid"></div>
+
+  </div>
+
+  <div id="studentProjectsPage" class="hidden project-page">
+
+    <div class="project-page-header">
+      <h1>Student Projects</h1>
+      <button type="button" data-ui-action="close-student-projects">⬅ Back</button>
+    </div>
+
+    <div id="studentProjectsPageList" class="project-page-grid"></div>
+
+  </div>
+
+  <div id="aiTeacherPage" class="ai-teacher-page hidden">
+    <div class="ai-topbar">
+      <div class="ai-topbar-title">
+        <img src="logo.png" class="brand-logo" alt="Educircuit logo">
+        <div>
+          <h2>AI Teacher</h2>
+          <p>Ask circuit questions, debug ideas, and get step-by-step explanations.</p>
+        </div>
+      </div>
+      <button class="secondary" data-ui-action="close-ai-teacher">⬅ Back to Simulator</button>
+    </div>
+
+    <div class="ai-shell">
+      <div class="ai-sidebar">
+        <div class="ai-card">
+          <h3>Classroom Help</h3>
+          <p>The AI Teacher explains concepts in a student-friendly way and can also answer questions about the circuit you are building right now.</p>
+          <div class="ai-chip-list">
+            <button class="ai-chip" data-ai-prompt="Explain my current circuit in simple words">Explain my circuit</button>
+            <button class="ai-chip" data-ai-prompt="Why is my circuit not turning on?">Why not on?</button>
+            <button class="ai-chip" data-ai-prompt="Teach me voltage and current">Teach voltage</button>
+            <button class="ai-chip" data-ai-prompt="Give me a precise circuit coach report">Precise coach</button>
+          </div>
+        </div>
+
+        <div class="ai-card">
+          <h3>Current Workspace</h3>
+          <p id="aiTeacherContext">No circuit loaded yet.</p>
+        </div>
+
+        <div class="ai-card ai-precision-card">
+          <h3>Precise Circuit Coach</h3>
+          <p id="aiCoachPrecisionText">Run logic or ask the AI Teacher to check your circuit.</p>
+          <div class="ai-chip-list" id="aiCoachSuggestionChips">
+            <button class="ai-chip" data-ai-prompt="What is the first exact fix I should make?">First fix</button>
+            <button class="ai-chip" data-ai-prompt="What is my efficiency score and why?">Efficiency</button>
+          </div>
+        </div>
+
+        <div class="ai-card">
+          <h3>Try Asking</h3>
+          <p>Examples: "Why does my LED need 2V?", "What does a resistor do?", "How do I make a motor circuit?", "What happens in a short circuit?", or "Quiz me".</p>
+        </div>
+      </div>
+
+      <div class="ai-chat-panel">
+        <div class="ai-chat-head">
+          <h3>Educircuit AI Teacher</h3>
+          <p>Interactive support for students, like a teacher sitting next to you.</p>
+          <div class="ai-quick-row">
+            <button class="secondary" data-ai-prompt="Teach me how switches work in circuits">Switches</button>
+            <button class="secondary" data-ai-prompt="Explain short circuit in easy words">Short Circuit</button>
+            <button class="secondary" data-ai-prompt="How much voltage does my circuit need?">Voltage Help</button>
+            <button class="secondary" data-ai-prompt="Quiz me on this circuit">Quiz Me</button>
+            <button class="secondary" data-ai-prompt="Explain it like I am new">Simplify</button>
+          </div>
+        </div>
+
+        <div class="ai-messages" id="aiTeacherMessages"></div>
+
+        <div class="ai-inputbar">
+          <textarea id="aiTeacherInput" placeholder="Ask your AI Teacher anything about circuits, components, voltage, logic, or your current project..."></textarea>
+          <button id="aiTeacherSendBtn">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand">
+          <img src="logo.png" class="brand-logo" />
+          <div class="brand-text">
+            <h1>EDUCIRCUIT</h1>
+            <p>Build • Learn • Innovate</p>
+          </div>
+        </div>
+        </div> 
+
+      <div class="top-actions">
+        <span class="pill" id="activeUserPill">Not logged in</span>
+        <button class="secondary" id="studentModeBtn">Student</button>
+        <button class="secondary" id="teacherModeBtn">Teacher</button>
+        <button class="secondary" id="clearBtn">Clear</button>
+        <button class="secondary" id="zoomOutBtn">Zoom −</button>
+        <span class="zoom-display" id="zoomDisplay">100%</span>
+        <button class="secondary" id="zoomInBtn">Zoom +</button>
+        <button class="secondary" id="aiTeacherBtn">AI Teacher</button>
+        <button class="green" id="saveBtn">Save</button>
+        <button class="secondary" id="langToggleBtn">தமிழ்</button>
+        <button class="red" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Components</h2>
+            <small>Click to add. Drag to move. Click ports to wire.</small>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="left-section-title">DIY Components</div>
+          <div class="component-grid" id="componentGrid"></div>
+
+          <div class="left-section-title">Logic Blocks</div>
+          <div class="example-list" id="logicBlockList"></div>
+
+          <div class="left-section-title">Example Projects</div>
+          <div class="example-list">
+            <div class="example-item" data-example="fan">
+              <b>Mini Fan</b>
+              Battery → Switch → Motor
+            </div>
+            <div class="example-item" data-example="alarm">
+              <b>Door Alarm</b>
+              Battery → Switch → Buzzer
+            </div>
+            <div class="example-item" data-example="traffic">
+              <b>Traffic Light</b>
+              LED sequence logic
+            </div>
+            <div class="example-item" data-example="plant">
+              <b>Smart Plant Watering</b>
+              Soil Sensor → Pump Motor
+            </div>
+            <div class="example-item" data-example="lamp">
+              <b>Smart Lamp</b>
+              Switch logic → LED
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel canvas-panel">
+        <div class="canvas-toolbar">
+          <div class="toolbar-group">
+            <button class="secondary" id="runLogicBtn">Run Logic</button>
+            <button class="secondary" id="stopLogicBtn">Reset Outputs</button>
+            <button class="secondary" id="autoWireBtn">Auto Wire</button>
+            <button class="secondary" id="toggleGridBtn">Toggle Grid</button>
+          </div>
+          <div class="toolbar-group">
+            <span class="pill">Ports: click one component port, then another</span>
+          </div>
+        </div>
+
+        <div class="workspace-area" id="workspaceArea">
+          <div class="canvas-world" id="canvasWorld">
+            <svg class="wire-layer" id="wireLayer"></svg>
+            <div class="items-layer" id="itemsLayer"></div>
+            <div id="deleteBin">🗑️</div>
+
+            <div class="logic-dock">
+              <h3>Logic Workspace</h3>
+              <div class="logic-list" id="logicList"></div>
+              <div class="mini-actions">
+                <button class="secondary" id="clearLogicBtn">Clear Logic</button>
+                <button class="secondary" id="addWaitBtn">Add WAIT 1s</button>
+                <button class="secondary" id="addLedOnBtn">ON</button>
+                <button class="secondary" id="addLedOffBtn">OFF</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Dashboard</h2>
+            <small>Student and teacher controls</small>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div id="studentPanel">
+            <div class="dashboard-card">
+              <h3 class="card-title">Student Dashboard</h3>
+              <div class="stat"><span>Status</span><b id="statusText">Not Submitted</b></div>
+              <div class="stat"><span>Grade</span><b id="gradeText">Not graded</b></div>
+              <div class="stat"><span>Project</span><b id="projectNameText">Untitled STEM Project</b></div>
+              <div class="mini-actions">
+                <button class="green" id="submitBtn">Submit Project</button>
+                <button class="secondary" id="renameBtn">Rename</button>
+              </div>
+
+              <div class="dashboard-card">
+                <h3 class="card-title">My Projects</h3>
+                <button type="button" data-ui-action="open-projects" class="secondary">
+                  Open Full Page 🚀
+                </button>
+              </div>
+            </div>
+
+            <div class="dashboard-card">
+              <h3 class="card-title">Student Projects</h3>
+              <button type="button" data-ui-action="open-student-projects" class="secondary">
+                Open Full Page 🚀
+              </button>
+            </div>
+
+            <div class="dashboard-card">
+              <h3 class="card-title">Battery Output</h3>
+              <div class="stat"><span>Current Voltage</span><b id="batteryVoltageValue">5.0V</b></div>
+              <input id="batteryVoltageRange" class="voltage-input" type="range" min="0" max="30" step="0.5" value="5">
+              <div class="small-note">Adjust the battery output voltage for every battery in the workspace.</div>
+            </div>
+
+            <div class="dashboard-card">
+              <h3 class="card-title">Simulation Outputs</h3>
+              <div class="stat">
+                <span>LED State</span>
+                <b class="output-state">
+                  <span class="led-indicator" id="dashboardLed"></span>
+                  <span id="ledStateText">OFF</span>
+                </b>
+              </div>
+              <div class="stat">
+                <span>Motor</span>
+                <b class="output-state">
+                  <span class="motor-wheel" id="dashboardMotor"></span>
+                  <span id="motorStateText">OFF</span>
+                </b>
+              </div>
+              <div class="stat">
+                <span>Buzzer</span>
+                <b class="output-state">
+                  <span class="buzzer-wave" id="dashboardBuzzer"></span>
+                  <span id="buzzerStateText">OFF</span>
+                </b>
+              </div>
+            </div>
+
+            <div class="dashboard-card">
+              <h3 class="card-title">Circuit Coach</h3>
+              <div class="stat"><span>Status</span><b id="coachStatusText">Ready</b></div>
+              <div class="small-note" id="coachHintText">Build a loop from battery + through your components and return to battery -.</div>
+              <div class="small-note coach-fix-text" id="coachFixText">Correct connection: Battery + -> first component +, each component - -> next component +, then final component - -> Battery -.</div>
+            </div>
+
+            <div class="dashboard-card">
+              <h3 class="card-title">Know My Voltage</h3>
+              <div id="voltageGuideList" class="voltage-guide"></div>
+            </div>
+          </div>
+
+          <div id="teacherPanel" class="hidden teacher-area">
+            <div class="dashboard-card">
+              <h3 class="card-title">Teacher Panel</h3>
+              <div class="field">
+                <label for="teacherGrade">Enter grade</label>
+                <input id="teacherGrade" type="text" placeholder="A+, 95, Excellent">
+              </div>
+              <div class="field field-spaced">
+                <label for="teacherComment">Feedback</label>
+                <textarea id="teacherComment" placeholder="Write comments for the student's project"></textarea>
+              </div>
+              <div class="mini-actions">
+                <button id="applyGradeBtn">Apply Grade</button>
+                <button class="secondary" id="copyProjectBtn">Copy Project Summary</button>
+              </div>
+            </div>
+
+            <div class="dashboard-card">
+              <h3 class="card-title">Submission Review</h3>
+              <div class="stat"><span>Submission</span><b id="teacherSubmissionState">Pending</b></div>
+              <div class="stat"><span>Current Grade</span><b id="teacherGradeState">Not graded</b></div>
+              <div class="stat"><span>Components</span><b id="teacherComponentCount">0</b></div>
+              <div class="stat"><span>Wires</span><b id="teacherWireCount">0</b></div>
+              <div class="stat"><span>Logic Blocks</span><b id="teacherLogicCount">0</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔥 FIREBASE (ADD THIS HERE) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+  <script src="./src/state/app-state.js"></script>
+  <script src="./src/ui/components.js"></script>
+  <script src="./src/ui/performance.js"></script>
+  <script src="./src/simulation/legacy-simulation.js"></script>
+  <script src="./src/app/runtime.js"></script>
+  <script src="./src/app/landing-fallback.js"></script>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
