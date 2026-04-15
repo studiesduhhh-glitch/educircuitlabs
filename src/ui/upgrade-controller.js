@@ -1,5 +1,6 @@
-import { analyzeCircuit } from "../core/circuit-engine.js";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260416-teacher1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260416-teacher1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260416-teacher1";
 import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js";
 
 function wait(ms) {
@@ -315,6 +316,9 @@ function loadQuickStartCircuit(app, preset) {
   state.items = [];
   state.wires = [];
   state.logic = ["ON", "WAIT 1s"];
+  state.learning = state.learning || {};
+  state.learning.selectedChallengeId = preset === "motor" ? "motor-circuit" : "led-circuit";
+  state.learning.lastResult = null;
   state.selectedPort = null;
   state.wireDrag = null;
   state.drag = null;
@@ -724,6 +728,7 @@ function renderIntensityDecorations(app) {
 }
 
 function installDashboardEnhancements(app) {
+  ensureLearningState(app);
   const coachFixText = document.getElementById("coachFixText");
   if (coachFixText && !document.getElementById("coachEfficiencyValue")) {
     coachFixText.insertAdjacentHTML("afterend", `
@@ -759,11 +764,129 @@ function installDashboardEnhancements(app) {
     card.innerHTML += `<div class="component-health-list" id="componentHealthList"></div>`;
     studentPanel.appendChild(card);
   }
+
+  if (studentPanel && !document.getElementById("learningChallengeCard")) {
+    const card = createCard("Learning Challenge", "Pick a task, run logic, and get a score with hints.");
+    card.id = "learningChallengeCard";
+    card.innerHTML += `
+      <div class="learning-challenge-tabs" id="learningChallengeTabs"></div>
+      <div class="learning-score-row">
+        <div>
+          <span>Score</span>
+          <b id="learningScoreValue">--</b>
+        </div>
+        <div>
+          <span>Status</span>
+          <b id="learningStatusValue">Ready</b>
+        </div>
+      </div>
+      <div class="learning-meter"><span id="learningScoreBar"></span></div>
+      <p class="learning-hint" id="learningHintText">Choose a challenge, build the circuit, then press Run Logic.</p>
+      <div class="learning-requirements" id="learningRequirements"></div>
+    `;
+    studentPanel.insertBefore(card, document.getElementById("componentHealthCard") || null);
+  }
+
+  const challengeTabs = document.getElementById("learningChallengeTabs");
+  if (challengeTabs && challengeTabs.dataset.learningTabsInstalled !== "true") {
+    challengeTabs.dataset.learningTabsInstalled = "true";
+    challengeTabs.addEventListener("click", event => {
+      const button = event.target.closest("[data-learning-challenge]");
+      if (!button) return;
+      ensureLearningState(app);
+      app.state.learning.selectedChallengeId = button.dataset.learningChallenge;
+      app.state.learning.lastResult = getLearningResult(app);
+      renderLearningPanel(app);
+      app.showToast?.(`${button.textContent.trim()} challenge selected`);
+    });
+  }
+
+  renderLearningPanel(app);
+}
+
+function ensureLearningState(app) {
+  if (!app?.state) return null;
+  app.state.learning = app.state.learning || {};
+  app.state.learning.selectedChallengeId = app.state.learning.selectedChallengeId || LEARNING_CHALLENGES[0].id;
+  app.state.learning.lastResult = app.state.learning.lastResult || null;
+  return app.state.learning;
+}
+
+function getLearningResult(app) {
+  ensureLearningState(app);
+  const snapshot = app.getProjectSnapshot?.() || app.state;
+  const report = app.state.simulationReport || analyzeCircuit(snapshot);
+  return evaluateLearningState(snapshot, {
+    report,
+    challengeId: app.state.learning.selectedChallengeId
+  });
+}
+
+function renderLearningPanel(app) {
+  const card = document.getElementById("learningChallengeCard");
+  if (!card || !app?.state) return;
+
+  const learning = ensureLearningState(app);
+  const result = learning.lastResult || getLearningResult(app);
+  learning.lastResult = result;
+
+  const tabs = document.getElementById("learningChallengeTabs");
+  if (tabs) {
+    tabs.innerHTML = LEARNING_CHALLENGES.map(challenge => `
+      <button
+        type="button"
+        class="secondary ${challenge.id === learning.selectedChallengeId ? "active" : ""}"
+        data-learning-challenge="${escapeHtml(challenge.id)}"
+      >${escapeHtml(challenge.shortTitle || challenge.title)}</button>
+    `).join("");
+  }
+
+  const status = result.challenge.passed
+    ? "Complete"
+    : result.circuit.isCorrect
+      ? "Correct"
+      : "Needs fix";
+  const statusClass = result.challenge.passed || result.circuit.isCorrect
+    ? "status-chip-safe"
+    : result.hint.level === "error"
+      ? "status-chip-danger"
+      : "status-chip-warning";
+
+  const scoreValue = document.getElementById("learningScoreValue");
+  const statusValue = document.getElementById("learningStatusValue");
+  const scoreBar = document.getElementById("learningScoreBar");
+  const hintText = document.getElementById("learningHintText");
+  const requirements = document.getElementById("learningRequirements");
+
+  if (scoreValue) scoreValue.textContent = `${result.score.total}/100`;
+  if (statusValue) {
+    statusValue.textContent = status;
+    statusValue.className = statusClass;
+  }
+  if (scoreBar) scoreBar.style.width = `${result.score.total}%`;
+  if (hintText) {
+    hintText.textContent = result.challenge.passed
+      ? result.challenge.message
+      : result.hint.message;
+  }
+  if (requirements) {
+    requirements.innerHTML = result.challenge.requirements
+      .map(requirement => `
+        <div class="learning-requirement ${requirement.passed ? "passed" : "pending"}">
+          <span>${requirement.passed ? "✓" : "•"}</span>
+          <b>${escapeHtml(requirement.label)}</b>
+        </div>
+      `)
+      .join("");
+  }
 }
 
 function renderDashboardEnhancements(app) {
   const report = app.state.simulationReport;
-  if (!report) return;
+  if (!report) {
+    renderLearningPanel(app);
+    return;
+  }
 
   const coach = buildCoachFeedback(report);
   const statusClass = coach.health === "danger"
@@ -836,6 +959,8 @@ function renderDashboardEnhancements(app) {
       }).join("")
       : "<p class=\"upgrade-muted\">Add components to see live health checks.</p>";
   }
+
+  renderLearningPanel(app);
 }
 
 function renderAiTeacherPrecision(app) {
@@ -899,7 +1024,12 @@ function installSimulationUpgrade(app) {
     });
 
     const coachFeedback = buildCoachFeedback(report);
+    const learningResult = evaluateLearningState(app.getProjectSnapshot?.() || app.state, {
+      report,
+      challengeId: ensureLearningState(app).selectedChallengeId
+    });
     app.state.simulationReport = report;
+    app.state.learning.lastResult = learningResult;
     app.state.outputIntensity = report.outputs;
     app.state.activeItems = report.activeItemIds;
     app.state.burstItems = report.burstItemIds;
@@ -1541,9 +1671,14 @@ function installActionOverrides(app, services, sharing, teacherDashboard, gamifi
     showSimulationFeedback(report);
     startCurrentFlowAnimation(app, report);
     showAiDebugMessage(debuggerResponse);
-    app.showToast(debuggerResponse.status === "safe"
-      ? `Logic run complete. Efficiency ${debuggerResponse.efficiency}%.`
-      : "AI coach found a fix suggestion.");
+    const learningResult = getLearningResult(app);
+    app.state.learning.lastResult = learningResult;
+    renderLearningPanel(app);
+    app.showToast(learningResult.challenge.passed
+      ? `${learningResult.challenge.challenge.title} complete. Score ${learningResult.score.total}/100.`
+      : learningResult.circuit.isCorrect
+        ? `Circuit correct. Score ${learningResult.score.total}/100.`
+        : `Hint: ${learningResult.hint.message}`);
   });
   if (runLogicBtn) runLogicBtn.dataset.upgradeOverride = "true";
 

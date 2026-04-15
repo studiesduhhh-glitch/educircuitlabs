@@ -36,6 +36,10 @@
         hint: "Build a loop from battery + through your components and return to battery -.",
         fix: "Correct connection: Battery + -> first component +, each component - -> next component +, then final component - -> Battery -."
       },
+      learning: {
+        selectedChallengeId: "led-circuit",
+        lastResult: null
+      },
       activeItems: [],
       aiTeacherMessages: [],
       burstItems: [],

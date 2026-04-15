@@ -82,6 +82,52 @@ test("AI teacher supports interactive quiz prompts", () => {
     defaultBatteryVoltage: 5
   });
 
-  assert.match(reply, /Quick friendly quiz/i);
+  assert.match(reply, /general quiz/i);
   assert.match(reply, /Reply with your answers/i);
+});
+
+test("AI teacher answers general science questions without forcing circuit debug", () => {
+  const reply = buildTeacherStyleReply("why is the sky blue?", {
+    items: [],
+    wires: [],
+    defaultBatteryVoltage: 5
+  });
+
+  assert.match(reply, /scatters/i);
+  assert.match(reply, /blue light/i);
+  assert.doesNotMatch(reply, /Circuit Coach/i);
+});
+
+test("AI teacher handles general writing prompts", () => {
+  const reply = buildTeacherStyleReply("write a short paragraph about teamwork", {
+    items: [],
+    wires: [],
+    defaultBatteryVoltage: 5
+  });
+
+  assert.match(reply, /clean draft/i);
+  assert.match(reply, /teamwork/i);
+  assert.doesNotMatch(reply, /Circuit Coach/i);
+});
+
+test("AI teacher can solve simple math prompts", () => {
+  const reply = buildTeacherStyleReply("what is 15% of 80?", {
+    items: [],
+    wires: [],
+    defaultBatteryVoltage: 5
+  });
+
+  assert.match(reply, /answer is 12/i);
+  assert.match(reply, /15% of 80/i);
+});
+
+test("AI teacher keeps live facts honest", () => {
+  const reply = buildTeacherStyleReply("what is the latest news today?", {
+    items: [],
+    wires: [],
+    defaultBatteryVoltage: 5
+  });
+
+  assert.match(reply, /does not have live internet/i);
+  assert.match(reply, /verify with a live source/i);
 });
