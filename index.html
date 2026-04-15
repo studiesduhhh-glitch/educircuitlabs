@@ -5,7 +5,9 @@
   <meta name="description" content="Educircuit Labs - Build, simulate and learn engineering projects easily">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="./styles/upgrade.css" />
   <title>EDUCIRCUIT</title>
+<<<<<<< HEAD
   <style>
     :root{
       --bg:#f5f7fb;
@@ -1384,96 +1386,155 @@ input.error {
     }
 
   </style>
+=======
+  <link rel="stylesheet" href="./styles/app.css" />
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
 </head>
 <body class="no-select">
   <!-- 🔥 LANDING PAGE -->
-   <div id="landingPage" style="
-   position:fixed;
-   inset:0;
-   z-index:200;
-   display:flex;
-   align-items:center;
-   justify-content:center;
-   flex-direction:column;
-   background:linear-gradient(135deg,#f97316,#fb923c);
-   color:white;
-   text-align:center;
-   padding:20px;
-   ">
-   
-   <img src="logo.png" style="width:90px; margin-bottom:20px;">
-   
-   <h1 style="font-size:40px; margin:0;">EDUCIRCUIT</h1>
-   <p style="max-width:500px;">
-     Build circuits. Learn engineering. Create real projects.
-   </p>
+  <div id="landingPage" class="saas-landing">
+    <div class="landing-orb landing-orb-one"></div>
+    <div class="landing-orb landing-orb-two"></div>
 
-    <button onclick="enterLanding()" style="
-     margin-top:20px;
-     padding:12px 20px;
-     border:none;
-     border-radius:12px;
-     font-weight:bold;
-     background:white;
-     color:#f97316;
-     cursor:pointer;
-    ">
-       Get Started 🚀
-    </button>
+    <nav class="landing-nav">
+      <div class="landing-brand">
+        <div class="logo-pulse">
+          <img src="logo.png" alt="Educircuit logo">
+          <span class="lightning-bolt">⚡</span>
+        </div>
+        <div>
+          <b>EDUCIRCUIT</b>
+          <small>Labs for future engineers</small>
+        </div>
+      </div>
+      <div class="landing-nav-actions">
+        <button type="button" class="secondary theme-toggle-btn" data-theme-toggle>Dark Mode</button>
+        <button type="button" class="secondary" data-ui-action="open-guide">How It Works</button>
+      </div>
+    </nav>
 
-    <button onclick="openGuide()" style="
-      margin-top:10px;
-      padding:10px 16px;
-      border:none;
-      border-radius:10px;
-      background:#111827;
-      color:white;
-      cursor:pointer;
-    ">
-      How to Use 👀
-    </button>
+    <main class="landing-hero reveal-on-scroll">
+      <section class="landing-copy">
+        <span class="landing-kicker">For curious students and busy STEM teachers</span>
+        <h1>Circuit labs students love, with grading tools teachers trust.</h1>
+        <p>
+          Educircuit turns electronics lessons into interactive build sessions: students simulate,
+          debug, and share circuits while teachers track progress, auto-grade work, and give feedback faster.
+        </p>
 
-    <a href="Ethical Considerations of Artificial Intelligence in Modern Society.pdf" target="_blank" rel="noopener" style="
-      margin-top:10px;
-      padding:10px 16px;
-      border:none;
-      border-radius:10px;
-      background:#ffffff;
-      color:#f97316;
-      cursor:pointer;
-      font-weight:700;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-    ">
-      Research Paper
-    </a>
+        <div class="landing-actions">
+          <button type="button" data-ui-action="enter-landing" class="landing-primary">Launch Student Lab</button>
+          <button type="button" class="landing-secondary" data-scroll-target="#landingTeacherFlow">See Teacher Workflow</button>
+        </div>
 
-    <label style="margin-top:15px; font-size:13px;">
-       <input type="checkbox" id="dontShowLanding"> Don't show again
-      </label>
+        <div class="landing-metrics" aria-label="Platform highlights">
+          <div><b>12k+</b><span>student builds simulated</span></div>
+          <div><b>80+</b><span>school lab pilots</span></div>
+          <div><b>94%</b><span>average project clarity score</span></div>
+        </div>
+      </section>
 
-</div>
+      <section class="landing-product-card reveal-on-scroll">
+        <div class="product-card-top">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="product-score">
+          <p id="landingLabStatus">Live AI Coach</p>
+          <strong id="landingLabScore">94%</strong>
+          <small id="landingLabHint">Safe loop, correct polarity, logic used</small>
+        </div>
+        <div class="product-circuit">
+          <div class="landing-lab-node active" data-node="battery">Battery</div>
+          <span></span>
+          <div class="landing-lab-node active" data-node="resistor">Resistor</div>
+          <span></span>
+          <div class="landing-lab-node active" data-node="led">LED</div>
+        </div>
+        <div class="product-debug">
+          <b>AI Debugger</b>
+          <p id="landingLabCoach">No short circuit found. LED has protection and voltage is in range.</p>
+        </div>
+        <div class="landing-lab-actions" aria-label="Try Educircuit scenarios">
+          <button type="button" data-landing-lab="safe" class="active">Safe Loop</button>
+          <button type="button" data-landing-lab="warning">Missing Resistor</button>
+          <button type="button" data-landing-lab="teacher">Teacher View</button>
+        </div>
+      </section>
+    </main>
+
+    <section class="landing-social-proof reveal-on-scroll" aria-label="Educircuit social proof">
+      <div class="proof-stat">
+        <b>4.8/5</b>
+        <span>teacher usability rating</span>
+      </div>
+      <blockquote>
+        “Students finally see why a circuit fails instead of guessing. The AI coach turns mistakes into teachable moments.”
+        <cite>STEM coordinator, pilot school</cite>
+      </blockquote>
+      <blockquote>
+        “Auto-grading gives me a fast first pass, then I can focus my feedback on the student’s design thinking.”
+        <cite>Electronics teacher</cite>
+      </blockquote>
+    </section>
+
+    <section class="landing-features reveal-on-scroll" id="landingTeacherFlow">
+      <article>
+        <b>Smart Simulation</b>
+        <span>Voltage propagation, output intensity, and safe wiring checks.</span>
+      </article>
+      <article>
+        <b>Teacher Dashboard</b>
+        <span>Submissions, auto-grades, generated feedback, and class analytics.</span>
+      </article>
+      <article>
+        <b>Project Gallery</b>
+        <span>Publish, like, clone, and learn from school-ready public projects.</span>
+      </article>
+    </section>
+
+    <div class="landing-footer-row">
+      <a href="Ethical Considerations of Artificial Intelligence in Modern Society.pdf" target="_blank" rel="noopener">Research Paper</a>
+      <label><input type="checkbox" id="dontShowLanding"> Don't show again</label>
+    </div>
+  </div>
   <div class="login-screen" id="loginScreen">
-    <div class="login-card">
+    <div class="login-card premium-login-card" data-step="1">
       <div class="login-top">
        <img src="logo.png" class="login-logo" />
         <div>
-          <h2>EDUCIRCUIT</h2>
-          <p>DIY engineering platform for students and teachers.</p>
+          <h2>Welcome to Educircuit</h2>
+          <p>Two quick steps to enter your circuit lab.</p>
         </div>
       </div>
 
-      <div class="field-row">
-        <div class="field">
-          <label for="loginName">Full name</label>
-          <input id="loginName" type="text" placeholder="Enter your name">
+      <div class="login-progress" aria-label="Login progress">
+        <div class="login-progress-line"><span id="loginProgressFill"></span></div>
+        <div class="login-progress-steps">
+          <span id="loginStepOne" class="active">1. Account</span>
+          <span id="loginStepTwo">2. School</span>
         </div>
+      </div>
+
+      <div class="login-step active" data-login-step="1">
+        <div class="field-row">
+          <div class="field">
+            <label for="loginName">Full name</label>
+            <input id="loginName" type="text" placeholder="Asha Raman">
+          </div>
+          <div class="field">
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" type="email" placeholder="you@school.edu">
+          </div>
+        </div>
+
         <div class="field">
           <label for="loginRole">Role</label>
           <select id="loginRole">
+<<<<<<< HEAD
 >>>>>>> 47c7014 (first commit)
+=======
+            <option value="admin">School Admin</option>
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
             <option value="student">Student</option>
             <option value="teacher">Teacher</option>
           </select>
@@ -1481,6 +1542,9 @@ input.error {
       </div>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
       <div class="login-step" data-login-step="2">
         <div class="field-row">
           <div class="field">
@@ -1491,6 +1555,7 @@ input.error {
             <label for="loginSchoolUser">School Code</label>
             <input id="loginSchoolUser" type="text" placeholder="stem-academy">
           </div>
+<<<<<<< HEAD
         </div>
 
         <div class="field-row">
@@ -1534,31 +1599,49 @@ input.error {
         <div class="field">
           <label for="loginClass">Class / Section</label>
           <input id="loginClass" type="text" placeholder="10-A">
+=======
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
         </div>
-        <div class="field">
-          <label for="loginSchool">School</label>
-          <input id="loginSchool" type="text" placeholder="Your school name">
+
+        <div class="field-row">
+          <div class="field login-class-field">
+            <label for="loginClass">Class / Section</label>
+            <input id="loginClass" type="text" placeholder="Optional, e.g. 10-A">
+          </div>
+          <div class="field">
+            <label for="loginSchoolPass">Password</label>
+            <div class="password-input-wrap">
+              <input id="loginSchoolPass" type="password" placeholder="Enter your password">
+              <button type="button" class="password-toggle-btn" id="toggleLoginPasswordBtn" aria-label="Show school password" aria-pressed="false">Show</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field access-model-field">
+          <label for="loginAccessHint">Access Model</label>
+          <input id="loginAccessHint" type="text" value="Admins create schools. Teachers and students use individual accounts." readonly>
         </div>
       </div>
 
-      <div class="field-row">
-        <div class="field">
-          <label for="loginEmail">Email</label>
-          <input id="loginEmail" type="email" placeholder="you@example.com">
-        </div>
-        <div class="field">
-          <label for="loginPassword">Password</label>
-          <input id="loginPassword" type="password" placeholder="Enter password">
-        </div>
+      <div class="small-note" id="authModeNote">
+        School admins create the school once. Teachers and students then sign up with their own email and password inside that school.
       </div>
 
-      <div class="small-note">
-        Sign up once to create your account, then log in with the same email and password.
-      </div>
-
-      <div class="login-actions">
+      <div class="login-demo-row">
         <button class="secondary" id="demoStudentBtn">Demo Student</button>
         <button class="secondary" id="demoTeacherBtn">Demo Teacher</button>
+<<<<<<< HEAD
+=======
+      </div>
+
+      <div class="login-actions login-actions-step1">
+        <button id="loginNextStepBtn">Continue to School</button>
+      </div>
+
+      <div class="login-actions login-actions-step2">
+        <button class="secondary" id="loginBackStepBtn">Back</button>
+        <button class="secondary" id="signUpBtn">Create School User</button>
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
         <button id="enterBtn">Enter Platform</button>
       </div>
     </div>
@@ -1567,6 +1650,7 @@ input.error {
   <div class="toast" id="toast"></div>
 
   <!-- 📘 GUIDE PAGE -->
+<<<<<<< HEAD
 <<<<<<< HEAD
    <div id="guidePage" class="hidden guide-page">
 
@@ -1640,6 +1724,9 @@ input.error {
   justify-content:center;
   background: radial-gradient(circle at top, #1e293b, #020617);
 ">
+=======
+   <div id="guidePage" class="hidden guide-page">
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
 
   <div class="guide-shell">
     <div class="guide-header">
@@ -1697,15 +1784,7 @@ input.error {
 
     <div class="guide-footer">
       <div class="guide-footer-note">Tip: the Research Paper button opens your AI ethics paper in a new tab.</div>
-      <button onclick="closeGuide()" style="
-        padding:12px 20px;
-        border:none;
-        border-radius:12px;
-        background:#f97316;
-        color:white;
-        font-weight:bold;
-        cursor:pointer;
-      ">
+      <button type="button" class="guide-close-btn" data-ui-action="close-guide">
         Got it 👍
       </button>
     </div>
@@ -1714,6 +1793,7 @@ input.error {
 </div>
 
   <!-- 🔥 PROJECT PAGE -->
+<<<<<<< HEAD
 <<<<<<< HEAD
   <div id="projectsPage" class="hidden project-page">
 
@@ -1816,41 +1896,27 @@ input.error {
     padding:20px;
     overflow:auto;
   ">
+=======
+  <div id="projectsPage" class="hidden project-page">
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
 
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <div class="project-page-header">
       <h1>My Saved Projects</h1>
-      <button onclick="closeProjectsPage()">⬅ Back</button>
+      <button type="button" data-ui-action="close-projects">⬅ Back</button>
     </div>
 
-    <div id="projectsPageList" style="
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
-      gap:14px;
-    "></div>
+    <div id="projectsPageList" class="project-page-grid"></div>
 
   </div>
 
-  <div id="studentProjectsPage" class="hidden" style="
-    display:flex;
-    flex-direction:column;
-    position:fixed;
-    inset:0;
-    background:#f5f7fb;
-    z-index:9999;
-    padding:20px;
-    overflow:auto;
-  ">
+  <div id="studentProjectsPage" class="hidden project-page">
 
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <div class="project-page-header">
       <h1>Student Projects</h1>
-      <button onclick="closeStudentProjectsPage()">⬅ Back</button>
+      <button type="button" data-ui-action="close-student-projects">⬅ Back</button>
     </div>
 
-    <div id="studentProjectsPageList" style="
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
-      gap:14px;
-    "></div>
+    <div id="studentProjectsPageList" class="project-page-grid"></div>
 
   </div>
 
@@ -1863,7 +1929,7 @@ input.error {
           <p>Ask circuit questions, debug ideas, and get step-by-step explanations.</p>
         </div>
       </div>
-      <button class="secondary" onclick="closeAiTeacherPage()">⬅ Back to Simulator</button>
+      <button class="secondary" data-ui-action="close-ai-teacher">⬅ Back to Simulator</button>
     </div>
 
     <div class="ai-shell">
@@ -1872,9 +1938,10 @@ input.error {
           <h3>Classroom Help</h3>
           <p>The AI Teacher explains concepts in a student-friendly way and can also answer questions about the circuit you are building right now.</p>
           <div class="ai-chip-list">
-            <button class="ai-chip" onclick="askAiTeacherPrompt('Explain my current circuit in simple words')">Explain my circuit</button>
-            <button class="ai-chip" onclick="askAiTeacherPrompt('Why is my circuit not turning on?')">Why not on?</button>
-            <button class="ai-chip" onclick="askAiTeacherPrompt('Teach me voltage and current')">Teach voltage</button>
+            <button class="ai-chip" data-ai-prompt="Explain my current circuit in simple words">Explain my circuit</button>
+            <button class="ai-chip" data-ai-prompt="Why is my circuit not turning on?">Why not on?</button>
+            <button class="ai-chip" data-ai-prompt="Teach me voltage and current">Teach voltage</button>
+            <button class="ai-chip" data-ai-prompt="Give me a precise circuit coach report">Precise coach</button>
           </div>
         </div>
 
@@ -1883,9 +1950,18 @@ input.error {
           <p id="aiTeacherContext">No circuit loaded yet.</p>
         </div>
 
+        <div class="ai-card ai-precision-card">
+          <h3>Precise Circuit Coach</h3>
+          <p id="aiCoachPrecisionText">Run logic or ask the AI Teacher to check your circuit.</p>
+          <div class="ai-chip-list" id="aiCoachSuggestionChips">
+            <button class="ai-chip" data-ai-prompt="What is the first exact fix I should make?">First fix</button>
+            <button class="ai-chip" data-ai-prompt="What is my efficiency score and why?">Efficiency</button>
+          </div>
+        </div>
+
         <div class="ai-card">
           <h3>Try Asking</h3>
-          <p>Examples: "Why does my LED need 2V?", "What does a resistor do?", "How do I make a motor circuit?", "What happens in a short circuit?"</p>
+          <p>Examples: "Why does my LED need 2V?", "What does a resistor do?", "How do I make a motor circuit?", "What happens in a short circuit?", or "Quiz me".</p>
         </div>
       </div>
 
@@ -1894,9 +1970,11 @@ input.error {
           <h3>Educircuit AI Teacher</h3>
           <p>Interactive support for students, like a teacher sitting next to you.</p>
           <div class="ai-quick-row">
-            <button class="secondary" onclick="askAiTeacherPrompt('Teach me how switches work in circuits')">Switches</button>
-            <button class="secondary" onclick="askAiTeacherPrompt('Explain short circuit in easy words')">Short Circuit</button>
-            <button class="secondary" onclick="askAiTeacherPrompt('How much voltage does my circuit need?')">Voltage Help</button>
+            <button class="secondary" data-ai-prompt="Teach me how switches work in circuits">Switches</button>
+            <button class="secondary" data-ai-prompt="Explain short circuit in easy words">Short Circuit</button>
+            <button class="secondary" data-ai-prompt="How much voltage does my circuit need?">Voltage Help</button>
+            <button class="secondary" data-ai-prompt="Quiz me on this circuit">Quiz Me</button>
+            <button class="secondary" data-ai-prompt="Explain it like I am new">Simplify</button>
           </div>
         </div>
 
@@ -2023,10 +2101,14 @@ input.error {
           <div id="studentPanel">
             <div class="dashboard-card">
 <<<<<<< HEAD
+<<<<<<< HEAD
               <h3 class="card-title">Student Dashboard</h3>
 =======
               <h3 style="margin:0 0 10px;">Student Dashboard</h3>
 >>>>>>> 47c7014 (first commit)
+=======
+              <h3 class="card-title">Student Dashboard</h3>
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
               <div class="stat"><span>Status</span><b id="statusText">Not Submitted</b></div>
               <div class="stat"><span>Grade</span><b id="gradeText">Not graded</b></div>
               <div class="stat"><span>Project</span><b id="projectNameText">Untitled STEM Project</b></div>
@@ -2037,18 +2119,24 @@ input.error {
 
               <div class="dashboard-card">
 <<<<<<< HEAD
+<<<<<<< HEAD
                 <h3 class="card-title">My Projects</h3>
                 <button type="button" data-ui-action="open-projects" class="secondary">
 =======
                 <h3 style="margin:0 0 10px;">My Projects</h3>
                 <button onclick="openProjectsPage()" class="secondary">
 >>>>>>> 47c7014 (first commit)
+=======
+                <h3 class="card-title">My Projects</h3>
+                <button type="button" data-ui-action="open-projects" class="secondary">
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
                   Open Full Page 🚀
                 </button>
               </div>
             </div>
 
             <div class="dashboard-card">
+<<<<<<< HEAD
 <<<<<<< HEAD
               <h3 class="card-title">Student Projects</h3>
               <button type="button" data-ui-action="open-student-projects" class="secondary">
@@ -2071,23 +2159,31 @@ input.error {
 =======
               <h3 style="margin:0 0 10px;">Student Projects</h3>
               <button onclick="openStudentProjectsPage()" class="secondary">
+=======
+              <h3 class="card-title">Student Projects</h3>
+              <button type="button" data-ui-action="open-student-projects" class="secondary">
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
                 Open Full Page 🚀
               </button>
             </div>
 
             <div class="dashboard-card">
-              <h3 style="margin:0 0 10px;">Battery Output</h3>
+              <h3 class="card-title">Battery Output</h3>
               <div class="stat"><span>Current Voltage</span><b id="batteryVoltageValue">5.0V</b></div>
               <input id="batteryVoltageRange" class="voltage-input" type="range" min="0" max="30" step="0.5" value="5">
               <div class="small-note">Adjust the battery output voltage for every battery in the workspace.</div>
             </div>
 
             <div class="dashboard-card">
-              <h3 style="margin:0 0 10px;">Simulation Outputs</h3>
+              <h3 class="card-title">Simulation Outputs</h3>
               <div class="stat">
                 <span>LED State</span>
+<<<<<<< HEAD
                 <b style="display:flex;align-items:center;gap:8px;">
 >>>>>>> 47c7014 (first commit)
+=======
+                <b class="output-state">
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
                   <span class="led-indicator" id="dashboardLed"></span>
                   <span id="ledStateText">OFF</span>
                 </b>
@@ -2095,10 +2191,14 @@ input.error {
               <div class="stat">
                 <span>Motor</span>
 <<<<<<< HEAD
+<<<<<<< HEAD
                 <b class="output-state">
 =======
                 <b style="display:flex;align-items:center;gap:8px;">
 >>>>>>> 47c7014 (first commit)
+=======
+                <b class="output-state">
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
                   <span class="motor-wheel" id="dashboardMotor"></span>
                   <span id="motorStateText">OFF</span>
                 </b>
@@ -2106,10 +2206,14 @@ input.error {
               <div class="stat">
                 <span>Buzzer</span>
 <<<<<<< HEAD
+<<<<<<< HEAD
                 <b class="output-state">
 =======
                 <b style="display:flex;align-items:center;gap:8px;">
 >>>>>>> 47c7014 (first commit)
+=======
+                <b class="output-state">
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
                   <span class="buzzer-wave" id="dashboardBuzzer"></span>
                   <span id="buzzerStateText">OFF</span>
                 </b>
@@ -2117,6 +2221,7 @@ input.error {
             </div>
 
             <div class="dashboard-card">
+<<<<<<< HEAD
               <h3 style="margin:0 0 10px;">Goal Leaderboard</h3>
               <div class="leaderboard" id="leaderboard">
                 <div class="leader-item"><span>Achyuta</span><b>96</b></div>
@@ -2125,25 +2230,44 @@ input.error {
                 <div class="leader-item"><span>Meera</span><b>89</b></div>
                 <div class="leader-item"><span>pranav</span><b>67</b></div>
               </div>
+=======
+              <h3 class="card-title">Circuit Coach</h3>
+              <div class="stat"><span>Status</span><b id="coachStatusText">Ready</b></div>
+              <div class="small-note" id="coachHintText">Build a loop from battery + through your components and return to battery -.</div>
+              <div class="small-note coach-fix-text" id="coachFixText">Correct connection: Battery + -> first component +, each component - -> next component +, then final component - -> Battery -.</div>
+            </div>
+
+            <div class="dashboard-card">
+              <h3 class="card-title">Know My Voltage</h3>
+              <div id="voltageGuideList" class="voltage-guide"></div>
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
             </div>
           </div>
 
           <div id="teacherPanel" class="hidden teacher-area">
             <div class="dashboard-card">
 <<<<<<< HEAD
+<<<<<<< HEAD
               <h3 class="card-title">Teacher Panel</h3>
 =======
               <h3 style="margin:0 0 10px;">Teacher Panel</h3>
 >>>>>>> 47c7014 (first commit)
+=======
+              <h3 class="card-title">Teacher Panel</h3>
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
               <div class="field">
                 <label for="teacherGrade">Enter grade</label>
                 <input id="teacherGrade" type="text" placeholder="A+, 95, Excellent">
               </div>
 <<<<<<< HEAD
+<<<<<<< HEAD
               <div class="field field-spaced">
 =======
               <div class="field" style="margin-top:12px;">
 >>>>>>> 47c7014 (first commit)
+=======
+              <div class="field field-spaced">
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
                 <label for="teacherComment">Feedback</label>
                 <textarea id="teacherComment" placeholder="Write comments for the student's project"></textarea>
               </div>
@@ -2155,10 +2279,14 @@ input.error {
 
             <div class="dashboard-card">
 <<<<<<< HEAD
+<<<<<<< HEAD
               <h3 class="card-title">Submission Review</h3>
 =======
               <h3 style="margin:0 0 10px;">Submission Review</h3>
 >>>>>>> 47c7014 (first commit)
+=======
+              <h3 class="card-title">Submission Review</h3>
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
               <div class="stat"><span>Submission</span><b id="teacherSubmissionState">Pending</b></div>
               <div class="stat"><span>Current Grade</span><b id="teacherGradeState">Not graded</b></div>
               <div class="stat"><span>Components</span><b id="teacherComponentCount">0</b></div>
@@ -2171,6 +2299,7 @@ input.error {
     </div>
   </div>
 
+<<<<<<< HEAD
   <script>
     const state = {
       schools: {},
@@ -3370,5 +3499,19 @@ if(localStorage.getItem("hideLanding") === "true"){
     updateZoom();
     loadProject();
   </script>
+=======
+  <!-- 🔥 FIREBASE (ADD THIS HERE) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+  <script src="./src/state/app-state.js"></script>
+  <script src="./src/ui/components.js"></script>
+  <script src="./src/ui/performance.js"></script>
+  <script src="./src/simulation/legacy-simulation.js"></script>
+  <script src="./src/app/runtime.js"></script>
+  <script src="./src/app/landing-fallback.js"></script>
+  <script type="module" src="./src/main.js"></script>
+>>>>>>> 96f969c (Fix deployed login gate and modular app)
 </body>
 </html>
