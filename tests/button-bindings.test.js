@@ -53,6 +53,7 @@ test("all static buttons have an event binding path", () => {
 
 test("deployed html stays clean and modular", () => {
   assert.doesNotMatch(indexHtml, /<<<<<<<|=======|>>>>>>>/);
+  assert.doesNotMatch(`${indexHtml}\n${allJs}`, /hhere/i);
   assert.doesNotMatch(indexHtml, /<script>\s*const state\s*=/);
   assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css" \/>/);
   assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js"><\/script>/);

@@ -1364,6 +1364,36 @@ body.upgrade-ready button.quiet-action:hover {
   box-shadow:0 10px 20px rgba(15,23,42,.07);
 }
 
+body.upgrade-ready .canvas-toolbar {
+  align-items:stretch;
+  flex-direction:column;
+  gap:8px;
+}
+
+body.upgrade-ready .canvas-toolbar .toolbar-group:first-child {
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:8px;
+  width:100%;
+}
+
+body.upgrade-ready .canvas-toolbar .toolbar-group:first-child button,
+body.upgrade-ready .canvas-toolbar #runLogicBtn.primary-action {
+  min-width:0;
+  width:100%;
+  padding-inline:8px;
+  white-space:nowrap;
+}
+
+body.upgrade-ready .canvas-toolbar .toolbar-group:last-child {
+  width:100%;
+}
+
+body.upgrade-ready .canvas-toolbar .toolbar-group:last-child .pill {
+  justify-content:center;
+  width:100%;
+}
+
 body.upgrade-ready button:active,
 body.upgrade-ready .btn:active,
 body.upgrade-ready .component-card:active,
