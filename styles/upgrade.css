@@ -1453,6 +1453,46 @@ button,
   animation: burstPulse 0.6s ease infinite alternate;
 }
 
+.canvas-item.switch-control-item {
+  border-color:rgba(37,99,235,.16);
+}
+
+.canvas-item.switch-control-item.switch-closed {
+  box-shadow:0 18px 34px rgba(16,185,129,.14);
+}
+
+.switch-toggle-control {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:30px;
+  margin-top:10px;
+  border-radius:8px;
+  border:1px solid rgba(37,99,235,.18);
+  background:#fff;
+  color:#0f62fe;
+  font-weight:900;
+  cursor:pointer;
+  transition:transform .14s ease, box-shadow .14s ease, background .14s ease;
+}
+
+.switch-toggle-control:hover {
+  transform:translateY(-1px);
+  box-shadow:0 10px 18px rgba(15,98,254,.12);
+}
+
+.switch-closed .switch-toggle-control {
+  background:linear-gradient(135deg, #0f62fe, #10b981);
+  border-color:rgba(16,185,129,.34);
+  color:#fff;
+}
+
+.voice-coach-btn[aria-pressed="true"] {
+  color:#0f62fe;
+  border-color:rgba(15,98,254,.22);
+}
+
 body.upgrade-ready button.primary-action {
   border-radius:8px;
   background:linear-gradient(135deg, #0f62fe, #10b981);

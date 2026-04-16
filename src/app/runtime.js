@@ -1145,6 +1145,9 @@ function renderItems(){
     if(state.burstItems.includes(item.id)){
       el.classList.add("bursting");
     }
+    if(item.type === "Switch" || item.type === "Relay"){
+      el.classList.add("switch-control-item", item.isClosed ? "switch-closed" : "switch-open");
+    }
     el.dataset.id = item.id;
     el.style.left = item.x + "px";
     el.style.top = item.y + "px";
@@ -1163,6 +1166,24 @@ function renderItems(){
       </div>
       <div class="item-body">${cfg.desc}${item.type === "Battery" ? `<span class="terminal-hint">${Number(item.voltage ?? state.defaultBatteryVoltage).toFixed(1)}V output</span>` : `<span class="terminal-hint">- left • + right</span>`}</div>
     `;
+
+    if(item.type === "Switch" || item.type === "Relay"){
+      const switchToggle = document.createElement("button");
+      switchToggle.type = "button";
+      switchToggle.className = "switch-toggle-control";
+      switchToggle.textContent = item.isClosed ? "Turn OFF" : "Turn ON";
+      switchToggle.setAttribute("aria-pressed", String(Boolean(item.isClosed)));
+      switchToggle.addEventListener("mousedown", event => {
+        event.preventDefault();
+        event.stopPropagation();
+      });
+      switchToggle.addEventListener("click", event => {
+        event.preventDefault();
+        event.stopPropagation();
+        toggleSwitchItem(item.id);
+      });
+      el.querySelector(".item-body")?.appendChild(switchToggle);
+    }
 
     item.ports.forEach(pos => {
       const p = document.createElement("div");
@@ -1381,6 +1402,22 @@ function handlePortClick(itemId, port){
 
 function getItemById(id){
   return state.items.find(i => i.id === id);
+}
+
+function toggleSwitchItem(id){
+  const item = getItemById(id);
+  if(!item || (item.type !== "Switch" && item.type !== "Relay")) return;
+
+  item.isClosed = !item.isClosed;
+  state.logicArmed = true;
+  const simulation = refreshSimulation();
+
+  if(simulation.overload && simulation.message){
+    showToast(simulation.message);
+    return;
+  }
+
+  showToast(`${item.type} ${item.isClosed ? "closed" : "opened"}`);
 }
 
 function getPortPosition(itemId, port){
@@ -1789,7 +1826,19 @@ if(!(state.wireDrag.from.itemId === toItemId && state.wireDrag.from.port === toP
 }
 
 async function runLogic(){
-  resetOutputs(false);
+  const usesControlLogic = state.logic.some(step => step === "ON" || step === "OFF");
+  let initialSimulation = null;
+  if(usesControlLogic){
+    resetOutputs(false);
+  } else {
+    state.logicArmed = true;
+    initialSimulation = refreshSimulation();
+    if(initialSimulation.overload){
+      showToast(initialSimulation.message);
+      return;
+    }
+  }
+
   let executedNormally = true;
 
   for(const step of state.logic){
@@ -2425,6 +2474,7 @@ window.educircuitApp = {
   setMode,
   addComponent,
   addLogic,
+  toggleSwitchItem,
   clearProject,
   submitProject,
   applyGrade,

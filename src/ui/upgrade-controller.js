@@ -1,8 +1,8 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260416-access3";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260416-access3";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260416-access3";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260416-voice1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260416-voice1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260416-voice1";
 import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js";
-import { formatAuthError } from "../services/auth-service.js?v=20260416-access3";
+import { formatAuthError } from "../services/auth-service.js?v=20260416-voice1";
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -266,6 +266,84 @@ function showSimulationFeedback(report) {
   showSimulationFeedback.timer = setTimeout(() => {
     panel.classList.remove("show");
   }, 7200);
+}
+
+const VOICE_COACH_STORAGE_KEY = "educircuit-voice-coach";
+
+function isVoiceCoachEnabled() {
+  return localStorage.getItem(VOICE_COACH_STORAGE_KEY) !== "off";
+}
+
+function updateVoiceCoachButton(button = document.getElementById("voiceCoachBtn")) {
+  if (!button) return;
+  const enabled = isVoiceCoachEnabled();
+  button.textContent = enabled ? "Voice Coach On" : "Voice Coach Off";
+  button.setAttribute("aria-pressed", String(enabled));
+}
+
+function installVoiceCoachToggle(app) {
+  const toolbarGroup = document.querySelector(".canvas-toolbar .toolbar-group:last-child");
+  if (!toolbarGroup || document.getElementById("voiceCoachBtn")) return;
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.id = "voiceCoachBtn";
+  button.className = "secondary voice-coach-btn";
+  button.addEventListener("click", () => {
+    const nextEnabled = !isVoiceCoachEnabled();
+    localStorage.setItem(VOICE_COACH_STORAGE_KEY, nextEnabled ? "on" : "off");
+    updateVoiceCoachButton(button);
+    if (!nextEnabled && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    app.showToast?.(nextEnabled ? "Voice Coach enabled" : "Voice Coach muted");
+  });
+
+  toolbarGroup.appendChild(button);
+  updateVoiceCoachButton(button);
+}
+
+function sanitizeSpeechText(text = "") {
+  return String(text)
+    .replace(/[^\x20-\x7E]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function buildVoiceCoachText(report = {}) {
+  const analysis = report.analysis || report;
+  const coach = report.coach || buildCoachFeedback(analysis);
+  const diagnostic = (analysis.diagnostics || []).find(item => item.severity === "error") ||
+    (analysis.diagnostics || []).find(item => item.severity === "warning");
+
+  if (diagnostic) {
+    const severity = diagnostic.severity === "error" ? "Error" : "Warning";
+    return sanitizeSpeechText(
+      `Circuit coach. ${severity}: ${diagnostic.title}. ${diagnostic.message}. To solve it: ${diagnostic.suggestion}`
+    );
+  }
+
+  return sanitizeSpeechText(
+    `Circuit coach. ${coach.headline}. ${coach.simpleExplanation || coach.conversation}. Efficiency ${coach.efficiencyPercent || coach.efficiencyScore || 0} percent.`
+  );
+}
+
+function speakCircuitCoach(report, app) {
+  if (!isVoiceCoachEnabled()) return;
+  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+    app?.showToast?.("Voice Coach is not supported in this browser");
+    return;
+  }
+
+  const text = buildVoiceCoachText(report);
+  if (!text) return;
+
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "en-US";
+  utterance.rate = 0.92;
+  utterance.pitch = 1;
+  window.speechSynthesis.speak(utterance);
 }
 
 function hasActiveOutput(report = {}) {
@@ -1739,6 +1817,7 @@ function installActionOverrides(app, services, sharing, teacherDashboard, gamifi
     showSimulationFeedback(report);
     startCurrentFlowAnimation(app, report);
     showAiDebugMessage(debuggerResponse);
+    speakCircuitCoach(report, app);
     const learningResult = getLearningResult(app);
     app.state.learning.lastResult = learningResult;
     renderLearningPanel(app);
@@ -1870,6 +1949,7 @@ export function installVisualPolish(app = {}) {
   installLandingInteractions();
   installMicroInteractions();
   installBrandingAndTheme();
+  installVoiceCoachToggle(app);
   installLoginStepper({
     toast: message => app.showToast?.(message) || window.alert(message)
   });

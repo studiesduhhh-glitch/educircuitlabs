@@ -55,9 +55,9 @@ test("deployed html stays clean and modular", () => {
   assert.doesNotMatch(indexHtml, /<<<<<<<|=======|>>>>>>>/);
   assert.doesNotMatch(`${indexHtml}\n${allJs}`, /hhere/i);
   assert.doesNotMatch(indexHtml, /<script>\s*const state\s*=/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260416-access3" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260416-access3" \/>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260416-access3"><\/script>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260416-voice1" \/>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260416-voice1" \/>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260416-voice1"><\/script>/);
   assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
 });
 
@@ -91,4 +91,14 @@ test("legacy auth fallback does not store shared school passwords", () => {
   assert.doesNotMatch(runtimeJs, /buildSchoolAuthEmail/);
   assert.match(runtimeJs, /createUserWithEmailAndPassword\(payload\.email,\s*payload\.schoolPassword\)/);
   assert.match(runtimeJs, /selfServiceSignup/);
+});
+
+test("manual switch controls and voice coach are wired", () => {
+  assert.match(runtimeJs, /function toggleSwitchItem/);
+  assert.match(runtimeJs, /switch-toggle-control/);
+  assert.match(runtimeJs, /aria-pressed/);
+  assert.match(runtimeJs, /usesControlLogic/);
+  assert.match(upgradeJs, /voiceCoachBtn/);
+  assert.match(upgradeJs, /SpeechSynthesisUtterance/);
+  assert.match(upgradeJs, /speakCircuitCoach\(report, app\)/);
 });
