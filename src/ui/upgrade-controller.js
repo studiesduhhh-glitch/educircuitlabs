@@ -1,8 +1,8 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260416-access1";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260416-access1";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260416-access1";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260416-access2";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260416-access2";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260416-access2";
 import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js";
-import { formatAuthError } from "../services/auth-service.js?v=20260416-access1";
+import { formatAuthError } from "../services/auth-service.js?v=20260416-access2";
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -1448,9 +1448,9 @@ function installAuthUpgrade(app, services) {
   const accessCopy = {
     "admin:create": "Creates the school and the first admin account. Use a real email and a password with at least 6 characters.",
     "admin:login": "Signs in to an existing school admin account. Use the same email and password used when the school was created.",
-    "teacher:create": "Creates a teacher account inside an existing school. Ask the admin for the school code first.",
+    "teacher:create": "Creates a teacher account and sets up the school automatically if the school code is new.",
     "teacher:login": "Signs in to an existing teacher account with that teacher's email and password.",
-    "student:create": "Creates a student account inside an existing school. Ask your teacher for the school code first.",
+    "student:create": "Creates a student account and sets up the school automatically if the school code is new.",
     "student:login": "Signs in to an existing student account with that student's email and password."
   };
 

@@ -266,7 +266,7 @@ function syncRoleFields(){
         : "Signs in to an existing school admin account.";
     } else {
       loginAccessHint.textContent = isCreate
-        ? "Creates an account inside an existing school."
+        ? "Creates an account and sets up the school automatically if the school code is new."
         : "Signs in to an account that already exists.";
     }
   }
@@ -274,7 +274,7 @@ function syncRoleFields(){
   if(authModeNote){
     authModeNote.textContent = loginRole.value === "admin"
       ? "Create the school admin once for each campus. That account can then onboard teachers and students."
-      : "Teachers and students use their own email and password inside the school created by the admin.";
+      : "Teachers and students can create their own account with a school code, even if it is a new school.";
   }
 }
 
