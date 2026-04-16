@@ -1494,14 +1494,22 @@ button,
 }
 
 .voice-coach-controls {
-  display:flex;
+  display:grid;
+  grid-template-columns:auto minmax(160px, 1fr) minmax(132px, auto);
   align-items:center;
   gap:8px;
   width:100%;
 }
 
+.voice-coach-label {
+  color:var(--muted);
+  font-size:12px;
+  font-weight:900;
+  white-space:nowrap;
+}
+
 .voice-coach-select {
-  flex:1 1 150px;
+  width:100%;
   min-width:0;
   height:38px;
   border-radius:8px;
@@ -1517,6 +1525,11 @@ button,
   outline:none;
   border-color:rgba(15,98,254,.35);
   box-shadow:0 0 0 4px rgba(15,98,254,.1);
+}
+
+.voice-coach-btn {
+  min-width:132px;
+  white-space:nowrap;
 }
 
 body.upgrade-ready button.primary-action {

@@ -1,8 +1,8 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260416-voice2";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260416-voice2";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260416-voice2";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260416-voice3";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260416-voice3";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260416-voice3";
 import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js";
-import { formatAuthError } from "../services/auth-service.js?v=20260416-voice2";
+import { formatAuthError } from "../services/auth-service.js?v=20260416-voice3";
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -270,6 +270,45 @@ function showSimulationFeedback(report) {
 
 const VOICE_COACH_STORAGE_KEY = "educircuit-voice-coach";
 const VOICE_COACH_VOICE_STORAGE_KEY = "educircuit-voice-coach-voice";
+const CURATED_VOICE_GROUPS = [
+  {
+    label: "English",
+    voices: [
+      ["en-us", "American English"],
+      ["en-gb", "UK English"],
+      ["en-in", "Indian English"]
+    ]
+  },
+  {
+    label: "Indian Languages",
+    voices: [
+      ["hi-in", "हिन्दी"],
+      ["ta-in", "தமிழ்"],
+      ["te-in", "తెలుగు"],
+      ["kn-in", "ಕನ್ನಡ"],
+      ["ml-in", "മലയാളം"],
+      ["bn-in", "বাংলা"],
+      ["mr-in", "मराठी"],
+      ["gu-in", "ગુજરાતી"],
+      ["pa-in", "ਪੰਜਾਬੀ"],
+      ["ur-in", "اردو"],
+      ["or-in", "ଓଡ଼ିଆ"],
+      ["as-in", "অসমীয়া"],
+      ["sa-in", "संस्कृत"],
+      ["kok-in", "कोंकणी"],
+      ["ne-in", "नेपाली"],
+      ["sd-in", "سنڌي"],
+      ["ks-in", "कश्मीरी"],
+      ["doi-in", "डोगरी"],
+      ["mai-in", "मैथिली"],
+      ["brx-in", "बड़ो"],
+      ["mni-in", "মৈতৈলোন"],
+      ["sat-in", "ᱥᱟᱱᱛᱟᱲᱤ"]
+    ]
+  }
+];
+const CURATED_VOICE_LABELS = new Map(CURATED_VOICE_GROUPS.flatMap(group => group.voices));
+const CURATED_VOICE_ORDER = new Map([...CURATED_VOICE_LABELS.keys()].map((key, index) => [key, index]));
 
 function isVoiceCoachEnabled() {
   return localStorage.getItem(VOICE_COACH_STORAGE_KEY) !== "off";
@@ -291,33 +330,70 @@ function getVoiceOptionValue(voice) {
   return voice?.voiceURI || voice?.name || "";
 }
 
-function getVoiceOptionLabel(voice) {
-  const lang = voice.lang ? ` (${voice.lang})` : "";
-  const defaultTag = voice.default ? " default" : "";
-  return `${voice.name || "Voice"}${lang}${defaultTag}`;
+function normalizeVoiceLang(voice) {
+  return String(voice?.lang || "").trim().toLowerCase().replace("_", "-");
+}
+
+function getCuratedVoiceKey(voice) {
+  const lang = normalizeVoiceLang(voice);
+  if (CURATED_VOICE_LABELS.has(lang)) return lang;
+
+  const baseLang = lang.split("-")[0];
+  const indiaKey = `${baseLang}-in`;
+  if (CURATED_VOICE_LABELS.has(indiaKey) && (lang === baseLang || lang.endsWith("-in"))) {
+    return indiaKey;
+  }
+
+  return "";
+}
+
+function getCuratedVoiceOptions() {
+  const selectedValue = localStorage.getItem(VOICE_COACH_VOICE_STORAGE_KEY) || "";
+  const byLanguage = new Map();
+
+  getSpeechVoices().forEach(voice => {
+    const key = getCuratedVoiceKey(voice);
+    if (!key) return;
+
+    const current = byLanguage.get(key);
+    const isSelectedVoice = getVoiceOptionValue(voice) === selectedValue;
+    if (!current || isSelectedVoice || (!current.voice.default && voice.default)) {
+      byLanguage.set(key, {
+        key,
+        voice,
+        label: CURATED_VOICE_LABELS.get(key),
+        group: CURATED_VOICE_GROUPS.find(group => group.voices.some(([voiceKey]) => voiceKey === key))?.label || "Voices",
+        order: CURATED_VOICE_ORDER.get(key) ?? 999
+      });
+    }
+  });
+
+  return [...byLanguage.values()].sort((a, b) => a.order - b.order);
 }
 
 function getSelectedVoice() {
   const selectedValue = localStorage.getItem(VOICE_COACH_VOICE_STORAGE_KEY) || "";
   if (!selectedValue) return null;
-  return getSpeechVoices().find(voice => getVoiceOptionValue(voice) === selectedValue) || null;
+  return getCuratedVoiceOptions().find(option => getVoiceOptionValue(option.voice) === selectedValue)?.voice || null;
 }
 
 function updateVoiceCoachOptions(select = document.getElementById("voiceCoachSelect")) {
   if (!select) return;
-  const voices = getSpeechVoices();
   const selectedValue = localStorage.getItem(VOICE_COACH_VOICE_STORAGE_KEY) || "";
-  const options = [
-    `<option value="">Default voice</option>`,
-    ...voices.map(voice => {
-      const value = escapeHtml(getVoiceOptionValue(voice));
-      const label = escapeHtml(getVoiceOptionLabel(voice));
-      return `<option value="${value}">${label}</option>`;
-    })
-  ];
+  const curatedOptions = getCuratedVoiceOptions();
+  const groupedOptions = CURATED_VOICE_GROUPS.map(group => {
+    const options = curatedOptions
+      .filter(option => option.group === group.label)
+      .map(option => `<option value="${escapeHtml(getVoiceOptionValue(option.voice))}">${escapeHtml(option.label)}</option>`)
+      .join("");
+    return options ? `<optgroup label="${escapeHtml(group.label)}">${options}</optgroup>` : "";
+  }).join("");
+  const unavailableNote = curatedOptions.length
+    ? ""
+    : `<option value="" disabled>No curated voices installed</option>`;
 
-  select.innerHTML = options.join("");
-  select.value = voices.some(voice => getVoiceOptionValue(voice) === selectedValue) ? selectedValue : "";
+  select.innerHTML = `<option value="">Default voice</option>${groupedOptions}${unavailableNote}`;
+  select.value = curatedOptions.some(option => getVoiceOptionValue(option.voice) === selectedValue) ? selectedValue : "";
 }
 
 function installVoiceCoachToggle(app) {
@@ -326,6 +402,11 @@ function installVoiceCoachToggle(app) {
 
   const controls = document.createElement("div");
   controls.className = "voice-coach-controls";
+
+  const label = document.createElement("label");
+  label.className = "voice-coach-label";
+  label.htmlFor = "voiceCoachSelect";
+  label.textContent = "Voice";
 
   const select = document.createElement("select");
   select.id = "voiceCoachSelect";
@@ -351,7 +432,7 @@ function installVoiceCoachToggle(app) {
     app.showToast?.(nextEnabled ? "Voice Coach enabled" : "Voice Coach muted");
   });
 
-  controls.append(select, button);
+  controls.append(label, select, button);
   toolbarGroup.appendChild(controls);
   updateVoiceCoachOptions(select);
   updateVoiceCoachButton(button);
