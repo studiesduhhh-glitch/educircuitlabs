@@ -1,7 +1,8 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260416-teacher1";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260416-teacher1";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260416-teacher1";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260416-access1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260416-access1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260416-access1";
 import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js";
+import { formatAuthError } from "../services/auth-service.js?v=20260416-access1";
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -1434,13 +1435,24 @@ function installAuthUpgrade(app, services) {
   const loginSchool = document.getElementById("loginSchool");
   const loginSchoolUser = document.getElementById("loginSchoolUser");
   const loginSchoolPass = document.getElementById("loginSchoolPass");
-  const signUpBtn = replaceButton(document.getElementById("signUpBtn"), handleSignUp);
-  const enterBtn = replaceButton(document.getElementById("enterBtn"), handleLogin);
+  const loginAccessModel = document.getElementById("loginAccessModel");
+  const loginAccessHint = document.getElementById("loginAccessHint");
+  const signUpBtn = replaceButton(document.getElementById("signUpBtn"), handleAccessToggle);
+  const enterBtn = replaceButton(document.getElementById("enterBtn"), handlePrimaryAccess);
   const demoStudentBtn = replaceButton(document.getElementById("demoStudentBtn"), () => fillDemoCredentials("student"));
   const demoTeacherBtn = replaceButton(document.getElementById("demoTeacherBtn"), () => fillDemoCredentials("teacher"));
   replaceButton(document.getElementById("logoutBtn"), handleLogout);
 
   ensureRoleOption(loginRole, "admin", "School Admin");
+
+  const accessCopy = {
+    "admin:create": "Creates the school and the first admin account. Use a real email and a password with at least 6 characters.",
+    "admin:login": "Signs in to an existing school admin account. Use the same email and password used when the school was created.",
+    "teacher:create": "Creates a teacher account inside an existing school. Ask the admin for the school code first.",
+    "teacher:login": "Signs in to an existing teacher account with that teacher's email and password.",
+    "student:create": "Creates a student account inside an existing school. Ask your teacher for the school code first.",
+    "student:login": "Signs in to an existing student account with that student's email and password."
+  };
 
   function getPayload() {
     return {
@@ -1450,7 +1462,8 @@ function installAuthUpgrade(app, services) {
       role: loginRole.value,
       className: loginClass.value.trim(),
       school: loginSchool.value.trim(),
-      schoolCode: loginSchoolUser.value.trim()
+      schoolCode: loginSchoolUser.value.trim(),
+      accessModel: loginAccessModel?.value || "create"
     };
   }
 
@@ -1482,10 +1495,66 @@ function installAuthUpgrade(app, services) {
 
   function validatePayload(payload) {
     validateStepOne(payload);
-    if (!payload.password || payload.password.length < 6) throw new Error("Use a password with at least 6 characters.");
-    if (!payload.school) throw new Error("Enter the school name.");
-    if (!payload.schoolCode && payload.role !== "admin") throw new Error("Enter the school code from your admin.");
-    if (payload.role === "student" && !payload.className) throw new Error("Enter your class or section.");
+    [loginSchoolPass, loginSchool, loginSchoolUser, loginClass].forEach(field => field?.classList.remove("error"));
+    if (!payload.password || payload.password.length < 6) {
+      loginSchoolPass.classList.add("error");
+      throw new Error("Use a password with at least 6 characters.");
+    }
+    if (!payload.school) {
+      loginSchool.classList.add("error");
+      throw new Error("Enter the school name.");
+    }
+    if (!payload.schoolCode) {
+      loginSchoolUser.classList.add("error");
+      throw new Error("Enter the school code.");
+    }
+    if (payload.role === "student" && !payload.className) {
+      loginClass.classList.add("error");
+      throw new Error("Enter your class or section.");
+    }
+  }
+
+  function syncAccessModel({ reset = false } = {}) {
+    const role = loginRole.value || "student";
+    const mode = reset ? "create" : (loginAccessModel?.value || "create");
+    if (loginAccessModel) {
+      loginAccessModel.value = mode;
+    }
+
+    const selectedMode = loginAccessModel?.value || "create";
+    const isCreate = selectedMode === "create";
+    const roleLabel = role === "admin" ? "Admin" : role === "teacher" ? "Teacher" : "Student";
+
+    if (loginAccessHint) {
+      loginAccessHint.textContent = accessCopy[`${role}:${selectedMode}`] || accessCopy["student:create"];
+    }
+
+    if (enterBtn) {
+      enterBtn.textContent = isCreate
+        ? role === "admin" ? "Create School Admin" : `Create ${roleLabel} Account`
+        : role === "admin" ? "Login as Admin" : `Login as ${roleLabel}`;
+    }
+
+    if (signUpBtn) {
+      signUpBtn.textContent = isCreate ? "Use Login Instead" : "Use Create Instead";
+      signUpBtn.setAttribute("aria-label", isCreate ? "Switch access model to login" : "Switch access model to create");
+    }
+  }
+
+  function handleAccessToggle() {
+    if (loginAccessModel) {
+      loginAccessModel.value = loginAccessModel.value === "create" ? "login" : "create";
+    }
+    syncAccessModel();
+  }
+
+  async function handlePrimaryAccess() {
+    const payload = getPayload();
+    if (payload.accessModel === "create") {
+      await handleSignUp();
+    } else {
+      await handleLogin();
+    }
   }
 
   async function handleSignUp() {
@@ -1501,7 +1570,7 @@ function installAuthUpgrade(app, services) {
       await wait(120);
       await services.refreshAll();
     } catch (error) {
-      alert(error.message);
+      alert(formatAuthError(error, { mode: "create", role: payload.role }));
     }
   }
 
@@ -1516,7 +1585,7 @@ function installAuthUpgrade(app, services) {
       await wait(120);
       await services.refreshAll();
     } catch (error) {
-      alert(error.message);
+      alert(formatAuthError(error, { mode: "login", role: payload.role }));
     }
   }
 
@@ -1533,13 +1602,17 @@ function installAuthUpgrade(app, services) {
       loginSchoolPass.value = "School@123";
       loginRole.dispatchEvent(new Event("change"));
     }
+    if (loginAccessModel) {
+      loginAccessModel.value = "create";
+      syncAccessModel();
+    }
     installLoginStepper({
       getPayload,
       validateStepOne,
-      onSubmit: handleLogin,
+      onSubmit: handlePrimaryAccess,
       toast: message => app.showToast(message)
     })?.goToLoginStep?.(1);
-    app.showToast("Demo details filled. Review every field, then continue.");
+    app.showToast("Demo details filled. Access Model is set to Create for first use.");
   }
 
   async function handleLogout() {
@@ -1558,19 +1631,14 @@ function installAuthUpgrade(app, services) {
   installLoginStepper({
     getPayload,
     validateStepOne,
-    onSubmit: handleLogin,
+    onSubmit: handlePrimaryAccess,
     toast: message => app.showToast(message)
   });
 
   loginRole.addEventListener("change", () => {
-    if (loginRole.value === "admin") {
-      signUpBtn.textContent = "Create School Admin";
-      enterBtn.textContent = "Login as Admin";
-    } else {
-      signUpBtn.textContent = "Create Account";
-      enterBtn.textContent = "Enter Platform";
-    }
+    syncAccessModel({ reset: true });
   });
+  loginAccessModel?.addEventListener("change", () => syncAccessModel());
 
   loginRole.dispatchEvent(new Event("change"));
 

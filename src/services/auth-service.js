@@ -12,6 +12,50 @@ function assert(condition, message) {
   }
 }
 
+export function formatAuthError(error, { mode = "login", role = "student" } = {}) {
+  const code = error?.code || "";
+  const message = error?.message || "";
+  const isCreate = mode === "create";
+  const roleLabel = role === "admin" ? "admin" : role === "teacher" ? "teacher" : "student";
+
+  if (code === "auth/invalid-credential" || code === "auth/user-not-found" || code === "auth/wrong-password") {
+    if (role === "admin") {
+      return "No matching admin account was found. Check the email and password, or set Access Model to Create to make the school admin first.";
+    }
+    return `No matching ${roleLabel} account was found. Check the email and password, or set Access Model to Create if this is a new account.`;
+  }
+
+  if (code === "auth/email-already-in-use") {
+    return "That email already has an Educircuit account. Set Access Model to Log in, then use the same email and password.";
+  }
+
+  if (code === "auth/weak-password") {
+    return "Use a stronger password with at least 6 characters.";
+  }
+
+  if (code === "auth/invalid-email") {
+    return "Enter a valid email address before continuing.";
+  }
+
+  if (code === "permission-denied") {
+    return "Firebase blocked this account action. Check that the school exists and that this role is allowed, then try again.";
+  }
+
+  if (/school already exists/i.test(message) && isCreate && role === "admin") {
+    return "This school already exists. Set Access Model to Log in for the admin account, or use a different school code for a new school.";
+  }
+
+  if (/school not found/i.test(message)) {
+    return "School not found. Ask the admin to create the school first, then create or log in to your account with the school code.";
+  }
+
+  if (/profile/i.test(message)) {
+    return message;
+  }
+
+  return message || "Something went wrong while signing in. Check the details and try again.";
+}
+
 export function createAuthService({ auth, db, firebase }) {
   const FieldValue = firebase?.firestore?.FieldValue;
   const serverTimestamp = () => FieldValue?.serverTimestamp?.() || new Date();
@@ -153,7 +197,9 @@ export function createAuthService({ auth, db, firebase }) {
 
   async function login(payload) {
     const cred = await auth.signInWithEmailAndPassword(payload.email, payload.password);
-    return fetchUserProfile(cred.user.uid);
+    const profile = await fetchUserProfile(cred.user.uid);
+    assert(profile, "This account exists, but its Educircuit classroom profile is missing. Create the account again or ask the school admin to repair it.");
+    return profile;
   }
 
   async function logout() {

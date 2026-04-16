@@ -4,9 +4,9 @@
   <meta name="description" content="Educircuit Labs - Build, simulate and learn engineering projects easily">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="./styles/app.css?v=20260416-teacher1" />
+  <link rel="stylesheet" href="./styles/app.css?v=20260416-access1" />
   <title>EDUCIRCUIT</title>
-  <link rel="stylesheet" href="./styles/upgrade.css?v=20260416-teacher1" />
+  <link rel="stylesheet" href="./styles/upgrade.css?v=20260416-access1" />
 </head>
 <body class="no-select">
   <!-- 🔥 LANDING PAGE -->
@@ -182,8 +182,14 @@
         </div>
 
         <div class="field access-model-field">
-          <label for="loginAccessHint">Access Model</label>
-          <input id="loginAccessHint" type="text" value="Admins create schools. Teachers and students use individual accounts." readonly>
+          <label for="loginAccessModel">Access Model</label>
+          <select id="loginAccessModel">
+            <option value="create">Create a new account</option>
+            <option value="login">Log in to existing account</option>
+          </select>
+          <p class="small-note access-model-copy" id="loginAccessHint">
+            Choose whether this form should create the account or log in to one that already exists.
+          </p>
         </div>
       </div>
 
@@ -583,12 +589,12 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
-  <script src="./src/state/app-state.js?v=20260416-teacher1"></script>
-  <script src="./src/ui/components.js?v=20260416-teacher1"></script>
-  <script src="./src/ui/performance.js?v=20260416-teacher1"></script>
-  <script src="./src/simulation/legacy-simulation.js?v=20260416-teacher1"></script>
-  <script src="./src/app/runtime.js?v=20260416-teacher1"></script>
-  <script src="./src/app/landing-fallback.js?v=20260416-teacher1"></script>
-  <script type="module" src="./src/main.js?v=20260416-teacher1"></script>
+  <script src="./src/state/app-state.js?v=20260416-access1"></script>
+  <script src="./src/ui/components.js?v=20260416-access1"></script>
+  <script src="./src/ui/performance.js?v=20260416-access1"></script>
+  <script src="./src/simulation/legacy-simulation.js?v=20260416-access1"></script>
+  <script src="./src/app/runtime.js?v=20260416-access1"></script>
+  <script src="./src/app/landing-fallback.js?v=20260416-access1"></script>
+  <script type="module" src="./src/main.js?v=20260416-access1"></script>
 </body>
 </html>

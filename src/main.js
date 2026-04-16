@@ -1,7 +1,7 @@
-import { createAuthService } from "./services/auth-service.js?v=20260416-teacher1";
-import { createProjectService } from "./services/project-service.js?v=20260416-teacher1";
-import { createGamificationService } from "./services/gamification-service.js?v=20260416-teacher1";
-import { bootstrapUpgrade, installVisualPolish } from "./ui/upgrade-controller.js?v=20260416-teacher1";
+import { createAuthService } from "./services/auth-service.js?v=20260416-access1";
+import { createProjectService } from "./services/project-service.js?v=20260416-access1";
+import { createGamificationService } from "./services/gamification-service.js?v=20260416-access1";
+import { bootstrapUpgrade, installVisualPolish } from "./ui/upgrade-controller.js?v=20260416-access1";
 
 async function waitForLegacyApp() {
   if (typeof window === "undefined") {

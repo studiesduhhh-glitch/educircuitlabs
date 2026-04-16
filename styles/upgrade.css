@@ -715,6 +715,11 @@ html {
   margin-top:12px;
 }
 
+.login-screen .access-model-copy {
+  margin:8px 0 0;
+  line-height:1.45;
+}
+
 .login-screen input,
 .login-screen select,
 .login-screen textarea {
@@ -734,10 +739,9 @@ html {
   justify-content: flex-end;
 }
 
-#loginAccessHint[readonly] {
-  color: var(--muted);
+#loginAccessModel {
+  color: var(--text);
   background: linear-gradient(180deg, #f8fbff, #eef5ff);
-  cursor: default;
 }
 
 .upgrade-card {

@@ -143,6 +143,8 @@ const loginClass = document.getElementById("loginClass");
 const loginSchool = document.getElementById("loginSchool");
 const loginSchoolUser = document.getElementById("loginSchoolUser");
 const loginSchoolPass = document.getElementById("loginSchoolPass");
+const loginAccessModel = document.getElementById("loginAccessModel");
+const loginAccessHint = document.getElementById("loginAccessHint");
 const toggleLoginPasswordBtn = document.getElementById("toggleLoginPasswordBtn");
 const signUpBtn = document.getElementById("signUpBtn");
 const enterBtn = document.getElementById("enterBtn");
@@ -245,8 +247,29 @@ function ensureSchoolContainer(school){
 
 function syncRoleFields(){
   const isFaculty = loginRole.value === "teacher" || loginRole.value === "admin";
+  const accessMode = loginAccessModel?.value || "create";
+  const isCreate = accessMode === "create";
   loginClass.placeholder = isFaculty ? "Department / Staff (optional)" : "10-A";
   loginClass.previousElementSibling.textContent = isFaculty ? "Department / Section" : "Class / Section";
+  if(enterBtn){
+    if(loginRole.value === "admin"){
+      enterBtn.textContent = isCreate ? "Create School Admin" : "Login as Admin";
+    } else {
+      const roleLabel = loginRole.value === "teacher" ? "Teacher" : "Student";
+      enterBtn.textContent = isCreate ? `Create ${roleLabel} Account` : `Login as ${roleLabel}`;
+    }
+  }
+  if(loginAccessHint){
+    if(loginRole.value === "admin"){
+      loginAccessHint.textContent = isCreate
+        ? "Creates the school and first admin account."
+        : "Signs in to an existing school admin account.";
+    } else {
+      loginAccessHint.textContent = isCreate
+        ? "Creates an account inside an existing school."
+        : "Signs in to an account that already exists.";
+    }
+  }
   const authModeNote = document.getElementById("authModeNote");
   if(authModeNote){
     authModeNote.textContent = loginRole.value === "admin"
@@ -320,6 +343,31 @@ function validateLoginPayload(payload){
   }
 
   return !hasError;
+}
+
+function formatFirebaseAuthError(error, action = "login", role = "student"){
+  const code = error?.code || "";
+  const message = error?.message || "";
+  const isAdmin = role === "admin";
+
+  if(code === "auth/invalid-credential" || code === "auth/user-not-found" || code === "auth/wrong-password"){
+    return isAdmin
+      ? "No matching admin account was found. Check the email and password, or set Access Model to Create to make the school admin first."
+      : "No matching account was found. Check the email and password, or set Access Model to Create if this is a new account.";
+  }
+  if(code === "auth/email-already-in-use"){
+    return "That email already has an Educircuit account. Set Access Model to Log in, then use the same email and password.";
+  }
+  if(code === "auth/weak-password"){
+    return "Use a stronger password with at least 6 characters.";
+  }
+  if(code === "auth/invalid-email"){
+    return "Enter a valid email address before continuing.";
+  }
+  if(/school already/i.test(message) && action === "create"){
+    return "This school already exists. Set Access Model to Log in, or use a different school code for a new school.";
+  }
+  return message || "Something went wrong while signing in. Check the details and try again.";
 }
 
 function ensureLocalUserRecord(profile){
@@ -422,7 +470,7 @@ async function signUpUser(){
     });
     showToast("School user created");
   } catch(error){
-    alert(error.message);
+    alert(formatFirebaseAuthError(error, "create", payload.role));
   }
 }
 
@@ -472,7 +520,7 @@ async function loginUser(){
     applyAuthenticatedProfile(cred.user.uid, profile);
     showToast("Welcome, " + profile.name);
   } catch(error){
-    alert(error.message);
+    alert(formatFirebaseAuthError(error, "login", payload.role));
   }
 }
 
@@ -2103,11 +2151,18 @@ function fillDemo(role){
   loginSchool.value = "STEM Academy";
   loginSchoolUser.value = "stem-academy";
   loginSchoolPass.value = "School@123";
+  if(loginAccessModel){
+    loginAccessModel.value = "create";
+  }
   syncRoleFields();
-  showToast("Demo details filled. Review them, then continue.");
+  showToast("Demo details filled. Access Model is set to Create for first use.");
 }
 
 function enterPlatform(){
+  if(loginAccessModel?.value === "create"){
+    signUpUser();
+    return;
+  }
   loginUser();
 }
 
@@ -2323,6 +2378,7 @@ toggleLoginPasswordBtn.addEventListener("click", () => {
 });
 
 loginRole.addEventListener("change", syncRoleFields);
+loginAccessModel?.addEventListener("change", syncRoleFields);
  
   
 document.getElementById("langToggleBtn").addEventListener("click", () => {
