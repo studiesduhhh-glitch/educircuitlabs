@@ -1,8 +1,8 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260416-voice3";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260416-voice3";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260416-voice3";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260416-lang1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260416-lang1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260416-lang1";
 import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js";
-import { formatAuthError } from "../services/auth-service.js?v=20260416-voice3";
+import { formatAuthError } from "../services/auth-service.js?v=20260416-lang1";
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -298,11 +298,11 @@ const CURATED_VOICE_GROUPS = [
       ["kok-in", "कोंकणी"],
       ["ne-in", "नेपाली"],
       ["sd-in", "سنڌي"],
-      ["ks-in", "कश्मीरी"],
+      ["ks-in", "کٲشُر"],
       ["doi-in", "डोगरी"],
       ["mai-in", "मैथिली"],
       ["brx-in", "बड़ो"],
-      ["mni-in", "মৈতৈলোন"],
+      ["mni-in", "ꯃꯤꯇꯩꯂꯣꯟ"],
       ["sat-in", "ᱥᱟᱱᱛᱟᱲᱤ"]
     ]
   }
@@ -698,7 +698,7 @@ function installButtonHierarchy() {
     button.classList.add("primary-action");
   });
 
-  document.querySelectorAll("#stopLogicBtn, #autoWireBtn, #toggleGridBtn, #clearBtn, #zoomOutBtn, #zoomInBtn, #langToggleBtn")
+  document.querySelectorAll("#stopLogicBtn, #autoWireBtn, #toggleGridBtn, #clearBtn, #zoomOutBtn, #zoomInBtn")
     .forEach(button => button.classList.add("quiet-action"));
 }
 

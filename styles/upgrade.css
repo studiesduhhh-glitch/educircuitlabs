@@ -739,6 +739,47 @@ html {
   justify-content: flex-end;
 }
 
+.language-picker {
+  display:grid;
+  grid-template-columns:auto minmax(88px, 1fr);
+  align-items:center;
+  gap:8px;
+  height:40px;
+  max-width:170px;
+  padding:4px 10px;
+  border:1px solid rgba(75,95,130,.14);
+  border-radius:8px;
+  background:rgba(255,255,255,.72);
+  box-shadow:0 8px 18px rgba(15,23,42,.05);
+  color:var(--text);
+}
+
+.language-picker-label {
+  color:var(--muted);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:0;
+  white-space:nowrap;
+}
+
+.language-select {
+  width:100%;
+  min-width:0;
+  border:0;
+  outline:0;
+  background:transparent;
+  color:var(--text);
+  cursor:pointer;
+  font:inherit;
+  font-size:13px;
+  font-weight:900;
+}
+
+.language-picker:focus-within {
+  border-color:rgba(15,98,254,.35);
+  box-shadow:0 0 0 4px rgba(15,98,254,.1), 0 8px 18px rgba(15,23,42,.05);
+}
+
 #loginAccessModel {
   color: var(--text);
   background: linear-gradient(180deg, #f8fbff, #eef5ff);
@@ -2036,7 +2077,8 @@ body {
 
 .top-actions button,
 .top-actions .pill,
-.top-actions .zoom-display {
+.top-actions .zoom-display,
+.top-actions .language-picker {
   max-width:100%;
   white-space:nowrap;
 }
@@ -2161,7 +2203,8 @@ body {
 
   .top-actions button,
   .top-actions .zoom-display,
-  .top-actions .pill {
+  .top-actions .pill,
+  .top-actions .language-picker {
     min-height:34px;
     height:34px;
     padding:7px 10px;
@@ -2497,13 +2540,19 @@ body {
 
   .top-actions button,
   .top-actions .zoom-display,
-  .top-actions .pill {
+  .top-actions .pill,
+  .top-actions .language-picker {
     min-height:36px;
     height:auto;
     padding:7px 8px;
     font-size:12px;
     line-height:1.2;
     white-space:normal;
+  }
+
+  .language-picker {
+    grid-template-columns:auto minmax(0, 1fr);
+    max-width:none;
   }
 
   #activeUserPill {

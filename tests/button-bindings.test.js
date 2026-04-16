@@ -55,10 +55,23 @@ test("deployed html stays clean and modular", () => {
   assert.doesNotMatch(indexHtml, /<<<<<<<|=======|>>>>>>>/);
   assert.doesNotMatch(`${indexHtml}\n${allJs}`, /hhere/i);
   assert.doesNotMatch(indexHtml, /<script>\s*const state\s*=/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260416-voice3" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260416-voice3" \/>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260416-voice3"><\/script>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260416-lang1" \/>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260416-lang1" \/>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260416-lang1"><\/script>/);
   assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
+});
+
+test("language picker includes Indian languages in native scripts", () => {
+  assert.match(indexHtml, /id="languageSelect"/);
+  assert.match(runtimeJs, /LANGUAGE_OPTIONS/);
+  assert.match(runtimeJs, /हिन्दी/);
+  assert.match(runtimeJs, /தமிழ்/);
+  assert.match(runtimeJs, /తెలుగు/);
+  assert.match(runtimeJs, /ಕನ್ನಡ/);
+  assert.match(runtimeJs, /മലയാളം/);
+  assert.match(runtimeJs, /اردو/);
+  assert.match(runtimeJs, /ꯃꯤꯇꯩꯂꯣꯟ/);
+  assert.match(runtimeJs, /document\.getElementById\("languageSelect"\)\?\.addEventListener\("change"/);
 });
 
 test("dynamic project and AI buttons are delegated", () => {
@@ -106,6 +119,8 @@ test("manual switch controls and voice coach are wired", () => {
   assert.match(upgradeJs, /Indian Languages/);
   assert.match(upgradeJs, /हिन्दी/);
   assert.match(upgradeJs, /தமிழ்/);
+  assert.match(upgradeJs, /کٲشُر/);
+  assert.match(upgradeJs, /ꯃꯤꯇꯩꯂꯣꯟ/);
   assert.match(upgradeJs, /getSpeechVoices/);
   assert.match(upgradeJs, /getCuratedVoiceOptions/);
   assert.match(upgradeJs, /getSelectedVoice/);

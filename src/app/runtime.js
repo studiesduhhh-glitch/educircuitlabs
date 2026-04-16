@@ -64,6 +64,33 @@ const db = firebase.firestore();
 
 console.log("Firebase connected 🚀");
 
+const LANGUAGE_OPTIONS = [
+  { code: "en", label: "English", toast: "Language switched 🌐" },
+  { code: "hi", label: "हिन्दी", toast: "हिन्दी चुनी गई 🌐" },
+  { code: "ta", label: "தமிழ்", toast: "தமிழ் தேர்ந்தெடுக்கப்பட்டது 🌐" },
+  { code: "te", label: "తెలుగు", toast: "తెలుగు ఎంచుకున్నారు 🌐" },
+  { code: "kn", label: "ಕನ್ನಡ", toast: "ಕನ್ನಡ ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ 🌐" },
+  { code: "ml", label: "മലയാളം", toast: "മലയാളം തിരഞ്ഞെടുത്തു 🌐" },
+  { code: "bn", label: "বাংলা", toast: "বাংলা বেছে নেওয়া হয়েছে 🌐" },
+  { code: "mr", label: "मराठी", toast: "मराठी निवडले 🌐" },
+  { code: "gu", label: "ગુજરાતી", toast: "ગુજરાતી પસંદ કર્યું 🌐" },
+  { code: "pa", label: "ਪੰਜਾਬੀ", toast: "ਪੰਜਾਬੀ ਚੁਣੀ ਗਈ 🌐" },
+  { code: "ur", label: "اردو", toast: "اردو منتخب ہو گئی 🌐" },
+  { code: "or", label: "ଓଡ଼ିଆ", toast: "ଓଡ଼ିଆ ବାଛାଗଲା 🌐" },
+  { code: "as", label: "অসমীয়া", toast: "অসমীয়া বাছনি কৰা হল 🌐" },
+  { code: "sa", label: "संस्कृत", toast: "संस्कृतं चयनितम् 🌐" },
+  { code: "kok", label: "कोंकणी", toast: "कोंकणी निवडली 🌐" },
+  { code: "ne", label: "नेपाली", toast: "नेपाली छानियो 🌐" },
+  { code: "sd", label: "سنڌي", toast: "سنڌي چونڊي وئي 🌐" },
+  { code: "ks", label: "کٲشُر", toast: "کٲشُر منتخب 🌐" },
+  { code: "doi", label: "डोगरी", toast: "डोगरी चुनी गई 🌐" },
+  { code: "mai", label: "मैथिली", toast: "मैथिली चुनल गेल 🌐" },
+  { code: "brx", label: "बड़ो", toast: "बड़ो चुना गया 🌐" },
+  { code: "mni", label: "ꯃꯤꯇꯩꯂꯣꯟ", toast: "ꯃꯤꯇꯩꯂꯣꯟ selected 🌐" },
+  { code: "sat", label: "ᱥᱟᱱᱛᱟᱲᱤ", toast: "ᱥᱟᱱᱛᱟᱲᱤ selected 🌐" }
+];
+const LANGUAGE_CODES = new Set(LANGUAGE_OPTIONS.map(language => language.code));
+
 const translations = {
   ta: {
     "EDUCIRCUIT": "எடுசர்க்யூட்",
@@ -95,21 +122,336 @@ const translations = {
     "Motor": "மோட்டார்",
     "Switch": "சுவிட்ச்",
     "LED": "எல்இடி",
-    "Buzzer": "பஸர்"
+    "Buzzer": "பஸர்",
+    "Language": "மொழி",
+    "AI Teacher": "AI ஆசிரியர்",
+    "Logout": "வெளியேறு",
+    "Not logged in": "உள்நுழையவில்லை",
+    "Zoom −": "சிறிதாக்கு −",
+    "Zoom +": "பெரிதாக்கு +",
+    "Voice": "குரல்"
+  },
+  hi: {
+    "Components": "घटक",
+    "Logic Blocks": "लॉजिक ब्लॉक",
+    "Example Projects": "उदाहरण प्रोजेक्ट",
+    "Student Dashboard": "छात्र डैशबोर्ड",
+    "Teacher Panel": "शिक्षक पैनल",
+    "Submit Project": "प्रोजेक्ट जमा करें",
+    "Rename": "नाम बदलें",
+    "Run Logic": "लॉजिक चलाएं",
+    "Reset Outputs": "आउटपुट रीसेट करें",
+    "Auto Wire": "ऑटो वायर",
+    "Toggle Grid": "ग्रिड बदलें",
+    "Save": "सेव",
+    "Clear": "साफ करें",
+    "Student": "छात्र",
+    "Teacher": "शिक्षक",
+    "School": "स्कूल",
+    "Class / Section": "कक्षा / सेक्शन",
+    "DIY Components": "DIY घटक",
+    "Simulation Outputs": "सिमुलेशन आउटपुट",
+    "Dashboard": "डैशबोर्ड",
+    "Battery": "बैटरी",
+    "Motor": "मोटर",
+    "Switch": "स्विच",
+    "LED": "एलईडी",
+    "Buzzer": "बजर",
+    "Language": "भाषा",
+    "AI Teacher": "AI शिक्षक",
+    "Logout": "लॉग आउट",
+    "Not logged in": "लॉग इन नहीं"
+  },
+  te: {
+    "Components": "భాగాలు",
+    "Student Dashboard": "విద్యార్థి డ్యాష్‌బోర్డ్",
+    "Teacher Panel": "ఉపాధ్యాయ ప్యానెల్",
+    "Submit Project": "ప్రాజెక్ట్ సమర్పించండి",
+    "Rename": "పేరు మార్చండి",
+    "Run Logic": "లాజిక్ నడపండి",
+    "Reset Outputs": "అవుట్‌పుట్‌లను రీసెట్ చేయండి",
+    "Auto Wire": "ఆటో వైర్",
+    "Toggle Grid": "గ్రిడ్ మార్చండి",
+    "Save": "సేవ్",
+    "Clear": "క్లియర్",
+    "Student": "విద్యార్థి",
+    "Teacher": "ఉపాధ్యాయుడు",
+    "DIY Components": "DIY భాగాలు",
+    "Dashboard": "డ్యాష్‌బోర్డ్",
+    "Battery": "బ్యాటరీ",
+    "Motor": "మోటార్",
+    "Switch": "స్విచ్",
+    "LED": "ఎల్ఈడి",
+    "Buzzer": "బజర్",
+    "Language": "భాష",
+    "AI Teacher": "AI ఉపాధ్యాయుడు",
+    "Logout": "లాగ్ అవుట్"
+  },
+  kn: {
+    "Components": "ಘಟಕಗಳು",
+    "Student Dashboard": "ವಿದ್ಯಾರ್ಥಿ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+    "Teacher Panel": "ಶಿಕ್ಷಕರ ಪ್ಯಾನೆಲ್",
+    "Submit Project": "ಪ್ರಾಜೆಕ್ಟ್ ಸಲ್ಲಿಸಿ",
+    "Rename": "ಹೆಸರು ಬದಲಿಸಿ",
+    "Run Logic": "ಲಾಜಿಕ್ ಚಲಾಯಿಸಿ",
+    "Reset Outputs": "ಔಟ್‌ಪುಟ್‌ಗಳನ್ನು ಮರುಹೊಂದಿಸಿ",
+    "Auto Wire": "ಆಟೋ ವೈರ್",
+    "Toggle Grid": "ಗ್ರಿಡ್ ಬದಲಿಸಿ",
+    "Save": "ಸೇವ್",
+    "Clear": "ತೆರವುಗೊಳಿಸಿ",
+    "Student": "ವಿದ್ಯಾರ್ಥಿ",
+    "Teacher": "ಶಿಕ್ಷಕ",
+    "DIY Components": "DIY ಘಟಕಗಳು",
+    "Dashboard": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+    "Battery": "ಬ್ಯಾಟರಿ",
+    "Motor": "ಮೋಟರ್",
+    "Switch": "ಸ್ವಿಚ್",
+    "LED": "ಎಲ್ಇಡಿ",
+    "Buzzer": "ಬಜರ್",
+    "Language": "ಭಾಷೆ",
+    "AI Teacher": "AI ಶಿಕ್ಷಕ",
+    "Logout": "ಲಾಗ್ ಔಟ್"
+  },
+  ml: {
+    "Components": "ഘടകങ്ങൾ",
+    "Student Dashboard": "വിദ്യാർത്ഥി ഡാഷ്ബോർഡ്",
+    "Teacher Panel": "അധ്യാപക പാനൽ",
+    "Submit Project": "പ്രോജക്റ്റ് സമർപ്പിക്കുക",
+    "Rename": "പേര് മാറ്റുക",
+    "Run Logic": "ലോജിക് പ്രവർത്തിപ്പിക്കുക",
+    "Reset Outputs": "ഔട്ട്പുട്ടുകൾ റീസെറ്റ് ചെയ്യുക",
+    "Auto Wire": "ഓട്ടോ വയർ",
+    "Toggle Grid": "ഗ്രിഡ് മാറ്റുക",
+    "Save": "സേവ്",
+    "Clear": "ക്ലിയർ",
+    "Student": "വിദ്യാർത്ഥി",
+    "Teacher": "അധ്യാപകൻ",
+    "DIY Components": "DIY ഘടകങ്ങൾ",
+    "Dashboard": "ഡാഷ്ബോർഡ്",
+    "Battery": "ബാറ്ററി",
+    "Motor": "മോട്ടോർ",
+    "Switch": "സ്വിച്ച്",
+    "LED": "എൽഇഡി",
+    "Buzzer": "ബസർ",
+    "Language": "ഭാഷ",
+    "AI Teacher": "AI അധ്യാപകൻ",
+    "Logout": "ലോഗ് ഔട്ട്"
+  },
+  bn: {
+    "Components": "উপাদান",
+    "Student Dashboard": "শিক্ষার্থী ড্যাশবোর্ড",
+    "Teacher Panel": "শিক্ষক প্যানেল",
+    "Submit Project": "প্রোজেক্ট জমা দিন",
+    "Rename": "নাম বদলান",
+    "Run Logic": "লজিক চালান",
+    "Reset Outputs": "আউটপুট রিসেট করুন",
+    "Auto Wire": "অটো ওয়্যার",
+    "Toggle Grid": "গ্রিড বদলান",
+    "Save": "সেভ",
+    "Clear": "ক্লিয়ার",
+    "Student": "শিক্ষার্থী",
+    "Teacher": "শিক্ষক",
+    "DIY Components": "DIY উপাদান",
+    "Dashboard": "ড্যাশবোর্ড",
+    "Battery": "ব্যাটারি",
+    "Motor": "মোটর",
+    "Switch": "সুইচ",
+    "LED": "এলইডি",
+    "Buzzer": "বাজার",
+    "Language": "ভাষা",
+    "AI Teacher": "AI শিক্ষক",
+    "Logout": "লগ আউট"
+  },
+  mr: {
+    "Components": "घटक",
+    "Student Dashboard": "विद्यार्थी डॅशबोर्ड",
+    "Teacher Panel": "शिक्षक पॅनेल",
+    "Submit Project": "प्रोजेक्ट सबमिट करा",
+    "Rename": "नाव बदला",
+    "Run Logic": "लॉजिक चालवा",
+    "Reset Outputs": "आउटपुट रीसेट करा",
+    "Auto Wire": "ऑटो वायर",
+    "Toggle Grid": "ग्रिड बदला",
+    "Save": "सेव्ह",
+    "Clear": "क्लिअर",
+    "Student": "विद्यार्थी",
+    "Teacher": "शिक्षक",
+    "DIY Components": "DIY घटक",
+    "Dashboard": "डॅशबोर्ड",
+    "Battery": "बॅटरी",
+    "Motor": "मोटर",
+    "Switch": "स्विच",
+    "LED": "एलईडी",
+    "Buzzer": "बझर",
+    "Language": "भाषा",
+    "AI Teacher": "AI शिक्षक",
+    "Logout": "लॉग आउट"
+  },
+  gu: {
+    "Components": "ઘટકો",
+    "Student Dashboard": "વિદ્યાર્થી ડેશબોર્ડ",
+    "Teacher Panel": "શિક્ષક પેનલ",
+    "Submit Project": "પ્રોજેક્ટ સબમિટ કરો",
+    "Rename": "નામ બદલો",
+    "Run Logic": "લોજિક ચલાવો",
+    "Reset Outputs": "આઉટપુટ રીસેટ કરો",
+    "Auto Wire": "ઓટો વાયર",
+    "Toggle Grid": "ગ્રિડ બદલો",
+    "Save": "સેવ",
+    "Clear": "ક્લિયર",
+    "Student": "વિદ્યાર્થી",
+    "Teacher": "શિક્ષક",
+    "DIY Components": "DIY ઘટકો",
+    "Dashboard": "ડેશબોર્ડ",
+    "Battery": "બેટરી",
+    "Motor": "મોટર",
+    "Switch": "સ્વિચ",
+    "LED": "એલઇડી",
+    "Buzzer": "બઝર",
+    "Language": "ભાષા",
+    "AI Teacher": "AI શિક્ષક",
+    "Logout": "લૉગ આઉટ"
+  },
+  pa: {
+    "Components": "ਘਟਕ",
+    "Student Dashboard": "ਵਿਦਿਆਰਥੀ ਡੈਸ਼ਬੋਰਡ",
+    "Teacher Panel": "ਅਧਿਆਪਕ ਪੈਨਲ",
+    "Submit Project": "ਪ੍ਰੋਜੈਕਟ ਜਮ੍ਹਾ ਕਰੋ",
+    "Rename": "ਨਾਮ ਬਦਲੋ",
+    "Run Logic": "ਲਾਜਿਕ ਚਲਾਓ",
+    "Reset Outputs": "ਆਉਟਪੁੱਟ ਰੀਸੈਟ ਕਰੋ",
+    "Auto Wire": "ਆਟੋ ਵਾਇਰ",
+    "Toggle Grid": "ਗ੍ਰਿਡ ਬਦਲੋ",
+    "Save": "ਸੇਵ",
+    "Clear": "ਕਲੀਅਰ",
+    "Student": "ਵਿਦਿਆਰਥੀ",
+    "Teacher": "ਅਧਿਆਪਕ",
+    "DIY Components": "DIY ਘਟਕ",
+    "Dashboard": "ਡੈਸ਼ਬੋਰਡ",
+    "Battery": "ਬੈਟਰੀ",
+    "Motor": "ਮੋਟਰ",
+    "Switch": "ਸਵਿੱਚ",
+    "LED": "ਐਲਈਡੀ",
+    "Buzzer": "ਬਜ਼ਰ",
+    "Language": "ਭਾਸ਼ਾ",
+    "AI Teacher": "AI ਅਧਿਆਪਕ",
+    "Logout": "ਲੌਗ ਆਉਟ"
+  },
+  ur: {
+    "Components": "اجزا",
+    "Student Dashboard": "طالب علم ڈیش بورڈ",
+    "Teacher Panel": "استاد پینل",
+    "Submit Project": "پروجیکٹ جمع کریں",
+    "Rename": "نام بدلیں",
+    "Run Logic": "لاجک چلائیں",
+    "Reset Outputs": "آؤٹ پٹ ری سیٹ کریں",
+    "Auto Wire": "آٹو وائر",
+    "Toggle Grid": "گرڈ بدلیں",
+    "Save": "محفوظ کریں",
+    "Clear": "صاف کریں",
+    "Student": "طالب علم",
+    "Teacher": "استاد",
+    "DIY Components": "DIY اجزا",
+    "Dashboard": "ڈیش بورڈ",
+    "Battery": "بیٹری",
+    "Motor": "موٹر",
+    "Switch": "سوئچ",
+    "LED": "ایل ای ڈی",
+    "Buzzer": "بزر",
+    "Language": "زبان",
+    "AI Teacher": "AI استاد",
+    "Logout": "لاگ آؤٹ"
+  },
+  or: {
+    "Components": "ଉପାଦାନ",
+    "Student Dashboard": "ଛାତ୍ର ଡ୍ୟାଶବୋର୍ଡ",
+    "Teacher Panel": "ଶିକ୍ଷକ ପ୍ୟାନେଲ",
+    "Submit Project": "ପ୍ରୋଜେକ୍ଟ ଦାଖଲ କରନ୍ତୁ",
+    "Rename": "ନାମ ବଦଳାନ୍ତୁ",
+    "Run Logic": "ଲଜିକ ଚଲାନ୍ତୁ",
+    "Reset Outputs": "ଆଉଟପୁଟ ରିସେଟ କରନ୍ତୁ",
+    "Auto Wire": "ଅଟୋ ୱାୟର",
+    "Toggle Grid": "ଗ୍ରିଡ ବଦଳାନ୍ତୁ",
+    "Save": "ସେଭ",
+    "Clear": "କ୍ଲିୟର",
+    "Student": "ଛାତ୍ର",
+    "Teacher": "ଶିକ୍ଷକ",
+    "DIY Components": "DIY ଉପାଦାନ",
+    "Dashboard": "ଡ୍ୟାଶବୋର୍ଡ",
+    "Battery": "ବ୍ୟାଟେରୀ",
+    "Motor": "ମୋଟର",
+    "Switch": "ସ୍ୱିଚ",
+    "LED": "ଏଲଇଡି",
+    "Buzzer": "ବଜର",
+    "Language": "ଭାଷା",
+    "AI Teacher": "AI ଶିକ୍ଷକ",
+    "Logout": "ଲଗ ଆଉଟ"
+  },
+  as: {
+    "Components": "উপাদান",
+    "Student Dashboard": "শিক্ষাৰ্থী ডেশ্বব'ৰ্ড",
+    "Teacher Panel": "শিক্ষক পেনেল",
+    "Submit Project": "প্ৰকল্প জমা দিয়ক",
+    "Rename": "নাম সলনি কৰক",
+    "Run Logic": "লজিক চলাওক",
+    "Reset Outputs": "আউটপুট ৰিছেট কৰক",
+    "Auto Wire": "অটো ৱায়াৰ",
+    "Toggle Grid": "গ্ৰিড সলনি কৰক",
+    "Save": "ছেভ",
+    "Clear": "ক্লিয়াৰ",
+    "Student": "শিক্ষাৰ্থী",
+    "Teacher": "শিক্ষক",
+    "DIY Components": "DIY উপাদান",
+    "Dashboard": "ডেশ্বব'ৰ্ড",
+    "Battery": "বেটাৰী",
+    "Motor": "মটৰ",
+    "Switch": "চুইচ",
+    "LED": "এলইডি",
+    "Buzzer": "বাজাৰ",
+    "Language": "ভাষা",
+    "AI Teacher": "AI শিক্ষক",
+    "Logout": "লগ আউট"
   }
 };
 
+LANGUAGE_OPTIONS.forEach(language => {
+  if (language.code !== "en") {
+    translations[language.code] = {
+      Language: language.label,
+      ...(translations[language.code] || {})
+    };
+  }
+});
+
+if (!LANGUAGE_CODES.has(state.lang)) {
+  state.lang = "en";
+}
+
+function getLanguageOption(code = state.lang) {
+  return LANGUAGE_OPTIONS.find(language => language.code === code) || LANGUAGE_OPTIONS[0];
+}
+
+function translateText(original, lang = state.lang) {
+  const key = String(original || "").trim();
+  if (!key || lang === "en") return key;
+  return translations[lang]?.[key] || key;
+}
+
+function renderLanguageOptions() {
+  const select = document.getElementById("languageSelect");
+  if (!select) return;
+  const selectedCode = LANGUAGE_CODES.has(state.lang) ? state.lang : "en";
+  select.replaceChildren(...LANGUAGE_OPTIONS.map(language => new Option(language.label, language.code)));
+  select.value = selectedCode;
+}
+
 function applyLanguage(){
   const lang = state.lang;
+  renderLanguageOptions();
 
   document.querySelectorAll("[data-en]").forEach(el => {
 const original = el.getAttribute("data-en");
-
-if(lang === "ta" && translations.ta[original]){
-  el.textContent = translations.ta[original];
-} else {
-  el.textContent = original;
-}
+el.textContent = translateText(original, lang);
   });
 }
 
@@ -1131,7 +1473,7 @@ function addComponent(type, x = null, y = null){
   refreshSimulation();
   renderItems();
   updateTeacherStats();
-  const name = state.lang === "ta" && translations.ta[type] ? translations.ta[type] : type;
+  const name = translateText(type);
   showToast(name + (state.lang === "ta" ? " சேர்க்கப்பட்டது" : " added"));
 }
 
@@ -1161,7 +1503,7 @@ function renderItems(){
 
     el.innerHTML = `
       <div class="item-head">
-       <b>${cfg.icon} ${translations.ta[item.type] && state.lang === "ta" ? translations.ta[item.type] : item.type}</b>
+       <b>${cfg.icon} ${translateText(item.type)}</b>
         ${statusHtml}
       </div>
       <div class="item-body">${cfg.desc}${item.type === "Battery" ? `<span class="terminal-hint">${Number(item.voltage ?? state.defaultBatteryVoltage).toFixed(1)}V output</span>` : `<span class="terminal-hint">- left • + right</span>`}</div>
@@ -1701,7 +2043,7 @@ function addLogic(name){
   state.logic.push(name);
   renderLogic();
   updateTeacherStats();
-  const label = state.lang === "ta" && translations.ta[name] ? translations.ta[name] : name;
+  const label = translateText(name);
   showToast(label + (state.lang === "ta" ? " சேர்க்கப்பட்டது" : " added"));
 }
 
@@ -1712,9 +2054,7 @@ function renderLogic(){
     const chip = document.createElement("div");
     chip.className = "logic-chip";
 
-    const label = state.lang === "ta" && translations.ta[step]
-      ? translations.ta[step]
-      : step;
+    const label = translateText(step);
 
     chip.innerHTML = `<span>${index + 1}. ${label}</span>`;
 
@@ -2408,15 +2748,11 @@ loginRole.addEventListener("change", syncRoleFields);
 loginAccessModel?.addEventListener("change", syncRoleFields);
  
   
-document.getElementById("langToggleBtn").addEventListener("click", () => {
-  state.lang = state.lang === "en" ? "ta" : "en";
-
+document.getElementById("languageSelect")?.addEventListener("change", event => {
+  const nextLang = event.target.value;
+  state.lang = LANGUAGE_CODES.has(nextLang) ? nextLang : "en";
   applyLanguage();
-
-  const btn = document.getElementById("langToggleBtn");
-  btn.textContent = state.lang === "en" ? "தமிழ்" : "English";
-
-  showToast(state.lang === "ta" ? "மொழி மாற்றப்பட்டது 🌐" : "Language switched 🌐");
+  showToast(getLanguageOption(state.lang).toast);
 });
 
 workspaceArea.addEventListener("wheel", (e) => {
