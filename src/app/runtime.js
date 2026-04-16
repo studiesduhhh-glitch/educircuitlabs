@@ -221,18 +221,12 @@ function normalizeKey(value){
     .replace(/^-+|-+$/g, "");
 }
 
-function buildSchoolAuthEmail({ school, schoolUsername, role, name }){
-  const parts = [
-    normalizeKey(school) || "school",
-    normalizeKey(schoolUsername) || "access",
-    normalizeKey(role) || "student",
-    normalizeKey(name) || "user"
-  ];
-  return `${parts.join(".")}@educircuitlabs.app`;
-}
-
 function getSchoolDocId(school){
   return normalizeKey(school) || "default-school";
+}
+
+function getMemberCollectionName(role){
+  return role === "teacher" ? "teachers" : role === "admin" ? "admins" : "students";
 }
 
 function ensureSchoolContainer(school){
@@ -413,11 +407,6 @@ async function fetchUserProfile(uid){
   return doc.exists ? doc.data() : null;
 }
 
-async function getSchoolAuthRecord(school){
-  const schoolDoc = await db.collection("schools").doc(getSchoolDocId(school)).get();
-  return schoolDoc.exists ? schoolDoc.data() : null;
-}
-
 async function signUpUser(){
   const payload = getLoginPayload();
   if(!validateLoginPayload(payload)){
@@ -426,49 +415,65 @@ async function signUpUser(){
   }
 
   const schoolKey = getSchoolDocId(payload.school);
-  const schoolEmail = buildSchoolAuthEmail(payload);
 
   try{
     const schoolRef = db.collection("schools").doc(schoolKey);
     const schoolDoc = await schoolRef.get();
+    const schoolData = schoolDoc.exists ? schoolDoc.data() : null;
+    const adminIds = Array.isArray(schoolData?.adminIds) ? schoolData.adminIds : [];
 
-    if(schoolDoc.exists){
-      const schoolData = schoolDoc.data();
-      if(
-        schoolData.schoolUsername !== payload.schoolUsername ||
-        schoolData.schoolPassword !== payload.schoolPassword
-      ){
-        alert("This school already uses different school credentials.");
-        return;
-      }
-    } else {
-      await schoolRef.set({
-        school: payload.school,
-        schoolKey,
-        schoolUsername: payload.schoolUsername,
-        schoolPassword: payload.schoolPassword,
-        createdAt: new Date()
-      });
+    if(payload.role === "admin" && adminIds.length){
+      alert("This school already has an admin. Use Access Model to log in instead.");
+      return;
     }
 
-    const cred = await auth.createUserWithEmailAndPassword(schoolEmail, payload.schoolPassword);
-    await db.collection("users").doc(cred.user.uid).set({
+    const cred = await auth.createUserWithEmailAndPassword(payload.email, payload.schoolPassword);
+    const collectionName = getMemberCollectionName(payload.role);
+    const profilePath = `schools/${schoolKey}/${collectionName}/${cred.user.uid}`;
+    const batch = db.batch();
+    const profile = {
+      uid: cred.user.uid,
       name: payload.name,
       email: payload.email,
       role: payload.role,
       className: payload.className,
       school: payload.school,
       schoolKey,
+      schoolId: schoolKey,
       schoolUsername: payload.schoolUsername,
-      authEmail: schoolEmail,
-      createdAt: new Date()
-    });
+      profilePath,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
 
-    applyAuthenticatedProfile(cred.user.uid, {
-      ...payload,
-      schoolKey
-    });
-    showToast("School user created");
+    if(schoolDoc.exists){
+      batch.set(schoolRef, {
+        id: schoolKey,
+        name: payload.school,
+        adminIds: payload.role === "admin" ? firebase.firestore.FieldValue.arrayUnion(cred.user.uid) : adminIds,
+        updatedAt: new Date(),
+        leaderboardEnabled: schoolData?.leaderboardEnabled ?? true
+      }, { merge: true });
+    } else {
+      batch.set(schoolRef, {
+        id: schoolKey,
+        name: payload.school,
+        adminIds: payload.role === "admin" ? [cred.user.uid] : [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        leaderboardEnabled: true,
+        selfServiceSignup: payload.role !== "admin",
+        createdBy: cred.user.uid,
+        createdByRole: payload.role
+      });
+    }
+
+    batch.set(schoolRef.collection(collectionName).doc(cred.user.uid), profile);
+    batch.set(db.collection("users").doc(cred.user.uid), profile);
+    await batch.commit();
+
+    applyAuthenticatedProfile(cred.user.uid, profile);
+    showToast("Account created safely");
   } catch(error){
     alert(formatFirebaseAuthError(error, "create", payload.role));
   }
@@ -482,39 +487,12 @@ async function loginUser(){
   }
 
   try{
-    const schoolData = await getSchoolAuthRecord(payload.school);
-    if(!schoolData){
-      alert("This school is not registered yet. Create the school user first.");
-      return;
-    }
-
-    if(
-      schoolData.schoolUsername !== payload.schoolUsername ||
-      schoolData.schoolPassword !== payload.schoolPassword
-    ){
-      alert("School username or password is incorrect.");
-      return;
-    }
-
-    const authEmail = buildSchoolAuthEmail(payload);
-    const cred = await auth.signInWithEmailAndPassword(authEmail, payload.schoolPassword);
-    let profile = await fetchUserProfile(cred.user.uid);
+    const cred = await auth.signInWithEmailAndPassword(payload.email, payload.schoolPassword);
+    const profile = await fetchUserProfile(cred.user.uid);
 
     if(!profile){
-      profile = {
-        name: payload.name,
-        email: payload.email,
-        role: payload.role,
-        className: payload.className,
-        school: payload.school,
-        schoolKey: getSchoolDocId(payload.school),
-        schoolUsername: payload.schoolUsername
-      };
-      await db.collection("users").doc(cred.user.uid).set({
-        ...profile,
-        authEmail,
-        createdAt: new Date()
-      });
+      alert("This account exists, but its Educircuit classroom profile is missing. Create a new account or ask the school admin to repair it.");
+      return;
     }
 
     applyAuthenticatedProfile(cred.user.uid, profile);

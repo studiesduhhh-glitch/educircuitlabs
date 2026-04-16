@@ -55,9 +55,9 @@ test("deployed html stays clean and modular", () => {
   assert.doesNotMatch(indexHtml, /<<<<<<<|=======|>>>>>>>/);
   assert.doesNotMatch(`${indexHtml}\n${allJs}`, /hhere/i);
   assert.doesNotMatch(indexHtml, /<script>\s*const state\s*=/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260416-access2" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260416-access2" \/>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260416-access2"><\/script>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260416-access3" \/>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260416-access3" \/>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260416-access3"><\/script>/);
   assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
 });
 
@@ -83,4 +83,12 @@ test("login step requires account details and demo buttons do not bypass auth", 
   assert.match(upgradeJs, /loginEmail\.classList\.add\("error"\)/);
   assert.doesNotMatch(upgradeJs, /loaded in demo mode/);
   assert.doesNotMatch(upgradeJs, /applyAuthenticatedProfile\(demoProfile\.uid/);
+});
+
+test("legacy auth fallback does not store shared school passwords", () => {
+  assert.doesNotMatch(runtimeJs, /schoolPassword:\s*payload\.schoolPassword/);
+  assert.doesNotMatch(runtimeJs, /schoolData\.schoolPassword/);
+  assert.doesNotMatch(runtimeJs, /buildSchoolAuthEmail/);
+  assert.match(runtimeJs, /createUserWithEmailAndPassword\(payload\.email,\s*payload\.schoolPassword\)/);
+  assert.match(runtimeJs, /selfServiceSignup/);
 });
