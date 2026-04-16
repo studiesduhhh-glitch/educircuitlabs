@@ -1,8 +1,8 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260416-voice1";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260416-voice1";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260416-voice1";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260416-voice2";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260416-voice2";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260416-voice2";
 import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js";
-import { formatAuthError } from "../services/auth-service.js?v=20260416-voice1";
+import { formatAuthError } from "../services/auth-service.js?v=20260416-voice2";
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -269,6 +269,7 @@ function showSimulationFeedback(report) {
 }
 
 const VOICE_COACH_STORAGE_KEY = "educircuit-voice-coach";
+const VOICE_COACH_VOICE_STORAGE_KEY = "educircuit-voice-coach-voice";
 
 function isVoiceCoachEnabled() {
   return localStorage.getItem(VOICE_COACH_STORAGE_KEY) !== "off";
@@ -281,9 +282,60 @@ function updateVoiceCoachButton(button = document.getElementById("voiceCoachBtn"
   button.setAttribute("aria-pressed", String(enabled));
 }
 
+function getSpeechVoices() {
+  if (!("speechSynthesis" in window)) return [];
+  return window.speechSynthesis.getVoices?.() || [];
+}
+
+function getVoiceOptionValue(voice) {
+  return voice?.voiceURI || voice?.name || "";
+}
+
+function getVoiceOptionLabel(voice) {
+  const lang = voice.lang ? ` (${voice.lang})` : "";
+  const defaultTag = voice.default ? " default" : "";
+  return `${voice.name || "Voice"}${lang}${defaultTag}`;
+}
+
+function getSelectedVoice() {
+  const selectedValue = localStorage.getItem(VOICE_COACH_VOICE_STORAGE_KEY) || "";
+  if (!selectedValue) return null;
+  return getSpeechVoices().find(voice => getVoiceOptionValue(voice) === selectedValue) || null;
+}
+
+function updateVoiceCoachOptions(select = document.getElementById("voiceCoachSelect")) {
+  if (!select) return;
+  const voices = getSpeechVoices();
+  const selectedValue = localStorage.getItem(VOICE_COACH_VOICE_STORAGE_KEY) || "";
+  const options = [
+    `<option value="">Default voice</option>`,
+    ...voices.map(voice => {
+      const value = escapeHtml(getVoiceOptionValue(voice));
+      const label = escapeHtml(getVoiceOptionLabel(voice));
+      return `<option value="${value}">${label}</option>`;
+    })
+  ];
+
+  select.innerHTML = options.join("");
+  select.value = voices.some(voice => getVoiceOptionValue(voice) === selectedValue) ? selectedValue : "";
+}
+
 function installVoiceCoachToggle(app) {
   const toolbarGroup = document.querySelector(".canvas-toolbar .toolbar-group:last-child");
   if (!toolbarGroup || document.getElementById("voiceCoachBtn")) return;
+
+  const controls = document.createElement("div");
+  controls.className = "voice-coach-controls";
+
+  const select = document.createElement("select");
+  select.id = "voiceCoachSelect";
+  select.className = "voice-coach-select";
+  select.setAttribute("aria-label", "Voice Coach voice");
+  select.addEventListener("change", () => {
+    localStorage.setItem(VOICE_COACH_VOICE_STORAGE_KEY, select.value);
+    const label = select.selectedOptions?.[0]?.textContent || "Default voice";
+    app.showToast?.(`Voice set to ${label}`);
+  });
 
   const button = document.createElement("button");
   button.type = "button";
@@ -299,8 +351,16 @@ function installVoiceCoachToggle(app) {
     app.showToast?.(nextEnabled ? "Voice Coach enabled" : "Voice Coach muted");
   });
 
-  toolbarGroup.appendChild(button);
+  controls.append(select, button);
+  toolbarGroup.appendChild(controls);
+  updateVoiceCoachOptions(select);
   updateVoiceCoachButton(button);
+
+  if ("speechSynthesis" in window) {
+    const refreshVoiceOptions = () => updateVoiceCoachOptions(select);
+    window.speechSynthesis.addEventListener?.("voiceschanged", refreshVoiceOptions);
+    setTimeout(refreshVoiceOptions, 300);
+  }
 }
 
 function sanitizeSpeechText(text = "") {
@@ -340,7 +400,11 @@ function speakCircuitCoach(report, app) {
 
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "en-US";
+  const selectedVoice = getSelectedVoice();
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+  }
+  utterance.lang = selectedVoice?.lang || "en-US";
   utterance.rate = 0.92;
   utterance.pitch = 1;
   window.speechSynthesis.speak(utterance);

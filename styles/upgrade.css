@@ -1493,6 +1493,32 @@ button,
   border-color:rgba(15,98,254,.22);
 }
 
+.voice-coach-controls {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  width:100%;
+}
+
+.voice-coach-select {
+  flex:1 1 150px;
+  min-width:0;
+  height:38px;
+  border-radius:8px;
+  border:1px solid rgba(75,95,130,.14);
+  background:rgba(255,255,255,.76);
+  color:var(--text);
+  font-weight:800;
+  padding:0 10px;
+  box-shadow:0 6px 14px rgba(15,23,42,.04);
+}
+
+.voice-coach-select:focus {
+  outline:none;
+  border-color:rgba(15,98,254,.35);
+  box-shadow:0 0 0 4px rgba(15,98,254,.1);
+}
+
 body.upgrade-ready button.primary-action {
   border-radius:8px;
   background:linear-gradient(135deg, #0f62fe, #10b981);

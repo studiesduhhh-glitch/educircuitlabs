@@ -55,9 +55,9 @@ test("deployed html stays clean and modular", () => {
   assert.doesNotMatch(indexHtml, /<<<<<<<|=======|>>>>>>>/);
   assert.doesNotMatch(`${indexHtml}\n${allJs}`, /hhere/i);
   assert.doesNotMatch(indexHtml, /<script>\s*const state\s*=/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260416-voice1" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260416-voice1" \/>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260416-voice1"><\/script>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260416-voice2" \/>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260416-voice2" \/>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260416-voice2"><\/script>/);
   assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
 });
 
@@ -99,6 +99,10 @@ test("manual switch controls and voice coach are wired", () => {
   assert.match(runtimeJs, /aria-pressed/);
   assert.match(runtimeJs, /usesControlLogic/);
   assert.match(upgradeJs, /voiceCoachBtn/);
+  assert.match(upgradeJs, /voiceCoachSelect/);
+  assert.match(upgradeJs, /getSpeechVoices/);
+  assert.match(upgradeJs, /getSelectedVoice/);
   assert.match(upgradeJs, /SpeechSynthesisUtterance/);
+  assert.match(upgradeJs, /utterance\.voice = selectedVoice/);
   assert.match(upgradeJs, /speakCircuitCoach\(report, app\)/);
 });
