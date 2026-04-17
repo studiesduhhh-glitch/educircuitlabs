@@ -44,6 +44,12 @@ const state = window.EducircuitState || {
 };
 window.EducircuitState = state;
 state.lang = state.lang || "en";
+window.EducircuitRuntimePrefs = window.EducircuitRuntimePrefs || {
+  theme: "light",
+  hideLanding: false,
+  voiceCoachEnabled: true,
+  voiceCoachVoice: ""
+};
 const UI = window.EducircuitUI;
 const performanceTools = window.EducircuitPerformance || {};
 
@@ -61,6 +67,9 @@ firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
 const db = firebase.firestore();
+auth.setPersistence?.(firebase.auth.Auth.Persistence.NONE).catch(error => {
+  console.warn("Firebase auth is running without browser persistence.", error);
+});
 
 console.log("Firebase connected 🚀");
 
@@ -720,7 +729,6 @@ function ensureLocalUserRecord(profile){
       projects: []
     };
     userBucket.push(userRecord);
-    localStorage.setItem("stem_schools", JSON.stringify(state.schools));
   }
 
   return userRecord;
@@ -1639,9 +1647,6 @@ function deleteProject(index){
     state.currentProjectIndex -= 1;
   }
 
-  // 💾 Save updated data
-  localStorage.setItem("stem_schools", JSON.stringify(state.schools));
-
   // 🔄 Refresh UI
   renderProjectsPage();   // full page  
 
@@ -2354,7 +2359,6 @@ function submitProject(){
   teacherSubmissionState.textContent = "Submitted";
   if(student && state.currentProjectIndex !== null && student.projects[state.currentProjectIndex]){
     student.projects[state.currentProjectIndex].status = "Submitted";
-    localStorage.setItem("stem_schools", JSON.stringify(state.schools));
     renderProjectList();
     renderProjectsPage();
   }
@@ -2385,7 +2389,6 @@ function applyGrade(){
     student.projects[state.currentProjectIndex].visibility = visibility;
     student.projects[state.currentProjectIndex].cloneable = visibility === "public";
     student.projects[state.currentProjectIndex].gradedAt = new Date().toLocaleString();
-    localStorage.setItem("stem_schools", JSON.stringify(state.schools));
     renderProjectList();
     renderProjectsPage();
     renderStudentProjectsPage();
@@ -2426,7 +2429,7 @@ function enterLanding(){
   const dontShow = document.getElementById("dontShowLanding").checked;
 
   if(dontShow){
-localStorage.setItem("hideLanding", "true");
+    window.EducircuitRuntimePrefs.hideLanding = true;
   }
 
   document.getElementById("landingPage").classList.add("hidden");
@@ -2441,8 +2444,8 @@ function closeGuide(){
   document.getElementById("guidePage").classList.add("hidden");
 }
 
-// 🔥 AUTO HIDE LANDING
-if(localStorage.getItem("hideLanding") === "true"){
+// 🔥 AUTO HIDE LANDING DURING THIS RUNTIME ONLY
+if(window.EducircuitRuntimePrefs.hideLanding === true){
   document.getElementById("landingPage").classList.add("hidden");
 }
 
@@ -2483,9 +2486,6 @@ function saveProject(options = {}){
     }
   }
 
-  // 💾 Save ALL schools
-  localStorage.setItem("stem_schools", JSON.stringify(state.schools));
-
   renderProjectList();
   renderProjectsPage();
   renderStudentProjectsPage();
@@ -2519,12 +2519,6 @@ alert("Error saving project");
 }
 
 function loadProject(){
-  const savedSchools = localStorage.getItem("stem_schools");
-
-  if(savedSchools){
-    state.schools = JSON.parse(savedSchools);
-  }
-
   auth.onAuthStateChanged(async (firebaseUser) => {
     if(firebaseUser){
       try{

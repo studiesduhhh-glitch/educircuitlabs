@@ -1,8 +1,8 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260417-projects1";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260417-projects1";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260417-projects1";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260417-firebase1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260417-firebase1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260417-firebase1";
 import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js";
-import { formatAuthError } from "../services/auth-service.js?v=20260417-projects1";
+import { formatAuthError } from "../services/auth-service.js?v=20260417-firebase1";
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -268,8 +268,12 @@ function showSimulationFeedback(report) {
   }, 7200);
 }
 
-const VOICE_COACH_STORAGE_KEY = "educircuit-voice-coach";
-const VOICE_COACH_VOICE_STORAGE_KEY = "educircuit-voice-coach-voice";
+const runtimePrefs = window.EducircuitRuntimePrefs = window.EducircuitRuntimePrefs || {
+  theme: "light",
+  hideLanding: false,
+  voiceCoachEnabled: true,
+  voiceCoachVoice: ""
+};
 const CURATED_VOICE_GROUPS = [
   {
     label: "English",
@@ -311,7 +315,7 @@ const CURATED_VOICE_LABELS = new Map(CURATED_VOICE_GROUPS.flatMap(group => group
 const CURATED_VOICE_ORDER = new Map([...CURATED_VOICE_LABELS.keys()].map((key, index) => [key, index]));
 
 function isVoiceCoachEnabled() {
-  return localStorage.getItem(VOICE_COACH_STORAGE_KEY) !== "off";
+  return runtimePrefs.voiceCoachEnabled !== false;
 }
 
 function updateVoiceCoachButton(button = document.getElementById("voiceCoachBtn")) {
@@ -348,7 +352,7 @@ function getCuratedVoiceKey(voice) {
 }
 
 function getCuratedVoiceOptions() {
-  const selectedValue = localStorage.getItem(VOICE_COACH_VOICE_STORAGE_KEY) || "";
+  const selectedValue = runtimePrefs.voiceCoachVoice || "";
   const byLanguage = new Map();
 
   getSpeechVoices().forEach(voice => {
@@ -372,14 +376,14 @@ function getCuratedVoiceOptions() {
 }
 
 function getSelectedVoice() {
-  const selectedValue = localStorage.getItem(VOICE_COACH_VOICE_STORAGE_KEY) || "";
+  const selectedValue = runtimePrefs.voiceCoachVoice || "";
   if (!selectedValue) return null;
   return getCuratedVoiceOptions().find(option => getVoiceOptionValue(option.voice) === selectedValue)?.voice || null;
 }
 
 function updateVoiceCoachOptions(select = document.getElementById("voiceCoachSelect")) {
   if (!select) return;
-  const selectedValue = localStorage.getItem(VOICE_COACH_VOICE_STORAGE_KEY) || "";
+  const selectedValue = runtimePrefs.voiceCoachVoice || "";
   const curatedOptions = getCuratedVoiceOptions();
   const groupedOptions = CURATED_VOICE_GROUPS.map(group => {
     const options = curatedOptions
@@ -413,7 +417,7 @@ function installVoiceCoachToggle(app) {
   select.className = "voice-coach-select";
   select.setAttribute("aria-label", "Voice Coach voice");
   select.addEventListener("change", () => {
-    localStorage.setItem(VOICE_COACH_VOICE_STORAGE_KEY, select.value);
+    runtimePrefs.voiceCoachVoice = select.value;
     const label = select.selectedOptions?.[0]?.textContent || "Default voice";
     app.showToast?.(`Voice set to ${label}`);
   });
@@ -424,7 +428,7 @@ function installVoiceCoachToggle(app) {
   button.className = "secondary voice-coach-btn";
   button.addEventListener("click", () => {
     const nextEnabled = !isVoiceCoachEnabled();
-    localStorage.setItem(VOICE_COACH_STORAGE_KEY, nextEnabled ? "on" : "off");
+    runtimePrefs.voiceCoachEnabled = nextEnabled;
     updateVoiceCoachButton(button);
     if (!nextEnabled && window.speechSynthesis) {
       window.speechSynthesis.cancel();
@@ -755,17 +759,17 @@ function installBrandingAndTheme() {
   }
 
   function applyTheme(theme) {
+    runtimePrefs.theme = theme;
     const isDark = theme === "dark";
     document.body.classList.toggle("dark-mode", isDark);
     document.documentElement.classList.toggle("dark-mode", isDark);
-    localStorage.setItem("educircuit-theme", theme);
     document.querySelectorAll("[data-theme-toggle]").forEach(btn => {
       btn.textContent = isDark ? "Light Mode" : "Dark Mode";
       btn.setAttribute("aria-pressed", String(isDark));
     });
   }
 
-  const savedTheme = localStorage.getItem("educircuit-theme");
+  const savedTheme = runtimePrefs.theme;
   applyTheme(savedTheme || "light");
 
   document.querySelectorAll("[data-theme-toggle]").forEach(btn => {
@@ -2099,13 +2103,12 @@ function installActionOverrides(app, services, sharing, teacherDashboard, gamifi
   if (runLogicBtn) runLogicBtn.dataset.upgradeOverride = "true";
 
   replaceButton(document.getElementById("saveBtn"), async () => {
-    app.saveProject({ silent: true });
-
     if (app.state.demoMode || !app.state.user.uid || !app.state.user.schoolKey) {
-      app.showToast("Project saved locally in demo mode");
+      app.showToast("Log in to save projects to Firebase");
       return;
     }
 
+    app.saveProject({ silent: true });
     const snapshot = app.getProjectSnapshot();
     const report = app.state.simulationReport || analyzeCircuit(snapshot);
     const visibility = sharing.getVisibility();
@@ -2152,9 +2155,12 @@ function installActionOverrides(app, services, sharing, teacherDashboard, gamifi
   });
 
   replaceButton(document.getElementById("submitBtn"), async () => {
-    window.submitProject();
-    if (app.state.demoMode || !app.state.user.uid || !app.state.user.schoolKey) return;
+    if (app.state.demoMode || !app.state.user.uid || !app.state.user.schoolKey) {
+      app.showToast("Log in to submit projects to Firebase");
+      return;
+    }
 
+    window.submitProject();
     const snapshot = app.getProjectSnapshot();
     const report = app.state.simulationReport || analyzeCircuit(snapshot);
     const submitted = await services.projects.submitProject({
@@ -2183,12 +2189,16 @@ function installActionOverrides(app, services, sharing, teacherDashboard, gamifi
   });
 
   replaceButton(document.getElementById("applyGradeBtn"), async () => {
-    window.applyGrade();
     const gradeValue = document.getElementById("teacherGrade").value.trim();
     const feedbackValue = document.getElementById("teacherComment").value.trim();
     const visibility = sharing.getVisibility();
     if (!gradeValue) return;
-    if (app.state.demoMode || !app.state.remoteProjectId || !app.state.user.schoolKey) return;
+    if (app.state.demoMode || !app.state.remoteProjectId || !app.state.user.schoolKey) {
+      app.showToast("Open a Firebase project before grading");
+      return;
+    }
+
+    window.applyGrade();
     await services.projects.gradeProject({
       schoolId: app.state.user.schoolKey,
       projectId: app.state.remoteProjectId,

@@ -6,6 +6,7 @@ const indexHtml = fs.readFileSync(new URL("../index.html", import.meta.url), "ut
 const runtimeJs = fs.readFileSync(new URL("../src/app/runtime.js", import.meta.url), "utf8");
 const fallbackJs = fs.readFileSync(new URL("../src/app/landing-fallback.js", import.meta.url), "utf8");
 const upgradeJs = fs.readFileSync(new URL("../src/ui/upgrade-controller.js", import.meta.url), "utf8");
+const storageGuardJs = fs.readFileSync(new URL("../src/app/storage-guard.js", import.meta.url), "utf8");
 const projectServiceJs = fs.readFileSync(new URL("../src/services/project-service.js", import.meta.url), "utf8");
 const allJs = `${runtimeJs}\n${fallbackJs}\n${upgradeJs}`;
 
@@ -56,10 +57,20 @@ test("deployed html stays clean and modular", () => {
   assert.doesNotMatch(indexHtml, /<<<<<<<|=======|>>>>>>>/);
   assert.doesNotMatch(`${indexHtml}\n${allJs}`, /hhere/i);
   assert.doesNotMatch(indexHtml, /<script>\s*const state\s*=/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260417-projects1" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260417-projects1" \/>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260417-projects1"><\/script>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260417-firebase1" \/>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260417-firebase1" \/>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260417-firebase1"><\/script>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260417-firebase1"><\/script>/);
   assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
+});
+
+test("active app code does not write browser storage", () => {
+  assert.doesNotMatch(allJs, /\blocalStorage\b/);
+  assert.doesNotMatch(allJs, /\bsessionStorage\b/);
+  assert.doesNotMatch(allJs, /stem_schools/);
+  assert.match(storageGuardJs, /Storage\?\.prototype/);
+  assert.match(storageGuardJs, /blockedWrites\.push/);
+  assert.doesNotMatch(storageGuardJs, /\.setItem\.call|originalSet|originalRemove|originalClear/);
 });
 
 test("language picker includes Indian languages in native scripts", () => {
@@ -91,6 +102,8 @@ test("project pages split saved, graded, and explore-visible work", () => {
   assert.match(runtimeJs, /function isGradedProject/);
   assert.match(runtimeJs, /\.filter\(\(\{ proj \}\) => !isGradedProject\(proj\)\)/);
   assert.match(upgradeJs, /function installSavedProjectsPortal/);
+  assert.match(upgradeJs, /Log in to save projects to Firebase/);
+  assert.match(upgradeJs, /Log in to submit projects to Firebase/);
   assert.match(upgradeJs, /\[data-ui-action='open-projects'\]/);
   assert.match(upgradeJs, /\[data-ui-action='open-student-projects'\]/);
   assert.match(upgradeJs, /event\.stopImmediatePropagation\(\)/);

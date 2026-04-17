@@ -139,17 +139,18 @@
   };
 
   function applyThemeFallback(theme){
+    window.EducircuitRuntimePrefs = window.EducircuitRuntimePrefs || {};
+    window.EducircuitRuntimePrefs.theme = theme;
     const isDark = theme === "dark";
     document.body.classList.toggle("dark-mode", isDark);
     document.documentElement.classList.toggle("dark-mode", isDark);
-    localStorage.setItem("educircuit-theme", theme);
     document.querySelectorAll("[data-theme-toggle]").forEach(button => {
       button.textContent = isDark ? "Light Mode" : "Dark Mode";
       button.setAttribute("aria-pressed", String(isDark));
     });
   }
 
-  const savedTheme = localStorage.getItem("educircuit-theme");
+  const savedTheme = window.EducircuitRuntimePrefs?.theme;
   if(savedTheme && document.body.dataset.brandingThemeInstalled !== "true"){
     applyThemeFallback(savedTheme);
   }
