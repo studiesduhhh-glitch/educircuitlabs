@@ -6,6 +6,7 @@ const indexHtml = fs.readFileSync(new URL("../index.html", import.meta.url), "ut
 const runtimeJs = fs.readFileSync(new URL("../src/app/runtime.js", import.meta.url), "utf8");
 const fallbackJs = fs.readFileSync(new URL("../src/app/landing-fallback.js", import.meta.url), "utf8");
 const upgradeJs = fs.readFileSync(new URL("../src/ui/upgrade-controller.js", import.meta.url), "utf8");
+const projectServiceJs = fs.readFileSync(new URL("../src/services/project-service.js", import.meta.url), "utf8");
 const allJs = `${runtimeJs}\n${fallbackJs}\n${upgradeJs}`;
 
 function getAttr(attrs, name) {
@@ -55,9 +56,9 @@ test("deployed html stays clean and modular", () => {
   assert.doesNotMatch(indexHtml, /<<<<<<<|=======|>>>>>>>/);
   assert.doesNotMatch(`${indexHtml}\n${allJs}`, /hhere/i);
   assert.doesNotMatch(indexHtml, /<script>\s*const state\s*=/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260416-lang1" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260416-lang1" \/>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260416-lang1"><\/script>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260417-projects1" \/>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260417-projects1" \/>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260417-projects1"><\/script>/);
   assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
 });
 
@@ -84,6 +85,22 @@ test("dynamic project and AI buttons are delegated", () => {
   assert.match(upgradeJs, /\[data-action='preview'\]/);
   assert.match(upgradeJs, /\[data-action='clone'\]/);
   assert.match(upgradeJs, /\[data-action='like'\]/);
+});
+
+test("project pages split saved, graded, and explore-visible work", () => {
+  assert.match(runtimeJs, /function isGradedProject/);
+  assert.match(runtimeJs, /\.filter\(\(\{ proj \}\) => !isGradedProject\(proj\)\)/);
+  assert.match(upgradeJs, /function installSavedProjectsPortal/);
+  assert.match(upgradeJs, /\[data-ui-action='open-projects'\]/);
+  assert.match(upgradeJs, /\[data-ui-action='open-student-projects'\]/);
+  assert.match(upgradeJs, /event\.stopImmediatePropagation\(\)/);
+  assert.match(upgradeJs, /function isReviewedProject/);
+  assert.match(upgradeJs, /filter\(project => !isReviewedProject\(project\)\)/);
+  assert.match(upgradeJs, /filter\(project => isReviewedProject\(project\)\)/);
+  assert.match(upgradeJs, /visibility === "public"/);
+  assert.match(projectServiceJs, /visibility = null/);
+  assert.match(projectServiceJs, /payload\.visibility = visibility/);
+  assert.match(projectServiceJs, /payload\.cloneable = visibility === "public"/);
 });
 
 test("login step requires account details and demo buttons do not bypass auth", () => {

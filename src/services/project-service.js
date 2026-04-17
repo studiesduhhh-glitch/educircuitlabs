@@ -95,7 +95,8 @@ export function createProjectService({ db, firebase }) {
     grade,
     feedback,
     gradedBy,
-    autoGrade = null
+    autoGrade = null,
+    visibility = null
   }) {
     const ref = schoolProjectsRef(schoolId).doc(projectId);
     const payload = {
@@ -108,6 +109,11 @@ export function createProjectService({ db, firebase }) {
       updatedAt: serverTimestamp(),
       "metrics.numericGrade": toNumericGrade(grade)
     };
+
+    if (visibility) {
+      payload.visibility = visibility;
+      payload.cloneable = visibility === "public";
+    }
 
     if (autoGrade) {
       payload.autoGrade = {

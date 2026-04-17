@@ -1,8 +1,8 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260416-lang1";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260416-lang1";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260416-lang1";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260417-projects1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260417-projects1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260417-projects1";
 import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js";
-import { formatAuthError } from "../services/auth-service.js?v=20260416-lang1";
+import { formatAuthError } from "../services/auth-service.js?v=20260417-projects1";
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -899,6 +899,18 @@ function getProjectVisibilitySelect() {
   return shareCard.querySelector("#projectVisibilitySelect");
 }
 
+function setProjectVisibility(value = "private") {
+  const select = getProjectVisibilitySelect();
+  const allowed = new Set(["private", "school", "public"]);
+  select.value = allowed.has(value) ? value : "private";
+}
+
+function isReviewedProject(project = {}) {
+  const grade = String(project.grade || "").trim();
+  const status = String(project.status || "").toUpperCase();
+  return status === "GRADED" || Boolean(grade && grade !== "Not graded");
+}
+
 function ensureExplorePage() {
   let page = document.getElementById("exploreProjectsPage");
   if (page) return page;
@@ -1530,6 +1542,8 @@ function installTeacherDashboard(app, services) {
           defaultBatteryVoltage: project.defaultBatteryVoltage || app.state.defaultBatteryVoltage
         });
         app.state.remoteProjectId = project.id;
+        app.state.currentProjectMeta = project;
+        setProjectVisibility(project.visibility || "private");
         app.showToast(`${project.name} loaded for review`);
       });
     });
@@ -1541,6 +1555,8 @@ function installTeacherDashboard(app, services) {
         const analysis = analyzeCircuit(project);
         const grade = autoGradeProject(project, analysis);
         app.applyProjectSnapshot(project, { ownerName: project.ownerName, projectId: project.id });
+        app.state.currentProjectMeta = project;
+        setProjectVisibility(project.visibility || "private");
         document.getElementById("teacherGrade").value = grade.grade;
         document.getElementById("teacherComment").value = grade.feedback;
         app.state.pendingAutoGrade = grade;
@@ -1594,6 +1610,8 @@ function installProjectSharing(app, services) {
           const project = projects.find(entry => entry.id === button.dataset.projectId);
           if (!project) return;
           app.applyProjectSnapshot(project, { ownerName: project.ownerName, projectId: project.id });
+          app.state.currentProjectMeta = project;
+          setProjectVisibility(project.visibility || "public");
           explorePage.classList.add("hidden");
           app.showToast(`${project.name} preview loaded`);
         });
@@ -1609,6 +1627,7 @@ function installProjectSharing(app, services) {
             visibility: "private",
             clonedFrom: project.id
           };
+          setProjectVisibility("private");
           explorePage.classList.add("hidden");
           app.showToast("Project cloned into your workspace");
         });
@@ -1868,6 +1887,101 @@ function installAuthUpgrade(app, services) {
   return { signUpBtn, enterBtn, demoStudentBtn, demoTeacherBtn };
 }
 
+function installSavedProjectsPortal(app, services) {
+  const page = document.getElementById("projectsPage");
+  const container = document.getElementById("projectsPageList");
+  const legacyRender = app.renderProjectsPage?.bind(app) || (() => {});
+
+  async function fetchRemoteSavedProjects() {
+    const user = app.state.user;
+    if (!user?.schoolKey || !user.uid || app.state.demoMode) return [];
+    const projects = await services.projects.listStudentProjects({
+      schoolId: user.schoolKey,
+      ownerId: user.uid
+    });
+
+    return projects
+      .filter(project => !isReviewedProject(project))
+      .sort((a, b) => String(b.updatedAt || b.createdAt || "").localeCompare(String(a.updatedAt || a.createdAt || "")));
+  }
+
+  function renderRemoteSavedProjects(projects) {
+    if (!container) return;
+    container.innerHTML = projects.length
+      ? `
+        <div class="remote-graded-header">
+          <div>
+            <b>My Saved Projects</b>
+            <span>Drafts and submitted work stay here until a teacher grades them.</span>
+          </div>
+          <span>${projects.length} saved</span>
+        </div>
+        ${projects.map(project => `
+          <article class="upgrade-submission-card" data-project-id="${escapeHtml(project.id)}">
+            <div>
+              <h4>${escapeHtml(project.name || "Untitled Project")}</h4>
+              <p>${escapeHtml(project.status || "DRAFT")} • ${escapeHtml(project.visibility || "private")}</p>
+              <p>${escapeHtml(project.simulation?.summary || "Saved circuit project")}</p>
+            </div>
+            <div class="upgrade-inline-actions">
+              <button class="secondary" data-action="open-saved" data-project-id="${escapeHtml(project.id)}">Open</button>
+            </div>
+          </article>
+        `).join("")}
+      `
+      : "<p class=\"upgrade-muted\">No saved projects yet. Save or submit a circuit to see it here.</p>";
+
+    container.querySelectorAll("[data-action='open-saved']").forEach(button => {
+      button.addEventListener("click", () => {
+        const project = projects.find(entry => entry.id === button.dataset.projectId);
+        if (!project) return;
+        app.applyProjectSnapshot(project, { ownerName: project.ownerName, projectId: project.id });
+        app.state.currentProjectMeta = project;
+        setProjectVisibility(project.visibility || "private");
+        page?.classList.add("hidden");
+        app.showToast(`${project.name || "Project"} opened from My Projects`);
+      });
+    });
+  }
+
+  async function refresh({ force = false } = {}) {
+    if (!container) return;
+    const pageIsVisible = page && !page.classList.contains("hidden");
+    if (!force && !pageIsVisible) return;
+    legacyRender();
+    if (app.state.demoMode || !app.state.user?.schoolKey || !app.state.user?.uid) return;
+    container.innerHTML = "<p class=\"upgrade-muted\">Loading saved projects...</p>";
+    try {
+      renderRemoteSavedProjects(await fetchRemoteSavedProjects());
+    } catch (error) {
+      console.error(error);
+      legacyRender();
+      container.insertAdjacentHTML(
+        "afterbegin",
+        "<p class=\"upgrade-muted\">Could not sync Firestore saved projects right now. Showing local saved projects.</p>"
+      );
+    }
+  }
+
+  async function openPage() {
+    page?.classList.remove("hidden");
+    await refresh({ force: true });
+  }
+
+  document.addEventListener("click", event => {
+    const button = event.target.closest("[data-ui-action='open-projects']");
+    if (!button) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    openPage();
+  }, true);
+
+  window.openProjectsPage = openPage;
+  app.openProjectsPage = openPage;
+
+  return { refresh };
+}
+
 function installStudentProjectPortal(app, services) {
   const page = document.getElementById("studentProjectsPage");
   const container = document.getElementById("studentProjectsPageList");
@@ -1882,7 +1996,7 @@ function installStudentProjectPortal(app, services) {
       : await services.projects.listStudentProjects({ schoolId: user.schoolKey, ownerId: user.uid });
 
     return projects
-      .filter(project => project.grade && project.grade !== "Not graded")
+      .filter(project => isReviewedProject(project))
       .sort((a, b) => String(b.gradedAt || b.updatedAt || "").localeCompare(String(a.gradedAt || a.updatedAt || "")));
   }
 
@@ -1919,6 +2033,8 @@ function installStudentProjectPortal(app, services) {
         const project = projects.find(entry => entry.id === button.dataset.projectId);
         if (!project) return;
         app.applyProjectSnapshot(project, { ownerName: project.ownerName, projectId: project.id });
+        app.state.currentProjectMeta = project;
+        setProjectVisibility(project.visibility || "private");
         page?.classList.add("hidden");
         app.showToast(`${project.name} loaded with teacher feedback`);
       });
@@ -1948,13 +2064,21 @@ function installStudentProjectPortal(app, services) {
     await refresh();
   }
 
+  document.addEventListener("click", event => {
+    const button = event.target.closest("[data-ui-action='open-student-projects']");
+    if (!button) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    openPage();
+  }, true);
+
   window.openStudentProjectsPage = openPage;
   app.openStudentProjectsPage = openPage;
 
   return { refresh };
 }
 
-function installActionOverrides(app, services, sharing, teacherDashboard, gamificationUi, studentProjectPortal) {
+function installActionOverrides(app, services, sharing, teacherDashboard, gamificationUi, savedProjectPortal, studentProjectPortal) {
   const runLogicBtn = replaceButton(document.getElementById("runLogicBtn"), async () => {
     await window.runLogic();
     const report = buildHumanReadableDebugReport(app.getProjectSnapshot());
@@ -2024,6 +2148,7 @@ function installActionOverrides(app, services, sharing, teacherDashboard, gamifi
     await services.refreshAll();
     await teacherDashboard.refreshTeacherDashboard();
     await gamificationUi.refreshGamificationUi();
+    await savedProjectPortal.refresh();
   });
 
   replaceButton(document.getElementById("submitBtn"), async () => {
@@ -2054,12 +2179,14 @@ function installActionOverrides(app, services, sharing, teacherDashboard, gamifi
 
     await teacherDashboard.refreshTeacherDashboard();
     await gamificationUi.refreshGamificationUi();
+    await savedProjectPortal.refresh();
   });
 
   replaceButton(document.getElementById("applyGradeBtn"), async () => {
     window.applyGrade();
     const gradeValue = document.getElementById("teacherGrade").value.trim();
     const feedbackValue = document.getElementById("teacherComment").value.trim();
+    const visibility = sharing.getVisibility();
     if (!gradeValue) return;
     if (app.state.demoMode || !app.state.remoteProjectId || !app.state.user.schoolKey) return;
     await services.projects.gradeProject({
@@ -2068,9 +2195,18 @@ function installActionOverrides(app, services, sharing, teacherDashboard, gamifi
       grade: gradeValue,
       feedback: feedbackValue,
       gradedBy: app.state.user,
-      autoGrade: app.state.pendingAutoGrade || null
+      autoGrade: app.state.pendingAutoGrade || null,
+      visibility
     });
     app.state.pendingAutoGrade = null;
+    app.state.currentProjectMeta = {
+      ...(app.state.currentProjectMeta || {}),
+      status: "GRADED",
+      grade: gradeValue,
+      feedback: feedbackValue,
+      visibility,
+      cloneable: visibility === "public"
+    };
 
     const updated = services.gamification.applyEvent(app.state.userProgress?.stats, "grade");
     app.state.userProgress = updated;
@@ -2084,7 +2220,12 @@ function installActionOverrides(app, services, sharing, teacherDashboard, gamifi
 
     await teacherDashboard.refreshTeacherDashboard();
     await gamificationUi.refreshGamificationUi();
+    await savedProjectPortal.refresh();
     await studentProjectPortal.refresh();
+    await sharing.renderExploreProjects();
+    app.showToast(visibility === "public"
+      ? "Grade applied and project added to Explore"
+      : "Grade applied and student work updated");
   });
 
   installButtonHierarchy();
@@ -2113,9 +2254,10 @@ export async function bootstrapUpgrade(app, services) {
   const sharing = installProjectSharing(app, services);
   const teacherDashboard = installTeacherDashboard(app, services);
   const gamificationUi = installGamificationPanels(app, services);
+  const savedProjectPortal = installSavedProjectsPortal(app, services);
   const studentProjectPortal = installStudentProjectPortal(app, services);
   installAuthUpgrade(app, services);
-  installActionOverrides(app, services, sharing, teacherDashboard, gamificationUi, studentProjectPortal);
+  installActionOverrides(app, services, sharing, teacherDashboard, gamificationUi, savedProjectPortal, studentProjectPortal);
 
   services.refreshAll = async function refreshAll() {
     try {
@@ -2123,6 +2265,8 @@ export async function bootstrapUpgrade(app, services) {
         await teacherDashboard.refreshTeacherDashboard();
       }
       await gamificationUi.refreshGamificationUi();
+      await savedProjectPortal.refresh();
+      await studentProjectPortal.refresh();
     } catch (error) {
       console.error(error);
     }

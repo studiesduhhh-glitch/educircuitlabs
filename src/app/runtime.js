@@ -1338,6 +1338,12 @@ function closeAiTeacherPage(){
   aiTeacherPage.classList.add("hidden");
 }
 
+function isGradedProject(project = {}) {
+  const grade = String(project.grade || "").trim();
+  const status = String(project.status || "").toLowerCase();
+  return status === "graded" || Boolean(grade && grade !== "Not graded");
+}
+
   function renderProjectsPage(){
     const container = document.getElementById("projectsPageList");
     container.innerHTML = "";
@@ -1350,12 +1356,16 @@ function closeAiTeacherPage(){
       s => s.name === state.user.name
     );
 
-    if(!student || student.projects.length === 0){
-      container.innerHTML = "<p>No projects yet</p>";
+    const savedProjects = (student?.projects || [])
+      .map((proj, index) => ({ proj, index }))
+      .filter(({ proj }) => !isGradedProject(proj));
+
+    if(savedProjects.length === 0){
+      container.innerHTML = "<p>No saved projects yet</p>";
       return;
   }
 
-  student.projects.forEach((proj, index) => {
+  savedProjects.forEach(({ proj, index }) => {
     container.appendChild(UI.projectPageCard(proj, index));
    });
  }
@@ -1369,13 +1379,17 @@ function renderProjectList(){
     s => s.name === state.user.name
   );
 
-  if(!student || student.projects.length === 0){
-    container.innerHTML = "<p class=\"project-card-meta\">No projects yet</p>";
+  const savedProjects = (student?.projects || [])
+    .map((proj, index) => ({ proj, index }))
+    .filter(({ proj }) => !isGradedProject(proj));
+
+  if(savedProjects.length === 0){
+    container.innerHTML = "<p class=\"project-card-meta\">No saved projects yet</p>";
     return;
   }
 
   container.innerHTML = "";
-  student.projects.forEach((proj, index) => {
+  savedProjects.forEach(({ proj, index }) => {
     container.appendChild(UI.projectListItem(proj, index));
   });
 }
@@ -2327,14 +2341,22 @@ function clearProject(){
 }
 
 function submitProject(){
-  statusText.textContent = "Submitted";
-  teacherSubmissionState.textContent = "Submitted";
   const school = state.user.school;
   const ownerName = state.projectOwnerName || state.user.name;
-  const student = state.schools[school]?.students.find(s => s.name === ownerName);
+  let student = state.schools[school]?.students.find(s => s.name === ownerName);
+
+  if(student && (state.currentProjectIndex === null || !student.projects[state.currentProjectIndex])){
+    saveProject({ silent: true });
+    student = state.schools[school]?.students.find(s => s.name === ownerName);
+  }
+
+  statusText.textContent = "Submitted";
+  teacherSubmissionState.textContent = "Submitted";
   if(student && state.currentProjectIndex !== null && student.projects[state.currentProjectIndex]){
     student.projects[state.currentProjectIndex].status = "Submitted";
     localStorage.setItem("stem_schools", JSON.stringify(state.schools));
+    renderProjectList();
+    renderProjectsPage();
   }
   showToast("Project submitted");
 }
@@ -2354,11 +2376,18 @@ function applyGrade(){
   const ownerName = state.projectOwnerName || state.user.name;
   const student = state.schools[school]?.students.find(s => s.name === ownerName);
   if(student && state.currentProjectIndex !== null && student.projects[state.currentProjectIndex]){
+    const visibility = document.getElementById("projectVisibilitySelect")?.value ||
+      student.projects[state.currentProjectIndex].visibility ||
+      "private";
     student.projects[state.currentProjectIndex].grade = value;
     student.projects[state.currentProjectIndex].feedback = feedback;
     student.projects[state.currentProjectIndex].status = "Graded";
+    student.projects[state.currentProjectIndex].visibility = visibility;
+    student.projects[state.currentProjectIndex].cloneable = visibility === "public";
     student.projects[state.currentProjectIndex].gradedAt = new Date().toLocaleString();
     localStorage.setItem("stem_schools", JSON.stringify(state.schools));
+    renderProjectList();
+    renderProjectsPage();
     renderStudentProjectsPage();
   }
   showToast("Grade applied");
@@ -2430,6 +2459,9 @@ function saveProject(options = {}){
     const existingProject = state.currentProjectIndex !== null
       ? student.projects[state.currentProjectIndex]
       : null;
+    const visibility = document.getElementById("projectVisibilitySelect")?.value ||
+      existingProject?.visibility ||
+      "private";
     const projectRecord = {
       name: state.projectName,
       items: deepClone(state.items),
@@ -2438,7 +2470,9 @@ function saveProject(options = {}){
       date: new Date().toLocaleString(),
       grade: gradeText.textContent || existingProject?.grade || "Not graded",
       status: statusText.textContent || existingProject?.status || "Not Submitted",
-      feedback: teacherCommentInput.value.trim() || existingProject?.feedback || ""
+      feedback: teacherCommentInput.value.trim() || existingProject?.feedback || "",
+      visibility,
+      cloneable: visibility === "public"
     };
 
     if(state.currentProjectIndex !== null && student.projects[state.currentProjectIndex]){
