@@ -1,6 +1,6 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260419-finalcheck1";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260419-finalcheck1";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260419-finalcheck1";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260419-ai-teacher1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260419-ai-teacher1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260419-ai-teacher1";
 import {
   buildGuidedLabSteps,
   buildMultimeterReading,
@@ -8,14 +8,14 @@ import {
   buildSnapshotSignature,
   getGuidedLabNextFix,
   replayEntriesDiffer
-} from "../core/classroom-engine.js?v=20260419-finalcheck1";
+} from "../core/classroom-engine.js?v=20260419-ai-teacher1";
 import {
   buildVivaQuestions,
   evaluateVivaAnswer,
   summarizeVivaSession
-} from "../core/viva-engine.js?v=20260419-finalcheck1";
-import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260419-finalcheck1";
-import { formatAuthError } from "../services/auth-service.js?v=20260419-finalcheck1";
+} from "../core/viva-engine.js?v=20260419-ai-teacher1";
+import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260419-ai-teacher1";
+import { formatAuthError } from "../services/auth-service.js?v=20260419-ai-teacher1";
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -2055,7 +2055,7 @@ function installAiTeacherEnhancements(app) {
   installVoiceConversationMode(app);
   const input = document.getElementById("aiTeacherInput");
   if (input) {
-    input.placeholder = "Ask anything: debug my circuit, quiz me, explain voltage, help with homework, or make this simpler...";
+    input.placeholder = "Ask about your circuit and get a quick status, fix, and tip...";
   }
 }
 

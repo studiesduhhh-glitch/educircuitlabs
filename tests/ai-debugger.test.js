@@ -70,64 +70,70 @@ test("AI teacher gives precise circuit coach answers", () => {
     "1 Battery, 1 LED. 2 wires connected."
   );
 
-  assert.match(reply, /Most precise finding/i);
-  assert.match(reply, /LED Needs A Resistor/i);
-  assert.match(reply, /Efficiency score/i);
+  const lines = reply.split("\n");
+  assert.equal(lines.length, 4);
+  assert.match(lines[0], /^Status: Partial$/);
+  assert.match(lines[1], /^Why: The LED is connected without a resistor\.$/);
+  assert.match(lines[2], /^Fix: Add a resistor in series with the LED\.$/);
+  assert.match(lines[3], /^Tip: A resistor limits current and helps protect an LED\.$/);
 });
 
-test("AI teacher supports interactive quiz prompts", () => {
+test("AI teacher gives four-line help for an incomplete workspace", () => {
   const reply = buildTeacherStyleReply("quiz me", {
     items: [],
     wires: [],
     defaultBatteryVoltage: 5
   });
 
-  assert.match(reply, /general quiz/i);
-  assert.match(reply, /Reply with your answers/i);
+  const lines = reply.split("\n");
+  assert.equal(lines.length, 4);
+  assert.match(lines[0], /^Status: Partial$/);
+  assert.match(lines[1], /^Why: No Battery or component is on the workspace yet\.$/);
+  assert.match(lines[2], /^Fix: Add a Battery, then add an LED or Motor\.$/);
+  assert.match(lines[3], /^Tip: A circuit starts with a power source and one load\.$/);
 });
 
-test("AI teacher answers general science questions without forcing circuit debug", () => {
-  const reply = buildTeacherStyleReply("why is the sky blue?", {
-    items: [],
-    wires: [],
-    defaultBatteryVoltage: 5
+test("AI teacher identifies short circuits with an exact fix", () => {
+  const reply = buildTeacherStyleReply("why is this not working?", {
+    items: [
+      createItem("battery-1", "Battery", { voltage: 9 }),
+      createItem("switch-1", "Switch", { isClosed: true })
+    ],
+    wires: [
+      { from: { itemId: "battery-1", port: "positive" }, to: { itemId: "switch-1", port: "positive" } },
+      { from: { itemId: "switch-1", port: "negative" }, to: { itemId: "battery-1", port: "negative" } }
+    ],
+    defaultBatteryVoltage: 9
   });
 
-  assert.match(reply, /scatters/i);
-  assert.match(reply, /blue light/i);
-  assert.doesNotMatch(reply, /Circuit Coach/i);
+  const lines = reply.split("\n");
+  assert.equal(lines.length, 4);
+  assert.match(lines[0], /^Status: Not Working$/);
+  assert.match(lines[1], /^Why: Battery positive is reaching Battery negative without a load\.$/);
+  assert.match(lines[2], /^Fix: Break the direct wire path and place an LED, Motor, or Buzzer in the loop\.$/);
+  assert.match(lines[3], /^Tip: A load like an LED or motor must sit in the path to use power safely\.$/);
 });
 
-test("AI teacher handles general writing prompts", () => {
-  const reply = buildTeacherStyleReply("write a short paragraph about teamwork", {
-    items: [],
-    wires: [],
-    defaultBatteryVoltage: 5
+test("AI teacher confirms a safe working circuit and suggests an upgrade", () => {
+  const reply = buildTeacherStyleReply("how is my circuit?", {
+    items: [
+      createItem("battery-1", "Battery", { voltage: 3 }),
+      createItem("resistor-1", "Resistor"),
+      createItem("led-1", "LED")
+    ],
+    wires: [
+      { from: { itemId: "battery-1", port: "positive" }, to: { itemId: "resistor-1", port: "positive" } },
+      { from: { itemId: "resistor-1", port: "negative" }, to: { itemId: "led-1", port: "positive" } },
+      { from: { itemId: "led-1", port: "negative" }, to: { itemId: "battery-1", port: "negative" } }
+    ],
+    defaultBatteryVoltage: 3,
+    logic: []
   });
 
-  assert.match(reply, /clean draft/i);
-  assert.match(reply, /teamwork/i);
-  assert.doesNotMatch(reply, /Circuit Coach/i);
-});
-
-test("AI teacher can solve simple math prompts", () => {
-  const reply = buildTeacherStyleReply("what is 15% of 80?", {
-    items: [],
-    wires: [],
-    defaultBatteryVoltage: 5
-  });
-
-  assert.match(reply, /answer is 12/i);
-  assert.match(reply, /15% of 80/i);
-});
-
-test("AI teacher keeps live facts honest", () => {
-  const reply = buildTeacherStyleReply("what is the latest news today?", {
-    items: [],
-    wires: [],
-    defaultBatteryVoltage: 5
-  });
-
-  assert.match(reply, /does not have live internet/i);
-  assert.match(reply, /verify with a live source/i);
+  const lines = reply.split("\n");
+  assert.equal(lines.length, 4);
+  assert.match(lines[0], /^Status: Working$/);
+  assert.match(lines[1], /^Why: Battery, Resistor, and LED form a closed loop and the circuit is running safely\.$/);
+  assert.match(lines[2], /^Fix: Add a Switch before the LED so you can control it\.$/);
+  assert.match(lines[3], /^Tip: An LED needs correct polarity, enough voltage, and a resistor\.$/);
 });

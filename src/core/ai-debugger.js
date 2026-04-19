@@ -314,6 +314,178 @@ function componentCounts(snapshot = {}) {
   return Object.entries(counts).map(([type, count]) => `${count} ${type}${count > 1 ? "s" : ""}`);
 }
 
+function oneLine(text = "") {
+  return String(text)
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function findItemById(snapshot = {}, itemId = "") {
+  return (snapshot.items || []).find(item => item.id === itemId) || null;
+}
+
+function listComponentTypes(snapshot = {}, options = {}) {
+  const includeBattery = options.includeBattery !== false;
+  const names = [...new Set((snapshot.items || [])
+    .map(item => item.type)
+    .filter(Boolean)
+    .filter(type => includeBattery || type !== "Battery"))];
+
+  if (!names.length) return includeBattery ? "battery and a component" : "a component";
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+}
+
+function firstLoadType(snapshot = {}) {
+  return (snapshot.items || []).find(item => item.type !== "Battery" && item.type !== "Resistor" && item.type !== "Switch" && item.type !== "Relay")?.type
+    || (snapshot.items || []).find(item => item.type !== "Battery")?.type
+    || "component";
+}
+
+function buildWorkingImprovement(snapshot = {}) {
+  const itemTypes = new Set((snapshot.items || []).map(item => item.type));
+  const logic = snapshot.logic || [];
+  const primaryLoad = firstLoadType(snapshot);
+
+  if (!itemTypes.has("Switch")) {
+    return `Add a Switch before the ${primaryLoad} so you can control it.`;
+  }
+  if (!logic.includes("ON")) {
+    return "Add ON logic, then run the circuit again.";
+  }
+  if (!logic.includes("OFF")) {
+    return "Add OFF logic so the output can stop cleanly.";
+  }
+  if (!logic.includes("WAIT 1s")) {
+    return "Add WAIT 1s so the output change is easier to see.";
+  }
+  return `Try a second safe output with the same Battery after checking the voltage.`;
+}
+
+function buildCircuitTip(snapshot = {}, issueType = "") {
+  const itemTypes = new Set((snapshot.items || []).map(item => item.type));
+  const primaryLoad = firstLoadType(snapshot);
+
+  if (issueType === "missing_component" && itemTypes.has("LED")) {
+    return "A resistor limits current and helps protect an LED.";
+  }
+  if (issueType === "missing_closed_loop") {
+    return "Current flows only when the path goes from Battery + back to Battery -.";
+  }
+  if (issueType === "short_circuit") {
+    return "A load like an LED or motor must sit in the path to use power safely.";
+  }
+  if (issueType === "reverse_polarity") {
+    return "Polarity matters because + should feed the component before - returns.";
+  }
+  if (issueType === "insufficient_voltage" || issueType === "over_voltage") {
+    return "Each component works best only inside its safe voltage range.";
+  }
+  if (itemTypes.has("LED")) {
+    return "An LED needs correct polarity, enough voltage, and a resistor.";
+  }
+  if (itemTypes.has("Motor") || itemTypes.has("Pump") || itemTypes.has("Servo")) {
+    return `${primaryLoad} works only when it gets enough voltage in a closed loop.`;
+  }
+  if (itemTypes.has("Switch") || itemTypes.has("Relay")) {
+    return "A switch controls current by opening or closing the path.";
+  }
+  return "A circuit needs a power source, a path, and a working component.";
+}
+
+function buildTeacherReplyFromReport(snapshot = {}, analysis = {}) {
+  const items = snapshot.items || [];
+  const wires = snapshot.wires || [];
+  const diagnostics = analysis.diagnostics || [];
+  const primaryFinding = analysis.primaryFinding || null;
+  const activeOutputs = Object.values(analysis.outputs || {}).some(output => output?.active);
+  const hasBattery = items.some(item => item.type === "Battery");
+  const hasComponent = items.some(item => item.type !== "Battery");
+  const components = listComponentTypes(snapshot);
+  const primaryItem = primaryFinding?.itemId ? findItemById(snapshot, primaryFinding.itemId) : null;
+  const primaryType = primaryItem?.type || firstLoadType(snapshot);
+
+  let status = "Working";
+  let why = `${components} form a closed loop and the circuit is running safely.`;
+  let fix = buildWorkingImprovement(snapshot);
+  let tip = buildCircuitTip(snapshot);
+
+  if (!items.length) {
+    status = "Partial";
+    why = "No Battery or component is on the workspace yet.";
+    fix = "Add a Battery, then add an LED or Motor.";
+    tip = "A circuit starts with a power source and one load.";
+  } else if (!hasBattery) {
+    status = "Partial";
+    why = `${listComponentTypes(snapshot, { includeBattery: false })} cannot work without a Battery.`;
+    fix = "Add a Battery and wire it into the loop.";
+    tip = "The Battery pushes current through the circuit.";
+  } else if (!hasComponent) {
+    status = "Partial";
+    why = "The Battery is placed, but no output component is connected yet.";
+    fix = "Add an LED, Motor, or Buzzer after the Battery.";
+    tip = "A load is the part that uses electrical energy.";
+  } else if (!wires.length) {
+    status = "Partial";
+    why = `${components} are placed, but no wires connect them yet.`;
+    fix = "Connect Battery + through the component path, then back to Battery -.";
+    tip = "Wires make the path that current follows.";
+  } else if (primaryFinding?.type === "short_circuit") {
+    status = "Not Working";
+    why = "Battery positive is reaching Battery negative without a load.";
+    fix = "Break the direct wire path and place an LED, Motor, or Buzzer in the loop.";
+    tip = buildCircuitTip(snapshot, primaryFinding.type);
+  } else if (primaryFinding?.type === "over_voltage") {
+    status = "Not Working";
+    why = `${primaryType} is getting too much voltage from the Battery.`;
+    fix = `Lower the Battery voltage or protect the ${primaryType} before running again.`;
+    tip = buildCircuitTip(snapshot, primaryFinding.type);
+  } else if (primaryFinding?.type === "missing_closed_loop") {
+    status = "Partial";
+    why = "Battery positive does not return to Battery negative yet.";
+    fix = `Finish the loop so the last component goes back to Battery -.`;
+    tip = buildCircuitTip(snapshot, primaryFinding.type);
+  } else if (primaryFinding?.type === "reverse_polarity") {
+    status = "Partial";
+    why = `${primaryType} is connected in the wrong direction.`;
+    fix = `Swap the wires on ${primaryType} so + goes in first and - returns to the Battery.`;
+    tip = buildCircuitTip(snapshot, primaryFinding.type);
+  } else if (primaryFinding?.type === "insufficient_voltage") {
+    const receivedVoltage = analysis.componentStates?.[primaryFinding.itemId]?.receivedVoltage;
+    status = "Partial";
+    why = `${primaryType} is underpowered${Number.isFinite(receivedVoltage) ? ` at ${receivedVoltage}V` : ""}.`;
+    fix = `Increase the Battery voltage or reduce voltage drops before the ${primaryType}.`;
+    tip = buildCircuitTip(snapshot, primaryFinding.type);
+  } else if (primaryFinding?.type === "missing_component") {
+    status = activeOutputs ? "Partial" : "Partial";
+    why = primaryFinding.missingType === "Resistor"
+      ? "The LED is connected without a resistor."
+      : `${primaryType} is missing a needed part in the path.`;
+    fix = primaryFinding.missingType === "Resistor"
+      ? "Add a resistor in series with the LED."
+      : oneLine(primaryFinding.suggestion || `Add the missing part before the ${primaryType}.`);
+    tip = buildCircuitTip(snapshot, primaryFinding.type);
+  } else if (diagnostics.length) {
+    status = activeOutputs ? "Partial" : "Not Working";
+    why = oneLine(primaryFinding?.message || `${primaryType} still has a circuit issue.`);
+    fix = oneLine(primaryFinding?.suggestion || `Fix the ${primaryType} connection, then run again.`);
+    tip = buildCircuitTip(snapshot, primaryFinding?.type || "");
+  } else if (!activeOutputs && hasComponent) {
+    status = "Partial";
+    why = `${components} are connected, but no output is active yet.`;
+    fix = "Press Run Logic and close any Switch in the path.";
+    tip = "Logic and switches decide when current can flow.";
+  }
+
+  return [
+    `Status: ${oneLine(status)}`,
+    `Why: ${oneLine(why)}`,
+    `Fix: ${oneLine(fix)}`,
+    `Tip: ${oneLine(tip)}`
+  ].join("\n");
+}
+
 function buildPreciseFinding(diagnostic, analysis = {}) {
   if (!diagnostic) {
     return "No blocking issue found. The circuit has no high-severity diagnostic right now.";
@@ -462,248 +634,5 @@ export function buildHumanReadableDebugReport(snapshot) {
 
 export function buildTeacherStyleReply(question, snapshot, circuitSummary = "") {
   const report = buildHumanReadableDebugReport(snapshot);
-  const analysis = report.analysis;
-  const outputs = analysis.outputs;
-  const lowerQuestion = String(question || "").toLowerCase();
-  const parts = componentCounts(snapshot);
-  const hasCircuit = (snapshot.items || []).length > 0;
-  const liveOutputSummary = outputSummary(outputs);
-  const circuitKeywords = [
-    "circuit",
-    "wire",
-    "wiring",
-    "battery",
-    "led",
-    "motor",
-    "switch",
-    "relay",
-    "voltage",
-    "electric current",
-    "resistor",
-    "buzzer",
-    "component",
-    "logic",
-    "polarity",
-    "short circuit",
-    "loop",
-    "output",
-    "sensor",
-    "servo",
-    "pump",
-    "diode",
-    "ohm",
-    "amps",
-    "amperage"
-  ];
-  const hasCircuitContext = includesAny(lowerQuestion, circuitKeywords);
-  const preciseCoach = [
-    `Circuit Coach: ${report.coach.headline}`,
-    `Status: ${report.coach.status}`,
-    `Simple explanation: ${report.coach.simpleExplanation}`,
-    `Suggestion: ${report.coach.suggestion}`,
-    `Efficiency: ${report.coach.efficiencyPercent}%`,
-    `Efficiency score: ${report.coach.efficiencyScore}/100`,
-    `Most precise finding: ${report.coach.preciseFinding}`,
-    `Live outputs: ${liveOutputSummary}`,
-    circuitSummary ? `Workspace: ${circuitSummary}` : ""
-  ].filter(Boolean).join("\n");
-
-  const asksForCircuitCoach = includesAny(lowerQuestion, [
-    "circuit coach",
-    "precise circuit",
-    "debug my circuit",
-    "check my circuit",
-    "current circuit",
-    "my circuit"
-  ]);
-  const isDebugQuestion =
-    asksForCircuitCoach ||
-    (hasCircuitContext && includesAny(lowerQuestion, [
-      "debug",
-      "fix",
-      "wrong",
-      "coach",
-      "precise",
-      "why",
-      "not",
-      "doesn't",
-      "does not",
-      "isn't",
-      "wont",
-      "won't"
-    ]));
-
-  if (!hasCircuitContext && !isDebugQuestion) {
-    return buildGeneralTeacherReply(question);
-  }
-
-  if (isDebugQuestion) {
-    return [
-      "I checked your circuit carefully. Here is the exact version:",
-      "",
-      preciseCoach,
-      "",
-      "Fix order:",
-      sentenceList(report.coach.preciseSteps),
-      "",
-      "Try that change, then run logic again. I will re-check the circuit with you."
-    ]
-      .filter(Boolean)
-      .join("\n");
-  }
-
-  if (includesAny(lowerQuestion, ["quiz", "test me", "question me", "practice"])) {
-    if (!hasCircuitContext && !includesAny(lowerQuestion, ["electric", "voltage", "stem"])) {
-      return [
-        "Absolutely. Tell me the subject you want to practice, or try this quick general quiz:",
-        "",
-        "1. Explain one thing you learned today in one sentence.",
-        "2. Give one example of it in real life.",
-        "3. What part still feels confusing?",
-        "",
-        "Reply with your answers and I will check them like a friendly tutor."
-      ].join("\n");
-    }
-
-    return [
-      "Absolutely. Quick friendly quiz time:",
-      "",
-      "1. What are the two things an LED needs before it can glow?",
-      "2. Why does a resistor protect an LED?",
-      "3. What happens if battery positive reaches battery negative without a load?",
-      "",
-      "Reply with your answers, and I will check them kindly and explain anything that feels confusing."
-    ].join("\n");
-  }
-
-  if (includesAny(lowerQuestion, ["explain my circuit", "current circuit", "my circuit", "what did i build"])) {
-    return [
-      "Here is your circuit in student-friendly words:",
-      "",
-      hasCircuit
-        ? `You currently have ${parts.join(", ")} with ${(snapshot.wires || []).length} wire${(snapshot.wires || []).length === 1 ? "" : "s"}.`
-        : "You have not placed components yet, so the first step is to add a Battery and one output like an LED.",
-      `Battery setting: ${(snapshot.defaultBatteryVoltage || 0).toFixed ? snapshot.defaultBatteryVoltage.toFixed(1) : snapshot.defaultBatteryVoltage || 0}V.`,
-      preciseCoach,
-      "",
-      "If you want, ask: 'walk me through each component' and I will explain the role of every part."
-    ].join("\n");
-  }
-
-  if (includesAny(lowerQuestion, ["voltage", "volt", "current", "amp", "electricity"])) {
-    return [
-      "Think of voltage as electrical push, and current as the amount of charge flowing.",
-      "",
-      "In your simulator:",
-      "- A component only turns on if it has a complete loop back to the battery.",
-      "- It also needs enough voltage for its minimum requirement.",
-      "- Too much voltage can damage sensitive components.",
-      "",
-      preciseCoach,
-      "",
-      "Tiny memory trick: voltage pushes, current flows, resistance limits."
-    ].join("\n");
-  }
-
-  if (includesAny(lowerQuestion, ["resistor", "resistance", "ohm"])) {
-    return [
-      "A resistor is the circuit's current limiter. It does not just 'use up power'; it helps control how hard electricity flows through a part.",
-      "",
-      "For an LED, a resistor is important because LEDs can be damaged by too much current. In Educircuit, I flag an LED without a resistor as a safety warning.",
-      "",
-      preciseCoach
-    ].join("\n");
-  }
-
-  if (includesAny(lowerQuestion, ["led", "light", "diode"])) {
-    return [
-      "An LED is a light-emitting diode. It is polarity-sensitive, so its positive side must receive power and its negative side must return to battery negative.",
-      "",
-      "Precise LED checklist:",
-      "- Battery positive should reach LED positive.",
-      "- LED negative should return to battery negative.",
-      "- The LED should get at least about 2V.",
-      "- Add a resistor in series for safety.",
-      "",
-      preciseCoach
-    ].join("\n");
-  }
-
-  if (includesAny(lowerQuestion, ["switch", "relay", "logic", "on", "off", "wait"])) {
-    return [
-      "Logic blocks control the circuit over time.",
-      "",
-      "ON closes switches and relays, OFF opens them, and WAIT 1s lets the output stay visible before the next step. A switch is basically a gate: closed means current can pass, open means it cannot.",
-      "",
-      "A good beginner sequence is: ON -> WAIT 1s -> OFF.",
-      "",
-      preciseCoach
-    ].join("\n");
-  }
-
-  if (includesAny(lowerQuestion, ["motor", "pump", "servo", "buzzer", "sensor"])) {
-    return [
-      "Motors, pumps, servos, buzzers, and sensors usually need more careful voltage planning than a simple LED.",
-      "",
-      "- Motors/pumps/servos are heavier loads, so weak voltage can make them slow or inactive.",
-      "- Buzzers need enough voltage and a complete return path.",
-      "- Sensors need stable power and correct polarity.",
-      "",
-      preciseCoach
-    ].join("\n");
-  }
-
-  if (includesAny(lowerQuestion, ["short circuit", "short", "burst", "overload", "danger", "safe", "safety"])) {
-    return [
-      "A short circuit happens when battery positive can reach battery negative through an easy conductor path without a useful load.",
-      "",
-      "That is dangerous in real life because current can become very large and heat things up quickly. In Educircuit, I mark this as a red safety issue.",
-      "",
-      preciseCoach
-    ].join("\n");
-  }
-
-  if (includesAny(lowerQuestion, ["grade", "feedback", "teacher", "submit", "rubric", "score"])) {
-    return [
-      "For grading, I look at three big things:",
-      "",
-      "- Correctness: does the circuit form a working loop?",
-      "- Logic usage: did you use ON/OFF/WAIT intentionally?",
-      "- Safety: are polarity, voltage, resistor use, and short-circuit risk handled?",
-      "",
-      preciseCoach,
-      "",
-      "A strong submission usually includes a clear project name, a safe loop, at least one logic step, and a short explanation of what the circuit does."
-    ].join("\n");
-  }
-
-  if (includesAny(lowerQuestion, ["how to", "steps", "build", "make", "create"])) {
-    return [
-      "Sure. Here is a simple build plan:",
-      "",
-      "1. Place a Battery.",
-      "2. Add one output component, like an LED, buzzer, or motor.",
-      "3. Wire battery positive through the component path.",
-      "4. Return the final negative side back to battery negative.",
-      "5. Add ON -> WAIT 1s -> OFF logic.",
-      "6. Run logic and let me check the result.",
-      "",
-      preciseCoach
-    ].join("\n");
-  }
-
-  return [
-    "I can help with that. I will answer like a friendly teacher and connect it back to your circuit when useful.",
-    "",
-    `Your question: "${question}"`,
-    "",
-    "A useful way to think about it:",
-    "Break the idea into source, path, load, control, and safety. In circuits, most problems come from one of those five areas.",
-    "",
-    preciseCoach,
-    "",
-    "You can also ask me to: explain it simpler, give an example, quiz you, or debug the current circuit."
-  ]
-    .filter(Boolean)
-    .join("\n");
+  return buildTeacherReplyFromReport(snapshot, report.analysis, question, circuitSummary);
 }

@@ -1357,7 +1357,7 @@ function openAiTeacherPage(){
   if(state.aiTeacherMessages.length === 0){
     addAiTeacherMessage(
       "teacher",
-      "Hello! I’m your AI Teacher. Ask me anything about circuits, voltage, current, components, logic blocks, or the project on your screen, and I’ll explain it step by step."
+      "Hello! I’m your AI Teacher. I will check your circuit and reply with Status, Why, Fix, and Tip."
     );
   }
 
