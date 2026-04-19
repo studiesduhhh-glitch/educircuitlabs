@@ -43,6 +43,28 @@
       activeItems: [],
       aiTeacherMessages: [],
       burstItems: [],
+      assignments: [],
+      activeAssignment: null,
+      buildReplay: {
+        history: [],
+        lastSignature: "",
+        isPlaying: false
+      },
+      multimeter: {
+        selection: { type: "overview" }
+      },
+      aiViva: {
+        active: false,
+        questions: [],
+        answers: [],
+        currentIndex: 0,
+        summary: null
+      },
+      voiceConversation: {
+        listening: false,
+        supported: false,
+        transcript: ""
+      },
       lang: "en"
     };
   }

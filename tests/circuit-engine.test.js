@@ -141,6 +141,34 @@ test("does not treat a resistor-protected LED path as a short", () => {
   assert.equal(result.outputs.led.active, true);
 });
 
+test("allows a resistor-protected LED build at the default classroom voltage", () => {
+  const battery = createItem("battery-1", "Battery", { voltage: 5 });
+  const resistor = createItem("resistor-1", "Resistor");
+  const led = createItem("led-1", "LED");
+  const result = analyzeCircuit({
+    items: [battery, resistor, led],
+    wires: [
+      {
+        from: { itemId: "battery-1", port: "positive" },
+        to: { itemId: "resistor-1", port: "positive" }
+      },
+      {
+        from: { itemId: "resistor-1", port: "negative" },
+        to: { itemId: "led-1", port: "positive" }
+      },
+      {
+        from: { itemId: "led-1", port: "negative" },
+        to: { itemId: "battery-1", port: "negative" }
+      }
+    ],
+    defaultBatteryVoltage: 5
+  });
+
+  assert.equal(result.diagnostics.some(item => item.type === "over_voltage"), false);
+  assert.equal(result.hasUnsafeVoltage, false);
+  assert.equal(result.outputs.led.active, true);
+});
+
 test("detects over-voltage", () => {
   const battery = createItem("battery-1", "Battery", { voltage: 9 });
   const led = createItem("led-1", "LED");

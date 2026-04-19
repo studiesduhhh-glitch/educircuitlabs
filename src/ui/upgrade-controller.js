@@ -1,8 +1,21 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260417-firebase1";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260417-firebase1";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260417-firebase1";
-import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js";
-import { formatAuthError } from "../services/auth-service.js?v=20260417-firebase1";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260419-finalcheck1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260419-finalcheck1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260419-finalcheck1";
+import {
+  buildGuidedLabSteps,
+  buildMultimeterReading,
+  buildReplayEntry,
+  buildSnapshotSignature,
+  getGuidedLabNextFix,
+  replayEntriesDiffer
+} from "../core/classroom-engine.js?v=20260419-finalcheck1";
+import {
+  buildVivaQuestions,
+  evaluateVivaAnswer,
+  summarizeVivaSession
+} from "../core/viva-engine.js?v=20260419-finalcheck1";
+import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260419-finalcheck1";
+import { formatAuthError } from "../services/auth-service.js?v=20260419-finalcheck1";
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -30,6 +43,82 @@ function replaceButton(button, handler) {
   button.replaceWith(clone);
   clone.addEventListener("click", handler);
   return clone;
+}
+
+function ensureAdvancedState(app) {
+  if (!app?.state) return null;
+  const state = app.state;
+  state.assignments = state.assignments || [];
+  state.activeAssignment = state.activeAssignment || null;
+  state.buildReplay = state.buildReplay || {
+    history: [],
+    lastSignature: "",
+    isPlaying: false
+  };
+  state.multimeter = state.multimeter || {
+    selection: { type: "overview" }
+  };
+  state.aiViva = state.aiViva || {
+    active: false,
+    questions: [],
+    answers: [],
+    currentIndex: 0,
+    summary: null
+  };
+  state.voiceConversation = state.voiceConversation || {
+    listening: false,
+    supported: false,
+    transcript: ""
+  };
+  state.voiceConversation.supported = Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
+  return state;
+}
+
+function formatDisplayDate(value) {
+  if (!value) return "No due date";
+  const date = typeof value?.toDate === "function" ? value.toDate() : new Date(value);
+  if (Number.isNaN(date.getTime())) return "No due date";
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
+}
+
+function getChallengeMeta(id) {
+  return LEARNING_CHALLENGES.find(challenge => challenge.id === id) || LEARNING_CHALLENGES[0];
+}
+
+function buildEnhancedProjectSnapshot(app) {
+  const snapshot = app.getProjectSnapshot?.() || {};
+  const activeAssignment = app.state.activeAssignment;
+  const challengeId = activeAssignment?.challengeId || ensureLearningState(app)?.selectedChallengeId || snapshot.challengeId || "";
+
+  return {
+    ...snapshot,
+    challengeId,
+    assignmentId: activeAssignment?.id || snapshot.assignmentId || null,
+    assignmentTitle: activeAssignment?.title || snapshot.assignmentTitle || "",
+    assignmentDueDate: activeAssignment?.dueDate || snapshot.assignmentDueDate || ""
+  };
+}
+
+function syncClassroomContextFromProject(app, project = {}) {
+  if (!app?.state) return;
+  ensureAdvancedState(app);
+  if (project.challengeId) {
+    ensureLearningState(app);
+    app.state.learning.selectedChallengeId = project.challengeId;
+  }
+  app.state.activeAssignment = project.assignmentId || project.assignmentTitle
+    ? {
+        id: project.assignmentId || null,
+        title: project.assignmentTitle || project.name || "Assignment",
+        dueDate: project.assignmentDueDate || "",
+        challengeId: project.challengeId || ensureLearningState(app)?.selectedChallengeId || "led-circuit",
+        className: project.className || ""
+      }
+    : null;
 }
 
 function ensureAiDebugToast() {
@@ -455,6 +544,28 @@ function sanitizeSpeechText(text = "") {
     .trim();
 }
 
+function speakTextWithVoice(text, app, options = {}) {
+  if (!isVoiceCoachEnabled()) return;
+  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+    app?.showToast?.("Voice Coach is not supported in this browser");
+    return;
+  }
+
+  const cleanedText = sanitizeSpeechText(text);
+  if (!cleanedText) return;
+
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(cleanedText);
+  const selectedVoice = getSelectedVoice();
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
+  }
+  utterance.lang = options.lang || selectedVoice?.lang || "en-US";
+  utterance.rate = options.rate || 0.92;
+  utterance.pitch = options.pitch || 1;
+  window.speechSynthesis.speak(utterance);
+}
+
 function buildVoiceCoachText(report = {}) {
   const analysis = report.analysis || report;
   const coach = report.coach || buildCoachFeedback(analysis);
@@ -474,25 +585,8 @@ function buildVoiceCoachText(report = {}) {
 }
 
 function speakCircuitCoach(report, app) {
-  if (!isVoiceCoachEnabled()) return;
-  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
-    app?.showToast?.("Voice Coach is not supported in this browser");
-    return;
-  }
-
   const text = buildVoiceCoachText(report);
-  if (!text) return;
-
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  const selectedVoice = getSelectedVoice();
-  if (selectedVoice) {
-    utterance.voice = selectedVoice;
-  }
-  utterance.lang = selectedVoice?.lang || "en-US";
-  utterance.rate = 0.92;
-  utterance.pitch = 1;
-  window.speechSynthesis.speak(utterance);
+  speakTextWithVoice(text, app);
 }
 
 function hasActiveOutput(report = {}) {
@@ -1042,6 +1136,10 @@ function installDashboardEnhancements(app) {
   }
 
   renderLearningPanel(app);
+  renderGuidedLabMode(app);
+  renderMultimeterCard(app);
+  renderReplayBuildCard(app);
+  renderAiVivaCard(app);
 }
 
 function ensureLearningState(app) {
@@ -1121,10 +1219,733 @@ function renderLearningPanel(app) {
   }
 }
 
+function recordBuildHistory(app, options = {}) {
+  if (!app?.state) return;
+  ensureAdvancedState(app);
+  const replayState = app.state.buildReplay;
+  if (replayState.isPlaying) return;
+
+  const snapshot = buildEnhancedProjectSnapshot(app);
+  const signature = buildSnapshotSignature(snapshot);
+  if (signature === replayState.lastSignature) return;
+
+  const previousEntry = replayState.history[replayState.history.length - 1] || null;
+  const nextEntry = buildReplayEntry(snapshot, previousEntry?.snapshot || null, options);
+  if (previousEntry && !replayEntriesDiffer(previousEntry, nextEntry)) {
+    replayState.lastSignature = signature;
+    return;
+  }
+
+  replayState.history = [...replayState.history, nextEntry].slice(-12);
+  replayState.lastSignature = signature;
+  renderReplayBuildCard(app);
+}
+
+async function playReplayBuild(app) {
+  ensureAdvancedState(app);
+  const replayState = app.state.buildReplay;
+  if (replayState.isPlaying) {
+    replayState.isPlaying = false;
+    renderReplayBuildCard(app);
+    app.showToast?.("Replay paused");
+    return;
+  }
+
+  if ((replayState.history || []).length < 2) {
+    app.showToast?.("Build a little more first, then replay your steps.");
+    return;
+  }
+
+  replayState.isPlaying = true;
+  renderReplayBuildCard(app);
+
+  for (const entry of replayState.history) {
+    if (!replayState.isPlaying) break;
+    app.applyProjectSnapshot?.(entry.snapshot, {
+      ownerName: entry.snapshot.ownerName,
+      projectId: entry.snapshot.id
+    });
+    syncClassroomContextFromProject(app, entry.snapshot);
+    renderLearningPanel(app);
+    renderGuidedLabMode(app);
+    renderMultimeterCard(app);
+    await wait(620);
+  }
+
+  replayState.isPlaying = false;
+  renderReplayBuildCard(app);
+  app.showToast?.("Replay finished");
+}
+
+function clearReplayBuild(app) {
+  ensureAdvancedState(app);
+  const snapshot = buildEnhancedProjectSnapshot(app);
+  app.state.buildReplay = {
+    history: [buildReplayEntry(snapshot, null, { label: "Current workspace" })],
+    lastSignature: buildSnapshotSignature(snapshot),
+    isPlaying: false
+  };
+  renderReplayBuildCard(app);
+}
+
+function ensureReplayBuildCard() {
+  let card = document.getElementById("replayBuildCard");
+  if (card) return card;
+
+  const studentPanel = document.getElementById("studentPanel");
+  if (!studentPanel) return null;
+
+  card = createCard("Replay Build", "Review the build sequence and play your own steps back.");
+  card.id = "replayBuildCard";
+  card.innerHTML += `
+    <div class="replay-build-actions">
+      <button type="button" id="replayBuildBtn">Replay Build</button>
+      <button type="button" class="secondary" id="clearReplayBuildBtn">Reset Timeline</button>
+    </div>
+    <div id="replayBuildTimeline" class="replay-build-timeline"></div>
+  `;
+  studentPanel.appendChild(card);
+  return card;
+}
+
+function renderReplayBuildCard(app) {
+  const card = ensureReplayBuildCard();
+  if (!card || !app?.state) return;
+
+  ensureAdvancedState(app);
+  const replayState = app.state.buildReplay;
+  const button = card.querySelector("#replayBuildBtn");
+  const clearButton = card.querySelector("#clearReplayBuildBtn");
+  const timeline = card.querySelector("#replayBuildTimeline");
+
+  if (button && button.dataset.bound !== "true") {
+    button.dataset.bound = "true";
+    button.addEventListener("click", () => playReplayBuild(app));
+  }
+  if (clearButton && clearButton.dataset.bound !== "true") {
+    clearButton.dataset.bound = "true";
+    clearButton.addEventListener("click", () => clearReplayBuild(app));
+  }
+
+  button.textContent = replayState.isPlaying ? "Pause Replay" : "Replay Build";
+  timeline.innerHTML = replayState.history.length
+    ? replayState.history
+        .slice()
+        .reverse()
+        .map(entry => `
+          <article class="replay-build-entry">
+            <b>${escapeHtml(entry.label)}</b>
+            <span>${escapeHtml(entry.detail)}</span>
+          </article>
+        `)
+        .join("")
+    : "<p class=\"upgrade-muted\">Your timeline appears as you build.</p>";
+}
+
+function ensureGuidedLabCard() {
+  let card = document.getElementById("guidedLabModeCard");
+  if (card) return card;
+
+  const studentPanel = document.getElementById("studentPanel");
+  if (!studentPanel) return null;
+
+  card = createCard("Guided Lab", "Step-by-step coaching follows your active challenge or teacher assignment.");
+  card.id = "guidedLabModeCard";
+  card.innerHTML += `
+    <div class="guided-lab-meta">
+      <b id="guidedLabTitle">No active lab yet</b>
+      <span id="guidedLabMeta">Choose a challenge or assignment to begin.</span>
+    </div>
+    <div id="guidedLabSteps" class="guided-lab-steps"></div>
+    <div class="upgrade-inline-actions">
+      <button type="button" id="guidedLabNextFixBtn">Next Fix</button>
+      <button type="button" class="secondary" id="guidedLabStartVivaBtn">Start Viva</button>
+    </div>
+  `;
+
+  const learningCard = document.getElementById("learningChallengeCard");
+  if (learningCard?.nextSibling) {
+    studentPanel.insertBefore(card, learningCard.nextSibling);
+  } else {
+    studentPanel.appendChild(card);
+  }
+  return card;
+}
+
+function renderGuidedLabMode(app) {
+  const card = ensureGuidedLabCard();
+  if (!card || !app?.state) return;
+
+  ensureAdvancedState(app);
+  const learningResult = app.state.learning?.lastResult || getLearningResult(app);
+  const activeAssignment = app.state.activeAssignment;
+  const activeChallenge = getChallengeMeta(app.state.learning?.selectedChallengeId);
+  const title = card.querySelector("#guidedLabTitle");
+  const meta = card.querySelector("#guidedLabMeta");
+  const stepsEl = card.querySelector("#guidedLabSteps");
+  const nextFixBtn = card.querySelector("#guidedLabNextFixBtn");
+  const startVivaBtn = card.querySelector("#guidedLabStartVivaBtn");
+  const steps = buildGuidedLabSteps(learningResult, activeAssignment);
+  const nextFix = getGuidedLabNextFix(learningResult);
+
+  if (title) {
+    title.textContent = activeAssignment?.title || activeChallenge.title;
+  }
+  if (meta) {
+    meta.textContent = activeAssignment
+      ? `${activeAssignment.className || "Classroom"} • Due ${formatDisplayDate(activeAssignment.dueDate)}`
+      : `${activeChallenge.description} • Score ${learningResult.score.total}/100`;
+  }
+  if (stepsEl) {
+    stepsEl.innerHTML = steps.length
+      ? steps.map(step => `
+          <div class="guided-lab-step ${step.passed ? "passed" : "pending"}">
+            <span>${step.passed ? "✓" : "•"}</span>
+            <b>${escapeHtml(step.label)}</b>
+          </div>
+        `).join("")
+      : "<p class=\"upgrade-muted\">Run logic to get guided steps.</p>";
+  }
+  if (nextFixBtn) {
+    nextFixBtn.textContent = learningResult.challenge?.passed ? "Challenge Complete" : "Next Fix";
+    nextFixBtn.disabled = Boolean(learningResult.challenge?.passed);
+    nextFixBtn.onclick = () => {
+      app.showToast?.(nextFix);
+      document.getElementById("aiTeacherBtn")?.click();
+      const aiInput = document.getElementById("aiTeacherInput");
+      if (aiInput) {
+        aiInput.value = `Guide me through this next fix: ${nextFix}`;
+      }
+    };
+  }
+  if (startVivaBtn) {
+    startVivaBtn.onclick = () => {
+      document.getElementById("aiTeacherBtn")?.click();
+      startVivaSession(app);
+    };
+  }
+}
+
+function ensureMultimeterCard() {
+  let card = document.getElementById("liveMultimeterCard");
+  if (card) return card;
+
+  const studentPanel = document.getElementById("studentPanel");
+  if (!studentPanel) return null;
+
+  card = createCard("Live Multimeter", "Inspect the whole loop or one component at a time.");
+  card.id = "liveMultimeterCard";
+  card.innerHTML += `
+    <div class="field">
+      <label for="multimeterTargetSelect">Measure</label>
+      <select id="multimeterTargetSelect"></select>
+    </div>
+    <div id="multimeterReadings" class="multimeter-readings"></div>
+  `;
+  studentPanel.appendChild(card);
+  return card;
+}
+
+function renderMultimeterCard(app) {
+  const card = ensureMultimeterCard();
+  if (!card || !app?.state) return;
+
+  ensureAdvancedState(app);
+  const select = card.querySelector("#multimeterTargetSelect");
+  const readingsEl = card.querySelector("#multimeterReadings");
+  const snapshot = buildEnhancedProjectSnapshot(app);
+  const report = app.state.simulationReport || analyzeCircuit(snapshot);
+  const items = snapshot.items || [];
+  const selection = app.state.multimeter.selection || { type: "overview" };
+
+  if (select && select.dataset.bound !== "true") {
+    select.dataset.bound = "true";
+    select.addEventListener("change", () => {
+      app.state.multimeter.selection = select.value === "overview"
+        ? { type: "overview" }
+        : { type: "item", id: select.value };
+      renderMultimeterCard(app);
+    });
+  }
+
+  const options = [
+    `<option value="overview">Whole circuit</option>`,
+    ...items.map(item => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.type)}</option>`)
+  ];
+  select.innerHTML = options.join("");
+
+  const selectedValue = selection.type === "item" && items.some(item => item.id === selection.id)
+    ? selection.id
+    : "overview";
+  select.value = selectedValue;
+  app.state.multimeter.selection = selectedValue === "overview"
+    ? { type: "overview" }
+    : { type: "item", id: selectedValue };
+
+  const reading = buildMultimeterReading(snapshot, report, app.state.multimeter.selection);
+  readingsEl.innerHTML = `
+    <div class="multimeter-header">
+      <b>${escapeHtml(reading.title)}</b>
+      <span class="status-chip-${reading.status === "error" ? "danger" : reading.status === "warning" ? "warning" : "safe"}">
+        ${escapeHtml(reading.status)}
+      </span>
+    </div>
+    <div class="multimeter-grid">
+      <div><span>Voltage</span><b>${escapeHtml(reading.voltage)}</b></div>
+      <div><span>Current</span><b>${escapeHtml(reading.current)}</b></div>
+      <div><span>Continuity</span><b>${escapeHtml(reading.continuity)}</b></div>
+      <div class="wide"><span>Note</span><p>${escapeHtml(reading.note)}</p></div>
+    </div>
+  `;
+}
+
+function ensureAiVivaCard() {
+  let card = document.getElementById("aiVivaCard");
+  if (card) return card;
+
+  const sidebar = document.querySelector(".ai-sidebar");
+  if (!sidebar) return null;
+
+  card = document.createElement("div");
+  card.id = "aiVivaCard";
+  card.className = "ai-card";
+  sidebar.appendChild(card);
+  return card;
+}
+
+function startVivaSession(app) {
+  ensureAdvancedState(app);
+  const snapshot = buildEnhancedProjectSnapshot(app);
+  const report = app.state.simulationReport || analyzeCircuit(snapshot);
+  const questions = buildVivaQuestions(snapshot, {
+    report,
+    learningResult: app.state.learning?.lastResult || getLearningResult(app)
+  });
+
+  app.state.aiViva = {
+    active: true,
+    questions,
+    answers: [],
+    currentIndex: 0,
+    summary: null
+  };
+  renderAiVivaCard(app);
+  speakTextWithVoice(questions[0]?.prompt || "", app);
+  app.showToast?.("AI viva started");
+}
+
+function submitVivaAnswer(app) {
+  ensureAdvancedState(app);
+  const input = document.getElementById("aiVivaAnswerInput");
+  const answer = input?.value.trim();
+  const viva = app.state.aiViva;
+
+  if (!answer) {
+    app.showToast?.("Answer the viva question first.");
+    return;
+  }
+
+  const question = viva.questions[viva.currentIndex];
+  if (!question) return;
+
+  const evaluation = evaluateVivaAnswer(question, answer, buildEnhancedProjectSnapshot(app));
+  viva.answers[viva.currentIndex] = {
+    ...evaluation,
+    questionId: question.id,
+    prompt: question.prompt,
+    answer
+  };
+  if (viva.currentIndex === viva.questions.length - 1) {
+    viva.summary = summarizeVivaSession({ answers: viva.answers.filter(Boolean) });
+  }
+
+  renderAiVivaCard(app);
+  speakTextWithVoice(evaluation.feedback, app);
+  app.showToast?.(evaluation.passed ? "Good viva answer" : "Viva feedback ready");
+}
+
+function moveToNextVivaQuestion(app) {
+  ensureAdvancedState(app);
+  const viva = app.state.aiViva;
+  if (!viva.active) {
+    startVivaSession(app);
+    return;
+  }
+
+  if (!viva.answers[viva.currentIndex]) {
+    app.showToast?.("Check this answer before moving on.");
+    return;
+  }
+
+  if (viva.currentIndex >= viva.questions.length - 1) {
+    viva.summary = summarizeVivaSession({ answers: viva.answers.filter(Boolean) });
+    renderAiVivaCard(app);
+    return;
+  }
+
+  viva.currentIndex += 1;
+  renderAiVivaCard(app);
+  speakTextWithVoice(viva.questions[viva.currentIndex]?.prompt || "", app);
+}
+
+function renderAiVivaCard(app) {
+  const card = ensureAiVivaCard();
+  if (!card || !app?.state) return;
+
+  ensureAdvancedState(app);
+  const viva = app.state.aiViva;
+  const currentQuestion = viva.questions[viva.currentIndex];
+  const currentAnswer = viva.answers[viva.currentIndex];
+  const score = viva.answers.reduce((sum, answer) => sum + Number(answer?.score || 0), 0);
+
+  if (!viva.active) {
+    card.innerHTML = `
+      <h3>AI Viva</h3>
+      <p>Practice a circuit viva with targeted questions about your build, logic, and safety decisions.</p>
+      <button type="button" id="startAiVivaBtn">Start Viva</button>
+    `;
+    card.querySelector("#startAiVivaBtn")?.addEventListener("click", () => startVivaSession(app), { once: true });
+    return;
+  }
+
+  card.innerHTML = `
+    <h3>AI Viva</h3>
+    <div class="viva-score-row">
+      <span>Question ${Math.min(viva.currentIndex + 1, viva.questions.length)} / ${viva.questions.length}</span>
+      <b>${score} pts</b>
+    </div>
+    <p class="viva-question">${escapeHtml(currentQuestion?.prompt || "Viva complete")}</p>
+    <textarea id="aiVivaAnswerInput" placeholder="Type your answer here...">${escapeHtml(currentAnswer?.answer || "")}</textarea>
+    <div class="viva-actions">
+      <button type="button" id="checkAiVivaBtn">Check Answer</button>
+      <button type="button" class="secondary" id="nextAiVivaBtn">${viva.currentIndex >= viva.questions.length - 1 ? "Finish" : "Next Question"}</button>
+    </div>
+    <div class="viva-feedback-card">
+      <b>${escapeHtml(currentAnswer?.passed ? "Strong answer" : currentAnswer ? "Needs more detail" : "Waiting for answer")}</b>
+      <p>${escapeHtml(currentAnswer?.feedback || currentQuestion?.hint || "Answer the question, then I will coach it.")}</p>
+      ${currentAnswer?.answerGuide ? `<small>${escapeHtml(currentAnswer.answerGuide)}</small>` : ""}
+    </div>
+    ${viva.summary ? `
+      <div class="viva-summary">
+        <b>${escapeHtml(`${viva.summary.percent}% viva score`)}</b>
+        <p>${escapeHtml(viva.summary.summary)}</p>
+        <small>${escapeHtml(viva.summary.recommendation)}</small>
+      </div>
+    ` : ""}
+  `;
+
+  card.querySelector("#checkAiVivaBtn")?.addEventListener("click", () => submitVivaAnswer(app), { once: true });
+  card.querySelector("#nextAiVivaBtn")?.addEventListener("click", () => moveToNextVivaQuestion(app), { once: true });
+}
+
+function installVoiceConversationMode(app) {
+  ensureAdvancedState(app);
+  const inputBar = document.querySelector(".ai-inputbar");
+  const aiMessages = document.getElementById("aiTeacherMessages");
+  if (!inputBar || !aiMessages) return;
+
+  let button = document.getElementById("voiceConversationBtn");
+  if (!button) {
+    button = document.createElement("button");
+    button.type = "button";
+    button.id = "voiceConversationBtn";
+    button.className = "secondary voice-conversation-btn";
+    button.textContent = "Speak";
+    inputBar.insertBefore(button, document.getElementById("aiTeacherSendBtn"));
+  }
+
+  let status = document.getElementById("voiceConversationStatus");
+  if (!status) {
+    status = document.createElement("div");
+    status.id = "voiceConversationStatus";
+    status.className = "voice-conversation-status";
+    status.textContent = "Voice conversation is ready.";
+    inputBar.insertAdjacentElement("afterend", status);
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+
+  function updateVoiceConversationUi() {
+    const isListening = Boolean(app.state.voiceConversation?.listening);
+    button.textContent = isListening ? "Stop" : "Speak";
+    button.setAttribute("aria-pressed", String(isListening));
+  }
+
+  function ensureRecognition() {
+    if (!SpeechRecognition) return null;
+    if (recognition) return recognition;
+
+    recognition = new SpeechRecognition();
+    recognition.lang = getSelectedVoice()?.lang || "en-IN";
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      app.state.voiceConversation.listening = true;
+      app.state.voiceConversation.transcript = "";
+      status.textContent = "Listening...";
+      updateVoiceConversationUi();
+    };
+
+    recognition.onresult = event => {
+      const transcript = [...event.results]
+        .map(result => result[0]?.transcript || "")
+        .join(" ")
+        .trim();
+      app.state.voiceConversation.transcript = transcript;
+      status.textContent = transcript ? `Heard: ${transcript}` : "Listening...";
+      const finalResult = event.results[event.results.length - 1];
+      if (finalResult?.isFinal) {
+        const input = document.getElementById("aiTeacherInput");
+        if (input) {
+          input.value = transcript;
+        }
+        document.getElementById("aiTeacherSendBtn")?.click();
+        status.textContent = "Voice message sent to the AI Teacher.";
+      }
+    };
+
+    recognition.onerror = event => {
+      app.state.voiceConversation.listening = false;
+      status.textContent = "Voice input could not start.";
+      updateVoiceConversationUi();
+      app.showToast?.(event.error === "not-allowed" ? "Allow microphone access to use voice conversation." : "Voice conversation hit an error.");
+    };
+
+    recognition.onend = () => {
+      app.state.voiceConversation.listening = false;
+      updateVoiceConversationUi();
+      if (!app.state.voiceConversation.transcript) {
+        status.textContent = "Voice conversation is ready.";
+      }
+    };
+
+    return recognition;
+  }
+
+  if (button.dataset.bound !== "true") {
+    button.dataset.bound = "true";
+    button.addEventListener("click", () => {
+      if (!SpeechRecognition) {
+        status.textContent = "This browser does not support voice input.";
+        app.showToast?.("Voice input is not supported in this browser");
+        return;
+      }
+      const activeRecognition = ensureRecognition();
+      if (app.state.voiceConversation.listening) {
+        activeRecognition.stop();
+      } else {
+        activeRecognition.lang = getSelectedVoice()?.lang || "en-IN";
+        activeRecognition.start();
+      }
+    });
+  }
+
+  if (aiMessages.dataset.voiceObserverInstalled !== "true") {
+    aiMessages.dataset.voiceObserverInstalled = "true";
+    const observer = new MutationObserver(() => {
+      const lastTeacherMessage = aiMessages.querySelector(".ai-message.teacher:last-child");
+      const text = lastTeacherMessage?.textContent?.trim();
+      if (!text || text === aiMessages.dataset.lastSpokenMessage) return;
+      aiMessages.dataset.lastSpokenMessage = text;
+      speakTextWithVoice(text, app, { rate: 0.96 });
+    });
+    observer.observe(aiMessages, {
+      childList: true
+    });
+  }
+
+  updateVoiceConversationUi();
+}
+
+function installAssignmentSystem(app, services) {
+  ensureAdvancedState(app);
+  const studentPanel = document.getElementById("studentPanel");
+  const teacherPanel = document.getElementById("teacherPanel");
+
+  if (studentPanel && !document.getElementById("studentAssignmentsCard")) {
+    const card = createCard("Assignments", "Teacher-created labs appear here and stay linked to your project.");
+    card.id = "studentAssignmentsCard";
+    card.innerHTML += `<div id="studentAssignmentList" class="assignment-list"></div>`;
+    studentPanel.insertBefore(card, studentPanel.firstChild?.nextSibling || null);
+  }
+
+  if (teacherPanel && !document.getElementById("teacherAssignmentsCard")) {
+    const card = createCard("Teacher Assignments", "Publish structured lab tasks for each class with challenge and due date.");
+    card.id = "teacherAssignmentsCard";
+    card.innerHTML += `
+      <div class="assignment-form-grid">
+        <div class="field">
+          <label for="assignmentTitleInput">Title</label>
+          <input id="assignmentTitleInput" type="text" placeholder="Week 3 LED Lab">
+        </div>
+        <div class="field">
+          <label for="assignmentClassInput">Class</label>
+          <input id="assignmentClassInput" type="text" placeholder="10-A or All Classes">
+        </div>
+        <div class="field">
+          <label for="assignmentChallengeSelect">Challenge</label>
+          <select id="assignmentChallengeSelect">
+            ${LEARNING_CHALLENGES.map(challenge => `
+              <option value="${escapeHtml(challenge.id)}">${escapeHtml(challenge.title)}</option>
+            `).join("")}
+          </select>
+        </div>
+        <div class="field">
+          <label for="assignmentDueInput">Due Date</label>
+          <input id="assignmentDueInput" type="date">
+        </div>
+      </div>
+      <div class="field">
+        <label for="assignmentInstructionsInput">Instructions</label>
+        <textarea id="assignmentInstructionsInput" placeholder="What should students prove or explain?"></textarea>
+      </div>
+      <div class="assignment-form-actions">
+        <button type="button" id="createAssignmentBtn">Create Assignment</button>
+      </div>
+      <div id="teacherAssignmentList" class="assignment-list"></div>
+    `;
+    teacherPanel.appendChild(card);
+  }
+
+  async function refreshAssignments() {
+    if (!services.assignments) return;
+
+    const user = app.state.user;
+    const studentList = document.getElementById("studentAssignmentList");
+    const teacherList = document.getElementById("teacherAssignmentList");
+    if (!user?.schoolKey || app.state.demoMode) {
+      app.state.assignments = [];
+      if (studentList) studentList.innerHTML = "<p class=\"upgrade-muted\">Log in to see live Firebase assignments.</p>";
+      if (teacherList) teacherList.innerHTML = "<p class=\"upgrade-muted\">Log in as a teacher or admin to publish assignments.</p>";
+      renderGuidedLabMode(app);
+      return;
+    }
+
+    const assignments = await services.assignments.listAssignments({
+      schoolId: user.schoolKey,
+      user
+    });
+
+    app.state.assignments = assignments;
+    if (app.state.activeAssignment?.id) {
+      const updatedActiveAssignment = assignments.find(assignment => assignment.id === app.state.activeAssignment.id);
+      if (updatedActiveAssignment) {
+        app.state.activeAssignment = updatedActiveAssignment;
+      }
+    }
+
+    if (studentList) {
+      studentList.innerHTML = assignments.length
+        ? assignments.map(assignment => {
+            const challenge = getChallengeMeta(assignment.challengeId);
+            const active = app.state.activeAssignment?.id === assignment.id;
+            return `
+              <article class="assignment-item ${active ? "active" : ""}">
+                <div>
+                  <b>${escapeHtml(assignment.title)}</b>
+                  <span>${escapeHtml(assignment.className || "Class")} • ${escapeHtml(challenge.shortTitle)} • ${escapeHtml(formatDisplayDate(assignment.dueDate))}</span>
+                  <p>${escapeHtml(assignment.instructions || challenge.description)}</p>
+                </div>
+                <button type="button" data-assignment-start="${escapeHtml(assignment.id)}">${active ? "Active" : "Start"}</button>
+              </article>
+            `;
+          }).join("")
+        : "<p class=\"upgrade-muted\">No assignments yet. You can still use Guided Lab mode with the built-in challenges.</p>";
+
+      studentList.querySelectorAll("[data-assignment-start]").forEach(button => {
+        button.addEventListener("click", () => {
+          const assignment = assignments.find(entry => entry.id === button.dataset.assignmentStart);
+          if (!assignment) return;
+          app.state.activeAssignment = assignment;
+          ensureLearningState(app);
+          app.state.learning.selectedChallengeId = assignment.challengeId || app.state.learning.selectedChallengeId;
+          if (!app.state.items.length || app.state.projectName === "Untitled STEM Project") {
+            app.state.projectName = assignment.title;
+            document.getElementById("projectNameText").textContent = assignment.title;
+          }
+          renderLearningPanel(app);
+          renderGuidedLabMode(app);
+          renderAiVivaCard(app);
+          app.showToast?.(`${assignment.title} is now active`);
+          refreshAssignments();
+        });
+      });
+    }
+
+    if (teacherList) {
+      teacherList.innerHTML = assignments.length
+        ? assignments.map(assignment => `
+            <article class="assignment-item teacher">
+              <div>
+                <b>${escapeHtml(assignment.title)}</b>
+                <span>${escapeHtml(assignment.className || "All Classes")} • ${escapeHtml(getChallengeMeta(assignment.challengeId).title)}</span>
+                <p>${escapeHtml(assignment.instructions || "No extra instructions")}</p>
+              </div>
+              <small>Due ${escapeHtml(formatDisplayDate(assignment.dueDate))}</small>
+            </article>
+          `).join("")
+        : "<p class=\"upgrade-muted\">Create the first assignment for this classroom.</p>";
+    }
+  }
+
+  const createAssignmentBtn = document.getElementById("createAssignmentBtn");
+  if (createAssignmentBtn && createAssignmentBtn.dataset.bound !== "true") {
+    createAssignmentBtn.dataset.bound = "true";
+    createAssignmentBtn.addEventListener("click", async () => {
+      const user = app.state.user;
+      if (app.state.demoMode || !user?.schoolKey || !user?.uid) {
+        app.showToast?.("Log in as a teacher or admin to create Firebase assignments");
+        return;
+      }
+      if (user.role !== "teacher" && user.role !== "admin") {
+        app.showToast?.("Switch to a teacher or admin account to create assignments");
+        return;
+      }
+
+      const title = document.getElementById("assignmentTitleInput")?.value.trim();
+      const className = document.getElementById("assignmentClassInput")?.value.trim() || "All Classes";
+      const challengeId = document.getElementById("assignmentChallengeSelect")?.value || "led-circuit";
+      const instructions = document.getElementById("assignmentInstructionsInput")?.value.trim() || "";
+      const dueDate = document.getElementById("assignmentDueInput")?.value || "";
+
+      if (!title) {
+        app.showToast?.("Enter an assignment title first");
+        return;
+      }
+
+      await services.assignments.createAssignment({
+        schoolId: user.schoolKey,
+        teacher: user,
+        assignment: {
+          title,
+          className,
+          challengeId,
+          challengeTitle: getChallengeMeta(challengeId).title,
+          instructions,
+          dueDate
+        }
+      });
+
+      document.getElementById("assignmentTitleInput").value = "";
+      document.getElementById("assignmentInstructionsInput").value = "";
+      app.showToast?.("Assignment published");
+      await refreshAssignments();
+    });
+  }
+
+  return { refreshAssignments };
+}
+
 function renderDashboardEnhancements(app) {
   const report = app.state.simulationReport;
   if (!report) {
     renderLearningPanel(app);
+    renderGuidedLabMode(app);
+    renderMultimeterCard(app);
+    renderReplayBuildCard(app);
+    renderAiVivaCard(app);
     return;
   }
 
@@ -1201,6 +2022,10 @@ function renderDashboardEnhancements(app) {
   }
 
   renderLearningPanel(app);
+  renderGuidedLabMode(app);
+  renderMultimeterCard(app);
+  renderReplayBuildCard(app);
+  renderAiVivaCard(app);
 }
 
 function renderAiTeacherPrecision(app) {
@@ -1208,7 +2033,7 @@ function renderAiTeacherPrecision(app) {
   const suggestionChips = document.getElementById("aiCoachSuggestionChips");
   if (!precisionText && !suggestionChips) return;
 
-  const report = buildHumanReadableDebugReport(app.getProjectSnapshot());
+  const report = buildHumanReadableDebugReport(buildEnhancedProjectSnapshot(app));
   const firstFix = report.coach.suggestion || report.coach.primaryTip || "Run logic, then ask me for the first exact fix.";
 
   if (precisionText) {
@@ -1226,6 +2051,8 @@ function renderAiTeacherPrecision(app) {
 
 function installAiTeacherEnhancements(app) {
   renderAiTeacherPrecision(app);
+  renderAiVivaCard(app);
+  installVoiceConversationMode(app);
   const input = document.getElementById("aiTeacherInput");
   if (input) {
     input.placeholder = "Ask anything: debug my circuit, quiz me, explain voltage, help with homework, or make this simpler...";
@@ -1310,6 +2137,7 @@ function installSimulationUpgrade(app) {
     renderDashboardEnhancements(app);
     renderAiTeacherPrecision(app);
     syncWorkspaceExperience(app);
+    recordBuildHistory(app);
   };
 
   upgradeApi.afterUpdateOutputs = () => {
@@ -1318,6 +2146,7 @@ function installSimulationUpgrade(app) {
     renderDashboardEnhancements(app);
     renderAiTeacherPrecision(app);
     syncWorkspaceExperience(app);
+    recordBuildHistory(app);
   };
 
   window.EducircuitUpgrade = upgradeApi;
@@ -1516,6 +2345,7 @@ function installTeacherDashboard(app, services) {
                 <div>
                   <h4>${project.name}</h4>
                   <p>${project.ownerName || "Unknown"} • ${project.className || "Class TBD"}</p>
+                  ${project.assignmentTitle ? `<p>Assignment: ${project.assignmentTitle}</p>` : ""}
                   <p>Status: ${project.status || "DRAFT"}${project.grade ? ` • Grade: ${project.grade}` : ""}</p>
                   ${project.metrics?.qualityScore ? `<span class="auto-grade-pill">Quality ${project.metrics.qualityScore}%</span>` : ""}
                 </div>
@@ -1539,12 +2369,17 @@ function installTeacherDashboard(app, services) {
           items: project.items,
           wires: project.wires,
           logic: project.logic,
+          assignmentId: project.assignmentId || null,
+          assignmentTitle: project.assignmentTitle || "",
+          assignmentDueDate: project.assignmentDueDate || "",
+          challengeId: project.challengeId || "",
           grade: project.grade || "Not graded",
           status: project.status || "DRAFT",
           feedback: project.feedback || "",
           ownerName: project.ownerName,
           defaultBatteryVoltage: project.defaultBatteryVoltage || app.state.defaultBatteryVoltage
         });
+        syncClassroomContextFromProject(app, project);
         app.state.remoteProjectId = project.id;
         app.state.currentProjectMeta = project;
         setProjectVisibility(project.visibility || "private");
@@ -1559,6 +2394,7 @@ function installTeacherDashboard(app, services) {
         const analysis = analyzeCircuit(project);
         const grade = autoGradeProject(project, analysis);
         app.applyProjectSnapshot(project, { ownerName: project.ownerName, projectId: project.id });
+        syncClassroomContextFromProject(app, project);
         app.state.currentProjectMeta = project;
         setProjectVisibility(project.visibility || "private");
         document.getElementById("teacherGrade").value = grade.grade;
@@ -1596,6 +2432,7 @@ function installProjectSharing(app, services) {
                 <div>
                   <h3>${project.name}</h3>
                   <p>${project.ownerName || "Unknown"} • ${project.schoolId || "School"}</p>
+                  ${project.assignmentTitle ? `<p>${project.assignmentTitle}</p>` : ""}
                   <p>${project.simulation?.summary || "Shared public project"}</p>
                   <span class="upgrade-like-count">♥ ${project.likeCount || 0}</span>
                 </div>
@@ -1614,6 +2451,7 @@ function installProjectSharing(app, services) {
           const project = projects.find(entry => entry.id === button.dataset.projectId);
           if (!project) return;
           app.applyProjectSnapshot(project, { ownerName: project.ownerName, projectId: project.id });
+          syncClassroomContextFromProject(app, project);
           app.state.currentProjectMeta = project;
           setProjectVisibility(project.visibility || "public");
           explorePage.classList.add("hidden");
@@ -1627,6 +2465,7 @@ function installProjectSharing(app, services) {
           if (!project) return;
           const cloned = services.projects.buildClonePayload(project, app.state.user);
           app.applyProjectSnapshot(cloned, { ownerName: app.state.user.name, projectId: null });
+          syncClassroomContextFromProject(app, cloned);
           app.state.currentProjectMeta = {
             visibility: "private",
             clonedFrom: project.id
@@ -1925,6 +2764,7 @@ function installSavedProjectsPortal(app, services) {
             <div>
               <h4>${escapeHtml(project.name || "Untitled Project")}</h4>
               <p>${escapeHtml(project.status || "DRAFT")} • ${escapeHtml(project.visibility || "private")}</p>
+              ${project.assignmentTitle ? `<p>${escapeHtml(project.assignmentTitle)}</p>` : ""}
               <p>${escapeHtml(project.simulation?.summary || "Saved circuit project")}</p>
             </div>
             <div class="upgrade-inline-actions">
@@ -1940,6 +2780,7 @@ function installSavedProjectsPortal(app, services) {
         const project = projects.find(entry => entry.id === button.dataset.projectId);
         if (!project) return;
         app.applyProjectSnapshot(project, { ownerName: project.ownerName, projectId: project.id });
+        syncClassroomContextFromProject(app, project);
         app.state.currentProjectMeta = project;
         setProjectVisibility(project.visibility || "private");
         page?.classList.add("hidden");
@@ -2021,6 +2862,7 @@ function installStudentProjectPortal(app, services) {
             <div>
               <h4>${escapeHtml(project.name || "Untitled Project")}</h4>
               <p>${escapeHtml(project.ownerName || "Unknown")} • ${escapeHtml(project.className || "Class TBD")}</p>
+              ${project.assignmentTitle ? `<p>${escapeHtml(project.assignmentTitle)}</p>` : ""}
               <p>Status: ${escapeHtml(project.status || "GRADED")} • Grade: ${escapeHtml(project.grade)}</p>
               ${project.feedback ? `<p class="graded-feedback">${escapeHtml(project.feedback)}</p>` : ""}
             </div>
@@ -2037,6 +2879,7 @@ function installStudentProjectPortal(app, services) {
         const project = projects.find(entry => entry.id === button.dataset.projectId);
         if (!project) return;
         app.applyProjectSnapshot(project, { ownerName: project.ownerName, projectId: project.id });
+        syncClassroomContextFromProject(app, project);
         app.state.currentProjectMeta = project;
         setProjectVisibility(project.visibility || "private");
         page?.classList.add("hidden");
@@ -2085,7 +2928,7 @@ function installStudentProjectPortal(app, services) {
 function installActionOverrides(app, services, sharing, teacherDashboard, gamificationUi, savedProjectPortal, studentProjectPortal) {
   const runLogicBtn = replaceButton(document.getElementById("runLogicBtn"), async () => {
     await window.runLogic();
-    const report = buildHumanReadableDebugReport(app.getProjectSnapshot());
+    const report = buildHumanReadableDebugReport(buildEnhancedProjectSnapshot(app));
     const debuggerResponse = buildDebuggerResponse(report);
     showSimulationFeedback(report);
     startCurrentFlowAnimation(app, report);
@@ -2109,7 +2952,7 @@ function installActionOverrides(app, services, sharing, teacherDashboard, gamifi
     }
 
     app.saveProject({ silent: true });
-    const snapshot = app.getProjectSnapshot();
+    const snapshot = buildEnhancedProjectSnapshot(app);
     const report = app.state.simulationReport || analyzeCircuit(snapshot);
     const visibility = sharing.getVisibility();
     const savedProject = await services.projects.saveProject({
@@ -2161,7 +3004,7 @@ function installActionOverrides(app, services, sharing, teacherDashboard, gamifi
     }
 
     window.submitProject();
-    const snapshot = app.getProjectSnapshot();
+    const snapshot = buildEnhancedProjectSnapshot(app);
     const report = app.state.simulationReport || analyzeCircuit(snapshot);
     const submitted = await services.projects.submitProject({
       schoolId: app.state.user.schoolKey,
@@ -2215,7 +3058,11 @@ function installActionOverrides(app, services, sharing, teacherDashboard, gamifi
       grade: gradeValue,
       feedback: feedbackValue,
       visibility,
-      cloneable: visibility === "public"
+      cloneable: visibility === "public",
+      assignmentId: app.state.activeAssignment?.id || app.state.currentProjectMeta?.assignmentId || null,
+      assignmentTitle: app.state.activeAssignment?.title || app.state.currentProjectMeta?.assignmentTitle || "",
+      assignmentDueDate: app.state.activeAssignment?.dueDate || app.state.currentProjectMeta?.assignmentDueDate || "",
+      challengeId: app.state.activeAssignment?.challengeId || ensureLearningState(app)?.selectedChallengeId || app.state.currentProjectMeta?.challengeId || ""
     };
 
     const updated = services.gamification.applyEvent(app.state.userProgress?.stats, "grade");
@@ -2251,6 +3098,7 @@ export function installVisualPolish(app = {}) {
   });
 
   if (app?.state) {
+    ensureAdvancedState(app);
     installDashboardEnhancements(app);
     installAiTeacherEnhancements(app);
     installPerformanceEnhancements(app);
@@ -2259,21 +3107,28 @@ export function installVisualPolish(app = {}) {
 }
 
 export async function bootstrapUpgrade(app, services) {
+  ensureAdvancedState(app);
   installVisualPolish(app);
   installSimulationUpgrade(app);
   const sharing = installProjectSharing(app, services);
   const teacherDashboard = installTeacherDashboard(app, services);
   const gamificationUi = installGamificationPanels(app, services);
+  const assignmentSystem = installAssignmentSystem(app, services);
   const savedProjectPortal = installSavedProjectsPortal(app, services);
   const studentProjectPortal = installStudentProjectPortal(app, services);
   installAuthUpgrade(app, services);
   installActionOverrides(app, services, sharing, teacherDashboard, gamificationUi, savedProjectPortal, studentProjectPortal);
+  renderGuidedLabMode(app);
+  renderMultimeterCard(app);
+  renderReplayBuildCard(app);
+  renderAiVivaCard(app);
 
   services.refreshAll = async function refreshAll() {
     try {
       if (app.state.user.schoolKey) {
         await teacherDashboard.refreshTeacherDashboard();
       }
+      await assignmentSystem.refreshAssignments();
       await gamificationUi.refreshGamificationUi();
       await savedProjectPortal.refresh();
       await studentProjectPortal.refresh();
@@ -2300,6 +3155,7 @@ export async function bootstrapUpgrade(app, services) {
   }
 
   await wait(80);
+  recordBuildHistory(app, { label: "Workspace ready" });
   await services.refreshAll();
   return services;
 }

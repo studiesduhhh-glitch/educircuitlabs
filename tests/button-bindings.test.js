@@ -8,7 +8,11 @@ const fallbackJs = fs.readFileSync(new URL("../src/app/landing-fallback.js", imp
 const upgradeJs = fs.readFileSync(new URL("../src/ui/upgrade-controller.js", import.meta.url), "utf8");
 const storageGuardJs = fs.readFileSync(new URL("../src/app/storage-guard.js", import.meta.url), "utf8");
 const projectServiceJs = fs.readFileSync(new URL("../src/services/project-service.js", import.meta.url), "utf8");
-const allJs = `${runtimeJs}\n${fallbackJs}\n${upgradeJs}`;
+const assignmentServiceJs = fs.readFileSync(new URL("../src/services/assignment-service.js", import.meta.url), "utf8");
+const vivaEngineJs = fs.readFileSync(new URL("../src/core/viva-engine.js", import.meta.url), "utf8");
+const classroomEngineJs = fs.readFileSync(new URL("../src/core/classroom-engine.js", import.meta.url), "utf8");
+const mainJs = fs.readFileSync(new URL("../src/main.js", import.meta.url), "utf8");
+const allJs = `${runtimeJs}\n${fallbackJs}\n${upgradeJs}\n${assignmentServiceJs}\n${vivaEngineJs}\n${classroomEngineJs}\n${mainJs}`;
 
 function getAttr(attrs, name) {
   const match = attrs.match(new RegExp(`${name}="([^"]*)"`, "i"));
@@ -57,11 +61,12 @@ test("deployed html stays clean and modular", () => {
   assert.doesNotMatch(indexHtml, /<<<<<<<|=======|>>>>>>>/);
   assert.doesNotMatch(`${indexHtml}\n${allJs}`, /hhere/i);
   assert.doesNotMatch(indexHtml, /<script>\s*const state\s*=/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260417-firebase1" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260417-firebase1" \/>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260417-firebase1"><\/script>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260417-firebase1"><\/script>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260419-finalcheck1" \/>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260419-finalcheck1" \/>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260419-finalcheck1"><\/script>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260419-finalcheck1"><\/script>/);
   assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
+  assert.match(mainJs, /createAssignmentService/);
 });
 
 test("active app code does not write browser storage", () => {
@@ -157,4 +162,25 @@ test("manual switch controls and voice coach are wired", () => {
   assert.match(upgradeJs, /SpeechSynthesisUtterance/);
   assert.match(upgradeJs, /utterance\.voice = selectedVoice/);
   assert.match(upgradeJs, /speakCircuitCoach\(report, app\)/);
+  assert.match(upgradeJs, /voiceConversationBtn/);
+  assert.match(upgradeJs, /SpeechRecognition \|\| window\.webkitSpeechRecognition/);
+});
+
+test("classroom roadmap features are connected to the current simulator", () => {
+  assert.match(upgradeJs, /installAssignmentSystem/);
+  assert.match(upgradeJs, /guidedLabModeCard/);
+  assert.match(upgradeJs, /liveMultimeterCard/);
+  assert.match(upgradeJs, /replayBuildCard/);
+  assert.match(upgradeJs, /aiVivaCard/);
+  assert.match(upgradeJs, /buildEnhancedProjectSnapshot/);
+  assert.match(upgradeJs, /recordBuildHistory/);
+  assert.match(upgradeJs, /services\.assignments/);
+  assert.match(projectServiceJs, /assignmentId/);
+  assert.match(projectServiceJs, /assignmentTitle/);
+  assert.match(projectServiceJs, /challengeId/);
+  assert.match(assignmentServiceJs, /createAssignmentService/);
+  assert.match(vivaEngineJs, /buildVivaQuestions/);
+  assert.match(vivaEngineJs, /evaluateVivaAnswer/);
+  assert.match(classroomEngineJs, /buildMultimeterReading/);
+  assert.match(classroomEngineJs, /buildReplayEntry/);
 });

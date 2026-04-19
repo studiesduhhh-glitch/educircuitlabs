@@ -319,6 +319,9 @@ export function analyzeCircuit({
       !sourceOnPositiveLead;
     const receivedVoltage = returnPath && sourceOnPositiveLead ? availableVoltage : 0;
     const safeVoltage = (spec.minVoltage || 0) * (spec.safeMultiplier || 2);
+    const adjustedSafeVoltage = item.type === "LED" && resistorInPoweredPath
+      ? Math.max(safeVoltage, (spec.minVoltage || 0) + 3)
+      : safeVoltage;
     const normalizedIntensity = spec.minVoltage > 0
       ? clamp(receivedVoltage / spec.minVoltage, 0, 1.5)
       : 0;
@@ -358,7 +361,7 @@ export function analyzeCircuit({
           { itemId: item.id }
         )
       );
-    } else if (receivedVoltage > safeVoltage && safeVoltage > 0) {
+    } else if (receivedVoltage > adjustedSafeVoltage && adjustedSafeVoltage > 0) {
       unsafeVoltage = true;
       burstItemIds.push(item.id);
       diagnostics.push(
@@ -367,7 +370,7 @@ export function analyzeCircuit({
           "error",
           `${item.type} Overvoltage`,
           `${item.type} is receiving ${receivedVoltage.toFixed(1)}V, above its safe operating range.`,
-          `Lower the battery voltage or distribute the load so ${item.type} does not receive more than about ${safeVoltage.toFixed(1)}V.`,
+          `Lower the battery voltage or distribute the load so ${item.type} does not receive more than about ${adjustedSafeVoltage.toFixed(1)}V.`,
           { itemId: item.id }
         )
       );

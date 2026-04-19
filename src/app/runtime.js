@@ -40,7 +40,29 @@ const state = window.EducircuitState || {
   },
   activeItems: [],
   aiTeacherMessages: [],
-  burstItems: []
+  burstItems: [],
+  assignments: [],
+  activeAssignment: null,
+  buildReplay: {
+    history: [],
+    lastSignature: "",
+    isPlaying: false
+  },
+  multimeter: {
+    selection: { type: "overview" }
+  },
+  aiViva: {
+    active: false,
+    questions: [],
+    answers: [],
+    currentIndex: 0,
+    summary: null
+  },
+  voiceConversation: {
+    listening: false,
+    supported: false,
+    transcript: ""
+  }
 };
 window.EducircuitState = state;
 state.lang = state.lang || "en";
@@ -2852,6 +2874,10 @@ window.educircuitApp = {
       items: deepClone(state.items),
       wires: deepClone(state.wires),
       logic: deepClone(state.logic),
+      challengeId: state.activeAssignment?.challengeId || state.learning?.selectedChallengeId || "",
+      assignmentId: state.activeAssignment?.id || null,
+      assignmentTitle: state.activeAssignment?.title || "",
+      assignmentDueDate: state.activeAssignment?.dueDate || "",
       grade: gradeText.textContent,
       status: statusText.textContent,
       feedback: teacherCommentInput.value.trim(),
@@ -2873,6 +2899,18 @@ window.educircuitApp = {
     state.currentProjectIndex = options.currentProjectIndex ?? null;
     state.logicArmed = false;
     state.remoteProjectId = snapshot.id || options.projectId || null;
+    state.activeAssignment = snapshot.assignmentId || snapshot.assignmentTitle
+      ? {
+          id: snapshot.assignmentId || null,
+          title: snapshot.assignmentTitle || snapshot.name || "Assignment",
+          dueDate: snapshot.assignmentDueDate || "",
+          challengeId: snapshot.challengeId || state.learning?.selectedChallengeId || "led-circuit"
+        }
+      : null;
+    if (snapshot.challengeId) {
+      state.learning = state.learning || {};
+      state.learning.selectedChallengeId = snapshot.challengeId;
+    }
     state.defaultBatteryVoltage = Number(snapshot.defaultBatteryVoltage || state.defaultBatteryVoltage || 5);
     projectNameText.textContent = state.projectName;
     gradeText.textContent = snapshot.grade || "Not graded";

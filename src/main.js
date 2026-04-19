@@ -1,7 +1,8 @@
-import { createAuthService } from "./services/auth-service.js?v=20260417-firebase1";
-import { createProjectService } from "./services/project-service.js?v=20260417-firebase1";
-import { createGamificationService } from "./services/gamification-service.js?v=20260417-firebase1";
-import { bootstrapUpgrade, installVisualPolish } from "./ui/upgrade-controller.js?v=20260417-firebase1";
+import { createAuthService } from "./services/auth-service.js?v=20260419-finalcheck1";
+import { createProjectService } from "./services/project-service.js?v=20260419-finalcheck1";
+import { createGamificationService } from "./services/gamification-service.js?v=20260419-finalcheck1";
+import { createAssignmentService } from "./services/assignment-service.js?v=20260419-finalcheck1";
+import { bootstrapUpgrade, installVisualPolish } from "./ui/upgrade-controller.js?v=20260419-finalcheck1";
 
 async function waitForLegacyApp() {
   if (typeof window === "undefined") {
@@ -36,6 +37,10 @@ async function main() {
       firebase
     }),
     projects: createProjectService({
+      db: app.db,
+      firebase
+    }),
+    assignments: createAssignmentService({
       db: app.db,
       firebase
     }),

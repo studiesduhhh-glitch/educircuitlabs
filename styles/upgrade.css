@@ -2717,6 +2717,222 @@ body {
   }
 }
 
+.assignment-list,
+.guided-lab-steps,
+.replay-build-timeline {
+  display:grid;
+  gap:10px;
+}
+
+.assignment-item,
+.guided-lab-step,
+.replay-build-entry,
+.multimeter-grid > div,
+.viva-feedback-card,
+.viva-summary {
+  border:1px solid rgba(148,163,184,.22);
+  border-radius:8px;
+  background:rgba(255,255,255,.88);
+  box-shadow:0 10px 24px rgba(15,23,42,.05);
+}
+
+.assignment-item {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  padding:12px;
+}
+
+.assignment-item.active {
+  border-color:rgba(16,185,129,.36);
+  box-shadow:0 0 0 1px rgba(16,185,129,.2);
+}
+
+.assignment-item.teacher {
+  align-items:center;
+}
+
+.assignment-item b,
+.assignment-item span,
+.assignment-item p,
+.replay-build-entry b,
+.replay-build-entry span {
+  display:block;
+}
+
+.assignment-item span,
+.assignment-item small,
+.guided-lab-meta span,
+.replay-build-entry span,
+.voice-conversation-status {
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.5;
+}
+
+.assignment-item p,
+.guided-lab-step b,
+.viva-feedback-card p,
+.viva-summary p,
+.multimeter-grid p {
+  margin:6px 0 0;
+  line-height:1.5;
+}
+
+.assignment-form-grid,
+.multimeter-grid {
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:10px;
+}
+
+.assignment-form-actions,
+.replay-build-actions,
+.viva-actions {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.assignment-form-actions,
+.replay-build-actions {
+  margin-top:12px;
+}
+
+.guided-lab-meta,
+.multimeter-header,
+.viva-score-row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.guided-lab-meta {
+  align-items:flex-start;
+  flex-direction:column;
+  margin-bottom:12px;
+}
+
+.guided-lab-step {
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:10px 12px;
+}
+
+.guided-lab-step.passed {
+  border-color:rgba(16,185,129,.28);
+  background:rgba(16,185,129,.08);
+}
+
+.guided-lab-step.pending {
+  border-color:rgba(59,130,246,.16);
+}
+
+.multimeter-readings {
+  margin-top:12px;
+}
+
+.multimeter-header {
+  margin-bottom:10px;
+}
+
+.multimeter-grid > div {
+  padding:12px;
+}
+
+.multimeter-grid span {
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:6px;
+}
+
+.multimeter-grid .wide {
+  grid-column:1 / -1;
+}
+
+.replay-build-timeline {
+  max-height:240px;
+  overflow:auto;
+  padding-right:4px;
+}
+
+.replay-build-entry {
+  padding:10px 12px;
+}
+
+.replay-build-entry b {
+  margin-bottom:4px;
+}
+
+.viva-question {
+  margin:12px 0 10px;
+  font-weight:800;
+  line-height:1.55;
+}
+
+#aiVivaAnswerInput {
+  min-height:92px;
+  resize:vertical;
+}
+
+.viva-feedback-card,
+.viva-summary {
+  margin-top:12px;
+  padding:12px;
+}
+
+.viva-feedback-card small,
+.viva-summary small {
+  display:block;
+  margin-top:8px;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+.voice-conversation-btn {
+  min-width:88px;
+}
+
+.voice-conversation-status {
+  margin-top:10px;
+}
+
+.dark-mode .assignment-item,
+.dark-mode .guided-lab-step,
+.dark-mode .replay-build-entry,
+.dark-mode .multimeter-grid > div,
+.dark-mode .viva-feedback-card,
+.dark-mode .viva-summary {
+  background:rgba(15,23,42,.82);
+  border-color:rgba(148,163,184,.18);
+}
+
+@media (max-width: 860px) {
+  .assignment-form-grid,
+  .multimeter-grid {
+    grid-template-columns:1fr;
+  }
+
+  .assignment-item,
+  .multimeter-header,
+  .viva-score-row {
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .assignment-item button,
+  .assignment-form-actions button,
+  .replay-build-actions button,
+  .viva-actions button,
+  .voice-conversation-btn {
+    width:100%;
+  }
+}
+
 @media (max-width: 420px) {
   .landing-copy h1 {
     font-size:34px;
