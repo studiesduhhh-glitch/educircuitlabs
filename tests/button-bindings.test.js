@@ -62,6 +62,9 @@ test("deployed html stays clean and modular", () => {
   assert.doesNotMatch(`${indexHtml}\n${allJs}`, /hhere/i);
   assert.doesNotMatch(indexHtml, /<script>\s*const state\s*=/);
   assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260419-ai-teacher1" \/>/);
+  assert.match(indexHtml, /<link rel="icon" href="\/favicon\.ico" sizes="any" \/>/);
+  assert.match(indexHtml, /<link rel="icon" type="image\/png" sizes="512x512" href="\/favicon\.png" \/>/);
+  assert.match(indexHtml, /<link rel="apple-touch-icon" sizes="180x180" href="\/apple-touch-icon\.png" \/>/);
   assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260419-ai-teacher1" \/>/);
   assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260419-ai-teacher1"><\/script>/);
   assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260419-ai-teacher1"><\/script>/);
