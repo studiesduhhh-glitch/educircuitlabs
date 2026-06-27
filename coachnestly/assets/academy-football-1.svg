@@ -1,0 +1,11 @@
+<svg width="800" height="520" viewBox="0 0 800 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="520" rx="40" fill="#0C1C2D" />
+  <rect x="64" y="72" width="672" height="376" rx="30" fill="#0F2740" stroke="rgba(255,255,255,0.18)" />
+  <rect x="110" y="122" width="580" height="276" rx="28" fill="#11B47A" fill-opacity="0.24" stroke="rgba(255,255,255,0.22)" />
+  <path d="M400 122V398" stroke="rgba(255,255,255,0.22)" stroke-width="4" />
+  <circle cx="400" cy="260" r="62" stroke="rgba(255,255,255,0.22)" stroke-width="4" />
+  <circle cx="248" cy="260" r="28" fill="#176BFF" />
+  <circle cx="552" cy="226" r="28" fill="#FF8C3C" />
+  <text x="110" y="102" fill="white" font-size="32" font-family="Outfit, Arial, sans-serif" font-weight="700">GoalForge Football Collective</text>
+  <text x="110" y="430" fill="#C8D7E8" font-size="22" font-family="Outfit, Arial, sans-serif">Floodlit turf • League prep • Team-first growth</text>
+</svg>

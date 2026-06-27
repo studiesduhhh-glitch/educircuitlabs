@@ -2519,20 +2519,34 @@ function saveProject(options = {}){
 
 async function saveProjectToFirebase() {
   try {
-await db.collection("projects").add({
-  userId: auth.currentUser ? auth.currentUser.uid : "",
-  schoolId: state.user.schoolKey || getSchoolDocId(state.user.school),
-  userName: state.user.name,
-  role: state.user.role,
-  name: state.projectName,
-  items: JSON.parse(JSON.stringify(state.items)),
-  wires: JSON.parse(JSON.stringify(state.wires)),
-  logic: JSON.parse(JSON.stringify(state.logic)),
-  createdAt: new Date()
-});
+    if(!auth.currentUser || !state.user.schoolKey){
+      showToast("Log in to save projects to Firebase");
+      return;
+    }
 
-showToast("Project saved");
-console.log("Saved full data ✅");
+    const schoolId = state.user.schoolKey || getSchoolDocId(state.user.school);
+    const projectRef = await db.collection("schools").doc(schoolId).collection("projects").add({
+      schoolId,
+      ownerId: auth.currentUser.uid,
+      ownerName: state.user.name,
+      ownerRole: state.user.role,
+      className: state.user.className || "",
+      name: state.projectName,
+      items: JSON.parse(JSON.stringify(state.items)),
+      wires: JSON.parse(JSON.stringify(state.wires)),
+      logic: JSON.parse(JSON.stringify(state.logic)),
+      defaultBatteryVoltage: Number(state.defaultBatteryVoltage || 5),
+      status: statusText.textContent || "DRAFT",
+      visibility: document.getElementById("projectVisibilitySelect")?.value || "private",
+      grade: gradeText.textContent || "Not graded",
+      feedback: teacherCommentInput.value.trim(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    state.remoteProjectId = projectRef.id;
+    showToast("Project saved");
+    console.log("Saved full data to school project collection");
 
   } catch (err) {
 console.error(err);

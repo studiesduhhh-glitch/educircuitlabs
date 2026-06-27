@@ -1,0 +1,12 @@
+<svg width="800" height="520" viewBox="0 0 800 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="520" rx="40" fill="#0B1724" />
+  <circle cx="654" cy="120" r="132" fill="#11B47A" fill-opacity="0.2" />
+  <rect x="70" y="72" width="660" height="376" rx="32" fill="#10233B" stroke="rgba(255,255,255,0.18)" />
+  <rect x="156" y="228" width="124" height="32" rx="16" fill="#F7FBFF" />
+  <rect x="520" y="228" width="124" height="32" rx="16" fill="#F7FBFF" />
+  <rect x="256" y="214" width="34" height="60" rx="17" fill="#176BFF" />
+  <rect x="510" y="214" width="34" height="60" rx="17" fill="#176BFF" />
+  <rect x="292" y="236" width="218" height="16" rx="8" fill="#11B47A" />
+  <text x="114" y="144" fill="white" font-size="34" font-family="Outfit, Arial, sans-serif" font-weight="700">Conditioning and athlete development</text>
+  <text x="114" y="182" fill="#D4E2F4" font-size="22" font-family="Outfit, Arial, sans-serif">For boxing, swimming, recovery, and strength-focused academies</text>
+</svg>

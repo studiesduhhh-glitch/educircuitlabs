@@ -3,12 +3,39 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CoachNestly | Discover Sports Coaching Near You</title>
+    <title>CoachNestly | Discover, Compare, and Book Sports Academies</title>
     <meta
       name="description"
-      content="CoachNestly is a dynamic sports coaching discovery app with live search, featured academies, interactive maps, geolocation, and fast contact."
+      content="CoachNestly helps families and athletes discover nearby coaching academies with live search, AI recommendations, saved favorites, academy comparisons, and onboarding flows."
     />
-    <meta name="coachnestly-google-maps-api-key" content="" />
+    <meta
+      name="keywords"
+      content="sports academy discovery, coaching near me, cricket academy, football coaching, swimming classes, sports startup"
+    />
+    <meta name="theme-color" content="#176bff" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="CoachNestly | Discover, Compare, and Book Sports Academies"
+    />
+    <meta
+      property="og:description"
+      content="A startup-ready MVP to search nearby coaching academies, compare programs, save favorites, and get AI-driven sport matches."
+    />
+    <meta property="og:image" content="assets/og-cover.svg" />
+    <meta property="og:url" content="https://coachnestly.app" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="CoachNestly | Startup-ready Sports Discovery MVP"
+    />
+    <meta
+      name="twitter:description"
+      content="Search nearby academies, compare programs, save favorites, and explore AI-powered recommendations."
+    />
+    <meta name="twitter:image" content="assets/og-cover.svg" />
+    <link rel="canonical" href="https://coachnestly.app" />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -16,8 +43,24 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "CoachNestly",
+        "url": "https://coachnestly.app",
+        "description": "A platform for discovering, comparing, and shortlisting nearby sports coaching academies.",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://coachnestly.app/?sport={sport}&location={location}",
+          "query-input": ["required name=sport", "required name=location"]
+        }
+      }
+    </script>
   </head>
-  <body>
+  <body data-theme="light">
+    <a class="skip-link" href="#mainContent">Skip to content</a>
+
     <div class="page-shell">
       <div class="page-orb page-orb--one" aria-hidden="true"></div>
       <div class="page-orb page-orb--two" aria-hidden="true"></div>
@@ -44,72 +87,96 @@
               <span class="sr-only">Toggle navigation</span>
             </button>
 
-            <nav class="site-nav" id="siteNav">
+            <nav class="site-nav" id="siteNav" aria-label="Primary navigation">
               <a href="#home">Home</a>
-              <a href="#featured">Featured</a>
-              <a href="#explore">Explore</a>
-              <a href="#add-academy">Add Academy</a>
+              <a href="#discover">Discover</a>
+              <a href="#ai-lab">AI Tools</a>
+              <a href="#add-academy">For Academies</a>
+              <a href="#admin">Admin</a>
+              <button class="ghost-button ghost-button--nav" id="themeToggle" type="button">
+                Dark mode
+              </button>
               <button class="nav-login" id="authTrigger" type="button">Login</button>
             </nav>
           </div>
         </div>
       </header>
 
-      <main>
+      <main id="mainContent">
         <section class="hero-section">
           <div class="container hero-grid">
             <div class="hero-copy" data-reveal>
-              <span class="eyebrow">Live sports discovery for every athlete</span>
-              <h1>Search, compare, and map the best coaching near you</h1>
+              <span class="eyebrow">The discovery engine for sports-first families</span>
+              <h1>Find the right coaching academy, not just the nearest one.</h1>
               <p class="hero-subtext">
-                CoachNestly now rebuilds the whole discovery experience from the
-                user's live location, with Google Maps-powered nearby search and
-                zero fixed city data.
+                Search nearby programs, compare fees and facilities, save favorites,
+                get AI-backed recommendations, and onboard new academies without
+                breaking the premium CoachNestly experience you already built.
               </p>
 
-              <form class="search-panel" id="searchForm">
-                <label class="search-field">
+              <form class="search-panel search-panel--wide" id="searchForm" role="search">
+                <label class="search-field search-field--suggest">
                   <span class="search-field__label">Sport</span>
                   <input
                     id="sportInput"
                     name="sport"
                     type="text"
                     placeholder="Cricket, football, swimming..."
-                    list="sportsList"
                     autocomplete="off"
+                    aria-autocomplete="list"
+                    aria-controls="sportSuggestions"
+                    aria-expanded="false"
                   />
+                  <div class="typeahead-menu" id="sportSuggestions" role="listbox" hidden></div>
                 </label>
 
-                <label class="search-field">
+                <label class="search-field search-field--suggest">
                   <span class="search-field__label">Location</span>
                   <input
                     id="locationInput"
                     name="location"
                     type="text"
-                    placeholder="Search by area or near you"
-                    list="areasList"
+                    placeholder="Gachibowli, Indiranagar, Bandra..."
                     autocomplete="off"
+                    aria-autocomplete="list"
+                    aria-controls="locationSuggestions"
+                    aria-expanded="false"
                   />
+                  <div class="typeahead-menu" id="locationSuggestions" role="listbox" hidden></div>
                 </label>
 
-                <button class="search-button" type="submit">Search</button>
+                <label class="search-field">
+                  <span class="search-field__label">Intent</span>
+                  <select id="intentInput" name="intent">
+                    <option value="all">All goals</option>
+                    <option value="competitive">Competitive training</option>
+                    <option value="fitness">Fitness & fun</option>
+                    <option value="beginner">Beginner confidence</option>
+                    <option value="elite">Elite pathway</option>
+                  </select>
+                </label>
+
+                <button class="search-button" type="submit">Search nearby</button>
               </form>
 
               <div class="search-toolbar">
-                <button class="ghost-button" id="locateMeButton" type="button">
-                  Use my location
+                <button class="ghost-button" id="useNearby" type="button">
+                  Use my area
                 </button>
                 <button class="ghost-button" id="clearFilters" type="button">
-                  Clear filters
+                  Reset filters
+                </button>
+                <button class="ghost-button" id="openQuizShortcut" type="button">
+                  Take AI sport quiz
                 </button>
               </div>
 
               <div class="hero-feedback">
                 <p class="search-feedback" id="searchFeedback" aria-live="polite">
-                  Loading the latest coaching centers in your city.
+                  Search updates instantly as you type, with academy suggestions and no page reloads.
                 </p>
                 <p class="geo-feedback" id="geoStatus" aria-live="polite">
-                  Checking whether your browser can locate nearby academies.
+                  Location defaults to your last used area. You can switch cities anytime.
                 </p>
               </div>
 
@@ -120,10 +187,11 @@
               <div class="dashboard-card">
                 <div class="dashboard-card__header">
                   <span class="section-tag">Live Marketplace</span>
-                  <h2>Everything updates instantly as you search</h2>
+                  <h2>Production-style discovery with retention built in</h2>
                   <p>
-                    Nearby coaching discovery now follows the user's location
-                    instead of permanent demo data.
+                    Favorites, recent views, AI matching, academy comparison, review
+                    flows, onboarding, and admin insights now sit inside the same
+                    premium front-end language.
                   </p>
                 </div>
 
@@ -133,80 +201,374 @@
               </div>
             </aside>
           </div>
+        </section>
 
-          <datalist id="sportsList"></datalist>
-          <datalist id="areasList"></datalist>
+        <section class="section-block section-block--metrics" id="metrics">
+          <div class="container">
+            <div class="metrics-grid" id="metricsGrid"></div>
+          </div>
         </section>
 
         <section class="section-block" id="featured">
           <div class="container">
-            <div class="section-heading" data-reveal>
-              <span class="section-tag">Live Nearby Picks</span>
-              <h2>Google Maps discovery updates around the current location</h2>
-              <p>
-                These cards are rebuilt from live search intent and nearby
-                coordinates instead of hardcoded academies.
-              </p>
+            <div class="section-heading section-heading--row" data-reveal>
+              <div>
+                <span class="section-tag">Featured Academies</span>
+                <h2>Investor-friendly storytelling, real user utility</h2>
+                <p>
+                  A premium carousel highlights standout academies with ratings,
+                  price points, contact pathways, and personalized match cues.
+                </p>
+              </div>
+
+              <div class="carousel-actions" aria-label="Featured academy controls">
+                <button class="ghost-button ghost-button--icon" id="featuredPrev" type="button">
+                  Prev
+                </button>
+                <button class="ghost-button ghost-button--icon" id="featuredNext" type="button">
+                  Next
+                </button>
+              </div>
             </div>
 
-            <div class="featured-grid" id="featuredGrid"></div>
+            <div class="featured-carousel" data-reveal style="--reveal-delay: 80ms">
+              <div class="featured-viewport">
+                <div class="featured-track" id="featuredRail"></div>
+              </div>
+              <div class="carousel-dots" id="featuredIndicators"></div>
+            </div>
           </div>
         </section>
 
-        <section class="section-block section-block--soft" id="explore">
+        <section class="section-block section-block--soft" id="signals">
+          <div class="container split-feature-grid">
+            <div class="split-panel" data-reveal>
+              <div class="section-heading section-heading--compact">
+                <span class="section-tag">Top Rated Near You</span>
+                <h2>Shortlist the best-reviewed options fast</h2>
+              </div>
+              <div class="stack-grid" id="topRatedGrid"></div>
+            </div>
+
+            <div class="split-panel" data-reveal style="--reveal-delay: 80ms">
+              <div class="section-heading section-heading--compact">
+                <span class="section-tag">Trending Sports</span>
+                <h2>See what families are exploring most</h2>
+              </div>
+              <div class="trending-sports-grid" id="trendingSportsGrid"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-block section-block--soft" id="discover">
           <div class="container">
             <div class="section-heading section-heading--row" data-reveal>
               <div>
-                <span class="section-tag">Explore Nearby</span>
-                <h2>Browse live nearby coaching from Google Maps</h2>
+                <span class="section-tag">Explore Academies</span>
+                <h2>Browse by fit, compare options, and move faster</h2>
                 <p id="resultsSummary">
-                  Loading academy results and nearby sports options.
+                  Discover academies matched to your sport, area, budget, and training goals.
                 </p>
               </div>
 
               <div class="results-meta">
-                <span class="results-count" id="resultsCount">0 centers</span>
+                <span class="results-count" id="resultsCount">0 academies</span>
                 <span class="results-count results-count--soft" id="matchMode">
-                  All results
+                  Personalized recommendations ready
                 </span>
               </div>
             </div>
 
-            <div class="category-filter-row" id="categoryChips"></div>
+            <div class="category-filter-row" id="categoryChips" aria-label="Trending sport filters"></div>
 
             <div class="workspace-shell">
-              <aside class="map-panel" id="map" data-reveal style="--reveal-delay: 100ms">
+              <aside class="map-panel" data-reveal style="--reveal-delay: 80ms">
                 <div class="map-panel__header">
                   <div>
-                    <p class="map-panel__eyebrow">Google Maps</p>
-                    <strong id="mapStatusLabel">Syncing map pins to your results</strong>
+                    <p class="map-panel__eyebrow">Map-ready layout</p>
+                    <strong id="mapStatusLabel">CoachNestly map preview is synced to your visible shortlist</strong>
                   </div>
-
                   <button class="ghost-button" id="resetMapView" type="button">
                     Reset map
                   </button>
                 </div>
 
-                <div class="map-surface">
-                  <div id="leafletMap" aria-label="Map of coaching centers"></div>
+                <div class="map-stage" id="mapStage" aria-label="Map preview of visible academies">
+                  <div class="map-stage__grid" aria-hidden="true"></div>
+                  <div class="map-stage__markers" id="mapMarkers"></div>
+                  <div class="map-stage__focus" id="mapFocusCard">
+                    <span class="map-stage__eyebrow">Google Maps integration placeholder</span>
+                    <h3 id="mapFocusTitle">Pick an academy to focus the map</h3>
+                    <p id="mapHelper">
+                      The map view is designed to swap directly into Google Maps or Mapbox once backend
+                      geocoding is connected.
+                    </p>
+                    <a class="details-primary" id="mapPrimaryAction" href="#" target="_blank" rel="noreferrer">
+                      View on map
+                    </a>
+                  </div>
                 </div>
 
-                <p class="map-helper" id="mapHelper">
-                  Click a card to focus its pin. Click a pin to open full
-                  academy details.
-                </p>
+                <div class="map-legend" id="mapLegend"></div>
               </aside>
 
               <div class="results-panel">
+                <div class="comparison-tray" id="comparisonTray" hidden>
+                  <div>
+                    <span class="comparison-tray__eyebrow">AI Compare</span>
+                    <strong id="compareCountLabel">Select 2 academies to compare</strong>
+                  </div>
+                  <button class="search-button" id="openComparisonFromTray" type="button">
+                    Compare now
+                  </button>
+                </div>
+
+                <div class="skeleton-grid" id="resultsSkeleton" hidden aria-hidden="true"></div>
                 <div class="results-grid" id="resultsGrid"></div>
 
                 <div class="empty-state" id="emptyState" hidden>
                   <div class="empty-state__icon">0</div>
-                  <h3>No results found</h3>
+                  <h3>No academies match this search yet</h3>
                   <p>
-                    Try another sport or location, or clear the filters to
-                    browse all coaching centers again.
+                    Try a broader location, remove filters, or use the AI quiz to discover sports
+                    and programs that fit the athlete's goals.
                   </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="saved-layout">
+              <div class="saved-panel" data-reveal>
+                <div class="section-heading section-heading--compact">
+                  <span class="section-tag">Saved Favorites</span>
+                  <h2>Your shortlist stays across sessions</h2>
+                </div>
+                <div class="mini-card-grid" id="favoritesGrid"></div>
+              </div>
+
+              <div class="saved-panel" data-reveal style="--reveal-delay: 80ms">
+                <div class="section-heading section-heading--compact">
+                  <span class="section-tag">Recently Viewed</span>
+                  <h2>Pick up where you left off</h2>
+                </div>
+                <div class="mini-card-grid" id="recentGrid"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-block" id="ai-lab">
+          <div class="container">
+            <div class="section-heading" data-reveal>
+              <span class="section-tag">AI Layer</span>
+              <h2>Give CoachNestly a startup-worthy intelligence edge</h2>
+              <p>
+                These tools run client-side today, but their architecture is ready to map to real LLM,
+                recommendation, and analytics services later.
+              </p>
+            </div>
+
+            <div class="ai-grid">
+              <article class="ai-card" data-reveal>
+                <div class="ai-card__header">
+                  <span class="section-tag section-tag--soft">AI Match</span>
+                  <h3>Academy recommendation engine</h3>
+                  <p>Recommend the best-fit academies using athlete goals, age, budget, and preferences.</p>
+                </div>
+
+                <form class="inline-form" id="recommendationForm">
+                  <label class="form-field">
+                    <span>Athlete age</span>
+                    <select id="recommendAge">
+                      <option value="under-10">Under 10</option>
+                      <option value="11-14">11-14</option>
+                      <option value="15-18">15-18</option>
+                      <option value="adult">Adult</option>
+                    </select>
+                  </label>
+
+                  <label class="form-field">
+                    <span>Primary goal</span>
+                    <select id="recommendGoal">
+                      <option value="beginner">Build confidence</option>
+                      <option value="competitive">Competitive growth</option>
+                      <option value="fitness">Fitness & consistency</option>
+                      <option value="elite">Elite performance</option>
+                    </select>
+                  </label>
+
+                  <label class="form-field">
+                    <span>Budget</span>
+                    <select id="recommendBudget">
+                      <option value="flexible">Flexible</option>
+                      <option value="mid">Balanced</option>
+                      <option value="value">Value first</option>
+                    </select>
+                  </label>
+
+                  <button class="search-button" type="submit">Get matches</button>
+                </form>
+
+                <div class="ai-result" id="recommendationResult">
+                  Choose preferences to generate your first AI shortlist.
+                </div>
+              </article>
+
+              <article class="ai-card" data-reveal style="--reveal-delay: 80ms">
+                <div class="ai-card__header">
+                  <span class="section-tag section-tag--soft">AI Quiz</span>
+                  <h3>Sport suggestion quiz</h3>
+                  <p>Great for new parents or beginners who know the goal but not the sport yet.</p>
+                </div>
+
+                <form class="inline-form" id="quizForm">
+                  <label class="form-field">
+                    <span>Energy style</span>
+                    <select id="quizEnergy">
+                      <option value="team">Team-based and social</option>
+                      <option value="solo">Independent and focused</option>
+                      <option value="mixed">A bit of both</option>
+                    </select>
+                  </label>
+
+                  <label class="form-field">
+                    <span>Preferred environment</span>
+                    <select id="quizEnvironment">
+                      <option value="outdoor">Outdoor activity</option>
+                      <option value="indoor">Indoor structure</option>
+                      <option value="water">Water confidence</option>
+                    </select>
+                  </label>
+
+                  <label class="form-field">
+                    <span>Outcome</span>
+                    <select id="quizOutcome">
+                      <option value="discipline">Discipline and routine</option>
+                      <option value="fun">Fun and activity</option>
+                      <option value="competition">Competition pathway</option>
+                    </select>
+                  </label>
+
+                  <button class="search-button" type="submit">Suggest sports</button>
+                </form>
+
+                <div class="ai-result" id="quizResult">
+                  Use the quiz to discover strong sport matches and instantly filter the marketplace.
+                </div>
+              </article>
+
+              <article class="ai-card ai-card--wide" data-reveal>
+                <div class="ai-card__header">
+                  <span class="section-tag section-tag--soft">AI Compare</span>
+                  <h3>Compare academies side by side</h3>
+                  <p>Surface trade-offs between price, coach quality, reviews, facilities, and goals.</p>
+                </div>
+
+                <div class="compare-controls">
+                  <label class="form-field">
+                    <span>Academy A</span>
+                    <select id="compareSelectA"></select>
+                  </label>
+                  <label class="form-field">
+                    <span>Academy B</span>
+                    <select id="compareSelectB"></select>
+                  </label>
+                  <button class="search-button" id="compareButton" type="button">Run comparison</button>
+                </div>
+
+                <div class="comparison-output" id="comparisonOutput">
+                  Select two academies to compare how they differ for parents, students, and performance-focused athletes.
+                </div>
+              </article>
+
+              <article class="ai-card ai-card--wide" data-reveal style="--reveal-delay: 80ms">
+                <div class="ai-card__header">
+                  <span class="section-tag section-tag--soft">AI Concierge</span>
+                  <h3>Chatbot assistant</h3>
+                  <p>Answer quick questions, suggest programs, and guide users toward the best next step.</p>
+                </div>
+
+                <div class="chat-shell">
+                  <div class="chat-feed" id="chatFeed" aria-live="polite"></div>
+                  <form class="chat-form" id="chatForm">
+                    <label class="sr-only" for="chatInput">Ask the CoachNestly assistant a question</label>
+                    <input
+                      id="chatInput"
+                      type="text"
+                      placeholder="Ask about fees, beginner options, timings, or best academies for cricket..."
+                      autocomplete="off"
+                    />
+                    <button class="search-button" type="submit">Send</button>
+                  </form>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-block section-block--soft" id="stories">
+          <div class="container">
+            <div class="section-heading section-heading--row" data-reveal>
+              <div>
+                <span class="section-tag">Trust & Growth</span>
+                <h2>Retention-oriented sections that make the product feel real</h2>
+                <p>
+                  Social proof, updates, lifecycle capture, and mobile expansion cues make the MVP feel
+                  competition-ready instead of like a static landing page.
+                </p>
+              </div>
+            </div>
+
+            <div class="stories-grid">
+              <div class="stories-column">
+                <div class="content-card" data-reveal>
+                  <div class="section-heading section-heading--compact">
+                    <span class="section-tag">Testimonials</span>
+                    <h2>What users are saying</h2>
+                  </div>
+                  <div class="testimonial-grid" id="testimonialsGrid"></div>
+                </div>
+
+                <div class="content-card" data-reveal style="--reveal-delay: 80ms">
+                  <div class="section-heading section-heading--compact">
+                    <span class="section-tag">Trending News</span>
+                    <h2>Blog and academy updates</h2>
+                  </div>
+                  <div class="news-grid" id="newsGrid"></div>
+                </div>
+              </div>
+
+              <div class="stories-column">
+                <div class="content-card" data-reveal>
+                  <div class="section-heading section-heading--compact">
+                    <span class="section-tag">Newsletter</span>
+                    <h2>Capture returning demand</h2>
+                  </div>
+                  <form class="newsletter-form" id="newsletterForm">
+                    <label class="form-field">
+                      <span>Email</span>
+                      <input id="newsletterEmail" type="email" placeholder="parent@example.com" />
+                    </label>
+                    <button class="search-button" type="submit">Join updates</button>
+                  </form>
+                  <p class="form-status" id="newsletterStatus" aria-live="polite">
+                    Weekly academy openings, trials, and scholarship updates.
+                  </p>
+                </div>
+
+                <div class="content-card" data-reveal style="--reveal-delay: 80ms">
+                  <div class="section-heading section-heading--compact">
+                    <span class="section-tag">Mobile App</span>
+                    <h2>Drive app installs early</h2>
+                  </div>
+                  <p class="content-card__copy">
+                    Offer saved shortlists, push alerts for trial sessions, coach chat, and attendance
+                    summaries through a future companion app.
+                  </p>
+                  <div class="download-actions">
+                    <button class="search-button" id="downloadIos" type="button">App Store</button>
+                    <button class="ghost-button" id="downloadAndroid" type="button">Google Play</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -216,114 +578,237 @@
         <section class="section-block" id="add-academy">
           <div class="container add-shell">
             <div class="add-copy" data-reveal>
-              <span class="section-tag">Add Academy</span>
-              <h2>Bring your academy onto the CoachNestly map</h2>
+              <span class="section-tag">Academy Registration</span>
+              <h2>Bring real academies into the marketplace with a guided flow</h2>
               <p>
-                Sign in, submit a coaching center, and see it appear instantly
-                in the live discovery experience. Added academies stay visible
-                only for the current session.
+                A multi-step onboarding experience captures the basics, operations,
+                pricing, facilities, and media needed to launch academy profiles at scale.
               </p>
 
               <div class="add-benefits">
                 <div class="benefit-card">
-                  <strong>Live preview</strong>
-                  <span>Your academy is added immediately to cards and Google Maps search flow.</span>
+                  <strong>Multi-step onboarding</strong>
+                  <span>Reduce form fatigue with a progressive, startup-style wizard.</span>
                 </div>
                 <div class="benefit-card">
-                  <strong>Clean validation</strong>
-                  <span>We verify key fields before adding temporary session entries.</span>
+                  <strong>Backend-ready payload</strong>
+                  <span>Every field maps cleanly to a future API and admin approval queue.</span>
                 </div>
                 <div class="benefit-card">
-                  <strong>Session only</strong>
-                  <span>Nothing is saved permanently after the page is refreshed.</span>
+                  <strong>Instant preview</strong>
+                  <span>Submitted academies appear immediately in the MVP for demonstration and testing.</span>
                 </div>
               </div>
             </div>
 
-            <form class="academy-form" id="academyForm" novalidate data-reveal style="--reveal-delay: 100ms">
-              <p class="auth-banner" id="authBanner" aria-live="polite">
-                Login to publish an academy on the CoachNestly map.
+            <div class="wizard-shell" data-reveal style="--reveal-delay: 100ms">
+              <div class="wizard-steps" id="onboardingStepper"></div>
+
+              <form class="academy-form academy-form--wizard" id="academyOnboardingForm" novalidate>
+                <section class="wizard-step is-active" data-step="1">
+                  <div class="form-grid">
+                    <label class="form-field">
+                      <span>Academy name</span>
+                      <input id="academyName" name="name" type="text" placeholder="Velocity Sports Academy" />
+                      <small class="field-error" data-error-for="name"></small>
+                    </label>
+
+                    <label class="form-field">
+                      <span>Primary sport</span>
+                      <input id="academySport" name="sport" type="text" placeholder="Cricket" />
+                      <small class="field-error" data-error-for="sport"></small>
+                    </label>
+
+                    <label class="form-field">
+                      <span>City</span>
+                      <input id="academyCity" name="city" type="text" placeholder="Hyderabad" />
+                      <small class="field-error" data-error-for="city"></small>
+                    </label>
+
+                    <label class="form-field">
+                      <span>Area</span>
+                      <input id="academyLocation" name="location" type="text" placeholder="Gachibowli" />
+                      <small class="field-error" data-error-for="location"></small>
+                    </label>
+                  </div>
+                </section>
+
+                <section class="wizard-step" data-step="2" hidden>
+                  <div class="form-grid">
+                    <label class="form-field">
+                      <span>Monthly fee</span>
+                      <input id="academyFees" name="fees" type="text" placeholder="₹4,500 / month" />
+                      <small class="field-error" data-error-for="fees"></small>
+                    </label>
+
+                    <label class="form-field">
+                      <span>Batch timings</span>
+                      <input id="academyTimings" name="timings" type="text" placeholder="Mon-Sat • 6:00 AM - 8:00 AM" />
+                      <small class="field-error" data-error-for="timings"></small>
+                    </label>
+
+                    <label class="form-field">
+                      <span>Head coach</span>
+                      <input id="academyCoach" name="coach" type="text" placeholder="Coach Arjun Menon" />
+                      <small class="field-error" data-error-for="coach"></small>
+                    </label>
+
+                    <label class="form-field">
+                      <span>Facilities</span>
+                      <input
+                        id="academyFacilities"
+                        name="facilities"
+                        type="text"
+                        placeholder="Indoor nets, fitness room, parking"
+                      />
+                      <small class="field-error" data-error-for="facilities"></small>
+                    </label>
+                  </div>
+                </section>
+
+                <section class="wizard-step" data-step="3" hidden>
+                  <div class="form-grid">
+                    <label class="form-field">
+                      <span>Phone or WhatsApp</span>
+                      <input id="academyContact" name="contact" type="text" placeholder="+91 98765 43210" />
+                      <small class="field-error" data-error-for="contact"></small>
+                    </label>
+
+                    <label class="form-field">
+                      <span>Email</span>
+                      <input id="academyEmail" name="email" type="email" placeholder="hello@academy.com" />
+                      <small class="field-error" data-error-for="email"></small>
+                    </label>
+
+                    <label class="form-field">
+                      <span>Image theme</span>
+                      <select id="academyImageTheme" name="imageTheme">
+                        <option value="cricket">Cricket studio</option>
+                        <option value="football">Football arena</option>
+                        <option value="swimming">Swimming pool</option>
+                        <option value="tennis">Tennis court</option>
+                        <option value="fitness">Fitness zone</option>
+                      </select>
+                    </label>
+
+                    <label class="form-field form-field--full">
+                      <span>Description</span>
+                      <textarea
+                        id="academyDescription"
+                        name="description"
+                        rows="5"
+                        placeholder="Tell families why this academy stands out."
+                      ></textarea>
+                      <small class="field-error" data-error-for="description"></small>
+                    </label>
+                  </div>
+                </section>
+
+                <section class="wizard-step" data-step="4" hidden>
+                  <div class="review-preview" id="onboardingPreview"></div>
+                </section>
+
+                <div class="form-actions form-actions--between">
+                  <button class="ghost-button" id="wizardBack" type="button">Back</button>
+                  <p class="form-status" id="formStatus" aria-live="polite">
+                    Complete each step to generate a launch-ready academy profile.
+                  </p>
+                  <div class="button-row">
+                    <button class="ghost-button" id="wizardSaveDraft" type="button">Save draft</button>
+                    <button class="search-button" id="academySubmitButton" type="submit">Next step</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <section class="section-block section-block--soft" id="admin">
+          <div class="container">
+            <div class="section-heading" data-reveal>
+              <span class="section-tag">Admin Dashboard</span>
+              <h2>Show how the marketplace will be managed behind the scenes</h2>
+              <p>
+                This admin concept lets reviewers see how academy additions, edits, and analytics could work
+                before a real backend is connected.
               </p>
+            </div>
 
-              <div class="form-grid">
-                <label class="form-field">
-                  <span>Name</span>
-                  <input id="academyName" name="name" type="text" placeholder="Velocity Sports Academy" />
-                  <small class="field-error" data-error-for="name"></small>
-                </label>
-
-                <label class="form-field">
-                  <span>Sport</span>
-                  <input
-                    id="academySport"
-                    name="sport"
-                    type="text"
-                    placeholder="Cricket"
-                    list="sportsList"
-                    autocomplete="off"
-                  />
-                  <small class="field-error" data-error-for="sport"></small>
-                </label>
-
-                <label class="form-field">
-                  <span>Location</span>
-                  <input
-                    id="academyLocation"
-                    name="location"
-                    type="text"
-                    placeholder="Gachibowli"
-                    list="areasList"
-                    autocomplete="off"
-                  />
-                  <small class="field-error" data-error-for="location"></small>
-                </label>
-
-                <label class="form-field">
-                  <span>Contact</span>
-                  <input
-                    id="academyContact"
-                    name="contact"
-                    type="text"
-                    placeholder="coach@example.com or +91 98765 43210"
-                  />
-                  <small class="field-error" data-error-for="contact"></small>
-                </label>
-
-                <label class="form-field form-field--full">
-                  <span>Description</span>
-                  <textarea
-                    id="academyDescription"
-                    name="description"
-                    rows="5"
-                    placeholder="Tell athletes what makes this academy stand out."
-                  ></textarea>
-                  <small class="field-error" data-error-for="description"></small>
-                </label>
+            <div class="admin-overview" data-reveal>
+              <div class="admin-metrics" id="adminMetrics"></div>
+              <div class="admin-actions">
+                <button class="search-button" id="adminCreateAcademy" type="button">Create academy</button>
+                <button class="ghost-button" id="adminLoadSubmission" type="button">Load latest submission</button>
               </div>
+            </div>
 
-              <div class="form-actions">
-                <button class="search-button" id="academySubmitButton" type="submit">
-                  Login to add academy
-                </button>
-                <p class="form-status" id="formStatus" aria-live="polite">
-                  Added academies appear instantly and remain session-only.
+            <div class="admin-grid">
+              <section class="content-card" data-reveal>
+                <div class="section-heading section-heading--compact">
+                  <span class="section-tag">Academy Directory</span>
+                  <h2>Manage marketplace records</h2>
+                </div>
+                <div class="admin-table" id="adminAcademyRows"></div>
+              </section>
+
+              <section class="content-card" data-reveal style="--reveal-delay: 80ms">
+                <div class="section-heading section-heading--compact">
+                  <span class="section-tag">Editor</span>
+                  <h2>Edit a selected academy</h2>
+                </div>
+
+                <form class="inline-form inline-form--stack" id="adminAcademyForm">
+                  <label class="form-field">
+                    <span>Name</span>
+                    <input id="adminName" name="name" type="text" placeholder="Select an academy to edit" />
+                  </label>
+                  <label class="form-field">
+                    <span>Sport</span>
+                    <input id="adminSport" name="sport" type="text" placeholder="Cricket" />
+                  </label>
+                  <label class="form-field">
+                    <span>Location</span>
+                    <input id="adminLocation" name="location" type="text" placeholder="Area, City" />
+                  </label>
+                  <label class="form-field">
+                    <span>Fees</span>
+                    <input id="adminFees" name="fees" type="text" placeholder="₹4,500 / month" />
+                  </label>
+                  <label class="form-field form-field--full">
+                    <span>Description</span>
+                    <textarea id="adminDescription" name="description" rows="4" placeholder="Academy summary"></textarea>
+                  </label>
+
+                  <div class="button-row">
+                    <button class="search-button" type="submit">Save changes</button>
+                    <button class="ghost-button" id="adminResetForm" type="button">Reset</button>
+                  </div>
+                </form>
+
+                <p class="form-status" id="adminStatus" aria-live="polite">
+                  Select an academy from the dashboard to simulate editing workflows.
                 </p>
-              </div>
-            </form>
+              </section>
+            </div>
           </div>
         </section>
       </main>
 
       <footer class="site-footer">
         <div class="container footer-row">
-          <p>
-            CoachNestly helps athletes and families discover coaching centers
-            faster, with premium search and live map exploration.
-          </p>
+          <div>
+            <strong>CoachNestly</strong>
+            <p>
+              Startup-ready discovery for sports coaching academies, with AI matching,
+              comparison tools, onboarding, and admin workflows built into the MVP.
+            </p>
+          </div>
+
           <nav class="footer-nav" aria-label="Footer links">
-            <a href="#home">About</a>
-            <a href="#explore">Explore</a>
-            <a href="#add-academy">Add Academy</a>
+            <a href="#discover">Discover</a>
+            <a href="#ai-lab">AI Tools</a>
+            <a href="#add-academy">Register Academy</a>
+            <a href="#admin">Admin</a>
             <a href="mailto:hello@coachnestly.app">Contact</a>
           </nav>
         </div>
@@ -331,67 +816,136 @@
 
       <nav class="bottom-nav" aria-label="Mobile navigation">
         <a href="#home" data-nav-target="home">Home</a>
-        <a href="#featured" data-nav-target="featured">Featured</a>
-        <a href="#explore" data-nav-target="explore">Explore</a>
-        <a href="#map" data-nav-target="map">Map</a>
+        <a href="#discover" data-nav-target="discover">Explore</a>
+        <a href="#ai-lab" data-nav-target="ai-lab">AI</a>
         <a href="#add-academy" data-nav-target="add-academy">Add</a>
+        <a href="#admin" data-nav-target="admin">Admin</a>
       </nav>
     </div>
 
-    <div class="details-modal-shell" id="detailsModal" aria-hidden="true">
-      <div class="details-modal-backdrop" id="modalBackdrop"></div>
-      <div class="details-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-        <button class="modal-close" id="closeModal" type="button">
-          Close
-        </button>
+    <div class="details-modal-shell" id="detailModal" aria-hidden="true">
+      <div class="details-modal-backdrop" id="detailBackdrop"></div>
+      <aside class="details-modal details-modal--wide" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+        <button class="modal-close" id="closeDetailModal" type="button">Close</button>
 
         <div class="details-modal__top">
-          <span class="details-modal__tag" id="modalBadge">Academy details</span>
-          <h3 id="modalTitle"></h3>
-          <p class="details-modal__description" id="modalDescription"></p>
+          <span class="details-modal__tag" id="detailBadge">Academy details</span>
+          <h3 id="detailTitle">Academy profile</h3>
+          <p class="details-modal__description" id="detailDescription"></p>
         </div>
 
-        <div class="details-metrics">
-          <div class="details-metric">
-            <span>Sport</span>
-            <strong id="modalSport"></strong>
-          </div>
-          <div class="details-metric">
-            <span>Distance</span>
-            <strong id="modalDistance"></strong>
-          </div>
-          <div class="details-metric">
-            <span>Rating</span>
-            <strong id="modalRating"></strong>
-          </div>
-          <div class="details-metric">
-            <span>Location</span>
-            <strong id="modalLocation"></strong>
-          </div>
-        </div>
+        <div class="detail-grid">
+          <div class="detail-main">
+            <div class="detail-gallery" id="detailGallery"></div>
 
-        <div class="details-actions">
-          <a class="details-primary" id="modalContact" href="#">Contact</a>
-          <button class="details-secondary" id="modalDone" type="button">
-            Close
-          </button>
+            <div class="details-metrics details-metrics--dense">
+              <div class="details-metric">
+                <span>Sport</span>
+                <strong id="detailSport"></strong>
+              </div>
+              <div class="details-metric">
+                <span>Location</span>
+                <strong id="detailLocation"></strong>
+              </div>
+              <div class="details-metric">
+                <span>Ratings</span>
+                <strong id="detailRating"></strong>
+              </div>
+              <div class="details-metric">
+                <span>Fees</span>
+                <strong id="detailFees"></strong>
+              </div>
+            </div>
+
+            <div class="detail-section">
+              <h4>Batch timings</h4>
+              <div class="chip-list" id="detailTimings"></div>
+            </div>
+
+            <div class="detail-section">
+              <h4>Facilities</h4>
+              <div class="chip-list" id="detailFacilities"></div>
+            </div>
+
+            <div class="detail-section">
+              <h4>Coaches</h4>
+              <div class="coach-list" id="detailCoaches"></div>
+            </div>
+
+            <div class="detail-section">
+              <div class="detail-section__row">
+                <h4>Reviews</h4>
+                <button class="ghost-button" id="favoriteToggle" type="button">Save favorite</button>
+              </div>
+              <div class="review-summary" id="detailReviewSummary"></div>
+              <div class="review-list" id="detailReviews"></div>
+            </div>
+
+            <form class="review-form" id="reviewForm">
+              <div class="detail-section__row">
+                <h4>Leave a review</h4>
+                <div class="star-input" id="reviewStars" aria-label="Review rating selector"></div>
+              </div>
+
+              <div class="form-grid">
+                <label class="form-field">
+                  <span>Title</span>
+                  <input id="reviewTitle" name="title" type="text" placeholder="Structured beginner coaching" />
+                </label>
+                <label class="form-field">
+                  <span>Your review</span>
+                  <textarea id="reviewBody" name="body" rows="4" placeholder="Share your experience."></textarea>
+                </label>
+              </div>
+
+              <div class="button-row">
+                <button class="search-button" type="submit">Submit review</button>
+                <p class="form-status" id="reviewStatus" aria-live="polite">
+                  Login as a parent or student to review an academy.
+                </p>
+              </div>
+            </form>
+          </div>
+
+          <div class="detail-side">
+            <div class="content-card content-card--sticky">
+              <div class="detail-contact-card">
+                <h4>Contact options</h4>
+                <div class="detail-actions detail-actions--stack">
+                  <a class="details-primary" id="detailContactPrimary" href="#" target="_blank" rel="noreferrer">
+                    Contact academy
+                  </a>
+                  <a class="details-secondary" id="detailEmailLink" href="#">Email</a>
+                  <a class="details-secondary" id="detailWhatsAppLink" href="#" target="_blank" rel="noreferrer">
+                    WhatsApp
+                  </a>
+                  <a class="details-secondary" id="detailMapLink" href="#" target="_blank" rel="noreferrer">
+                    View on map
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      </aside>
     </div>
 
     <div class="auth-modal-shell" id="authModal" aria-hidden="true">
       <div class="details-modal-backdrop" id="authBackdrop"></div>
       <div class="details-modal auth-modal" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
-        <button class="modal-close" id="closeAuthModal" type="button">
-          Close
-        </button>
+        <button class="modal-close" id="closeAuthModal" type="button">Close</button>
 
         <div class="details-modal__top">
-          <span class="details-modal__tag" id="authModalBadge">Member login</span>
-          <h3 id="authModalTitle">Login to add and manage academies</h3>
+          <span class="details-modal__tag" id="authModalBadge">Account access</span>
+          <h3 id="authModalTitle">Create a local CoachNestly account</h3>
           <p class="details-modal__description" id="authModalDescription">
-            Use a quick local login to publish academies from this device.
+            This MVP stores users locally so favorites, reviews, and saved preferences persist across sessions.
           </p>
+        </div>
+
+        <div class="auth-toggle">
+          <button class="ghost-button is-active" id="authModeSignup" type="button">Sign up</button>
+          <button class="ghost-button" id="authModeLogin" type="button">Login</button>
         </div>
 
         <form class="auth-form" id="authForm" novalidate>
@@ -408,7 +962,7 @@
               <small class="field-error" data-auth-error-for="email"></small>
             </label>
 
-            <label class="form-field form-field--full">
+            <label class="form-field">
               <span>Password</span>
               <input
                 id="authPassword"
@@ -419,14 +973,26 @@
               />
               <small class="field-error" data-auth-error-for="password"></small>
             </label>
+
+            <fieldset class="role-field form-field form-field--full">
+              <legend>Account mode</legend>
+              <div class="role-options">
+                <label class="role-chip">
+                  <input type="radio" name="role" value="parent" checked />
+                  <span>Parent</span>
+                </label>
+                <label class="role-chip">
+                  <input type="radio" name="role" value="student" />
+                  <span>Student</span>
+                </label>
+              </div>
+            </fieldset>
           </div>
 
           <div class="form-actions">
-            <button class="search-button" id="authSubmitButton" type="submit">
-              Login
-            </button>
+            <button class="search-button" id="authSubmitButton" type="submit">Create account</button>
             <p class="form-status" id="authStatus" aria-live="polite">
-              Your session is stored only on this device.
+              Local-first auth keeps the MVP functional without a backend.
             </p>
           </div>
         </form>
@@ -435,20 +1001,19 @@
           <div class="auth-session-card">
             <span>Logged in as</span>
             <strong id="authSessionName"></strong>
-            <p id="authSessionEmail"></p>
+            <p id="authSessionMeta"></p>
           </div>
 
           <div class="details-actions">
-            <button class="search-button" id="authContinueButton" type="button">
-              Continue
-            </button>
-            <button class="details-secondary" id="authLogoutButton" type="button">
-              Log out
-            </button>
+            <button class="search-button" id="authContinueButton" type="button">Continue</button>
+            <button class="details-secondary" id="authLogoutButton" type="button">Log out</button>
           </div>
         </div>
       </div>
     </div>
-    <script src="script.js"></script>
+
+    <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="true"></div>
+
+    <script type="module" src="src/app.js"></script>
   </body>
 </html>

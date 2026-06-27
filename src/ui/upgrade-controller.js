@@ -2245,8 +2245,8 @@ function installGamificationPanels(app, services) {
             .slice(0, 5)
             .map(entry => `
               <div class="leader-item">
-                <span>#${entry.rank} ${entry.name}</span>
-                <b>${entry.stats?.weeklyXp || 0} XP</b>
+                <span>#${escapeHtml(entry.rank)} ${escapeHtml(entry.name || "Student")}</span>
+                <b>${escapeHtml(Number(entry.stats?.weeklyXp || 0))} XP</b>
               </div>
             `)
             .join("")
@@ -2258,8 +2258,8 @@ function installGamificationPanels(app, services) {
             .slice(0, 5)
             .map(entry => `
               <div class="leader-item">
-                <span>#${entry.rank} ${entry.school}</span>
-                <b>${entry.weeklyXp || 0} XP</b>
+                <span>#${escapeHtml(entry.rank)} ${escapeHtml(entry.school || "School")}</span>
+                <b>${escapeHtml(Number(entry.weeklyXp || 0))} XP</b>
               </div>
             `)
             .join("")
@@ -2333,7 +2333,7 @@ function installTeacherDashboard(app, services) {
         <div class="upgrade-summary-item"><span>Submissions</span><b>${performance.submissionsCount}</b></div>
         <div class="upgrade-summary-item"><span>Graded</span><b>${performance.gradedCount}</b></div>
         <div class="upgrade-summary-item"><span>Average Grade</span><b>${performance.averageGrade ?? "—"}</b></div>
-        <div class="upgrade-summary-item"><span>Top Performer</span><b>${performance.topPerformers[0]?.ownerName || "—"}</b></div>
+        <div class="upgrade-summary-item"><span>Top Performer</span><b>${escapeHtml(performance.topPerformers[0]?.ownerName || "—")}</b></div>
       `;
     }
 
@@ -2341,17 +2341,17 @@ function installTeacherDashboard(app, services) {
       listEl.innerHTML = projects.length
         ? projects
             .map(project => `
-              <article class="upgrade-submission-card" data-project-id="${project.id}">
+              <article class="upgrade-submission-card" data-project-id="${escapeHtml(project.id)}">
                 <div>
-                  <h4>${project.name}</h4>
-                  <p>${project.ownerName || "Unknown"} • ${project.className || "Class TBD"}</p>
-                  ${project.assignmentTitle ? `<p>Assignment: ${project.assignmentTitle}</p>` : ""}
-                  <p>Status: ${project.status || "DRAFT"}${project.grade ? ` • Grade: ${project.grade}` : ""}</p>
-                  ${project.metrics?.qualityScore ? `<span class="auto-grade-pill">Quality ${project.metrics.qualityScore}%</span>` : ""}
+                  <h4>${escapeHtml(project.name || "Untitled Project")}</h4>
+                  <p>${escapeHtml(project.ownerName || "Unknown")} • ${escapeHtml(project.className || "Class TBD")}</p>
+                  ${project.assignmentTitle ? `<p>Assignment: ${escapeHtml(project.assignmentTitle)}</p>` : ""}
+                  <p>Status: ${escapeHtml(project.status || "DRAFT")}${project.grade ? ` • Grade: ${escapeHtml(project.grade)}` : ""}</p>
+                  ${project.metrics?.qualityScore ? `<span class="auto-grade-pill">Quality ${escapeHtml(Number(project.metrics.qualityScore || 0))}%</span>` : ""}
                 </div>
                 <div class="upgrade-inline-actions">
-                  <button class="secondary" data-action="open" data-project-id="${project.id}">Open</button>
-                  <button data-action="auto-grade" data-project-id="${project.id}">Auto Grade</button>
+                  <button class="secondary" data-action="open" data-project-id="${escapeHtml(project.id)}">Open</button>
+                  <button data-action="auto-grade" data-project-id="${escapeHtml(project.id)}">Auto Grade</button>
                 </div>
               </article>
             `)
@@ -2428,18 +2428,18 @@ function installProjectSharing(app, services) {
       exploreList.innerHTML = projects.length
         ? projects
             .map(project => `
-              <article class="upgrade-project-card ${(project.likedBy || []).includes(app.state.user.uid) ? "liked" : ""}" data-project-id="${project.id}">
+              <article class="upgrade-project-card ${(project.likedBy || []).includes(app.state.user.uid) ? "liked" : ""}" data-project-id="${escapeHtml(project.id)}">
                 <div>
-                  <h3>${project.name}</h3>
-                  <p>${project.ownerName || "Unknown"} • ${project.schoolId || "School"}</p>
-                  ${project.assignmentTitle ? `<p>${project.assignmentTitle}</p>` : ""}
-                  <p>${project.simulation?.summary || "Shared public project"}</p>
-                  <span class="upgrade-like-count">♥ ${project.likeCount || 0}</span>
+                  <h3>${escapeHtml(project.name || "Untitled Project")}</h3>
+                  <p>${escapeHtml(project.ownerName || "Unknown")} • ${escapeHtml(project.schoolId || "School")}</p>
+                  ${project.assignmentTitle ? `<p>${escapeHtml(project.assignmentTitle)}</p>` : ""}
+                  <p>${escapeHtml(project.simulation?.summary || "Shared public project")}</p>
+                  <span class="upgrade-like-count">♥ ${escapeHtml(Number(project.likeCount || 0))}</span>
                 </div>
                 <div class="upgrade-inline-actions">
-                  <button class="secondary" data-action="preview" data-project-id="${project.id}">Preview</button>
-                  <button data-action="clone" data-project-id="${project.id}">Clone</button>
-                  <button class="secondary" data-action="like" data-project-id="${project.id}">Like</button>
+                  <button class="secondary" data-action="preview" data-project-id="${escapeHtml(project.id)}">Preview</button>
+                  <button data-action="clone" data-project-id="${escapeHtml(project.id)}">Clone</button>
+                  <button class="secondary" data-action="like" data-project-id="${escapeHtml(project.id)}">Like</button>
                 </div>
               </article>
             `)

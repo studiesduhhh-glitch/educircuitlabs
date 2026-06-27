@@ -106,6 +106,27 @@ test("dynamic project and AI buttons are delegated", () => {
   assert.match(upgradeJs, /\[data-action='like'\]/);
 });
 
+test("Firestore-backed UI fields are escaped before template rendering", () => {
+  assert.doesNotMatch(upgradeJs, /<h[34]>\$\{project\.name/);
+  assert.doesNotMatch(upgradeJs, /<p>\$\{project\.ownerName/);
+  assert.doesNotMatch(upgradeJs, /<p>Assignment: \$\{project\.assignmentTitle/);
+  assert.doesNotMatch(upgradeJs, /<p>\$\{project\.simulation\?\.summary/);
+  assert.doesNotMatch(upgradeJs, /<span>#\$\{entry\.rank\} \$\{entry\.name/);
+  assert.doesNotMatch(upgradeJs, /<span>#\$\{entry\.rank\} \$\{entry\.school/);
+  assert.match(upgradeJs, /escapeHtml\(project\.name \|\| "Untitled Project"\)/);
+  assert.match(upgradeJs, /escapeHtml\(project\.ownerName \|\| "Unknown"\)/);
+  assert.match(upgradeJs, /escapeHtml\(project\.simulation\?\.summary \|\| "Shared public project"\)/);
+});
+
+test("fallback AI teacher keeps the strict lab-teacher response contract", () => {
+  assert.match(fallbackJs, /Status: Partial/);
+  assert.match(fallbackJs, /Why: No Battery or component is on the workspace yet\./);
+  assert.match(fallbackJs, /Fix: Add a Battery, then add an LED or Motor\./);
+  assert.match(fallbackJs, /Tip: A circuit starts with a power source and one load\./);
+  assert.doesNotMatch(fallbackJs, /Absolutely\. Quick friendly quiz/);
+  assert.doesNotMatch(fallbackJs, /I checked the circuit like a teacher sitting next to you/);
+});
+
 test("project pages split saved, graded, and explore-visible work", () => {
   assert.match(runtimeJs, /function isGradedProject/);
   assert.match(runtimeJs, /\.filter\(\(\{ proj \}\) => !isGradedProject\(proj\)\)/);
@@ -122,6 +143,13 @@ test("project pages split saved, graded, and explore-visible work", () => {
   assert.match(projectServiceJs, /visibility = null/);
   assert.match(projectServiceJs, /payload\.visibility = visibility/);
   assert.match(projectServiceJs, /payload\.cloneable = visibility === "public"/);
+});
+
+test("legacy Firebase save fallback uses school-scoped projects", () => {
+  assert.doesNotMatch(runtimeJs, /db\.collection\("projects"\)\.add/);
+  assert.match(runtimeJs, /db\.collection\("schools"\)\.doc\(schoolId\)\.collection\("projects"\)\.add/);
+  assert.match(runtimeJs, /ownerId: auth\.currentUser\.uid/);
+  assert.match(runtimeJs, /state\.remoteProjectId = projectRef\.id/);
 });
 
 test("login step requires account details and demo buttons do not bypass auth", () => {

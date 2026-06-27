@@ -168,60 +168,67 @@
     window.EducircuitUpgrade.buildAiTeacherReply = function(question){
       const app = window.educircuitApp;
       const snapshot = app?.getProjectSnapshot?.() || {};
-      const q = String(question || "").toLowerCase();
       const items = snapshot.items || [];
       const wires = snapshot.wires || [];
       const coach = app?.state?.coach || {};
       const counts = {};
       items.forEach(item => counts[item.type] = (counts[item.type] || 0) + 1);
-      const parts = Object.entries(counts).map(([type, count]) => `${count} ${type}${count > 1 ? "s" : ""}`).join(", ") || "no components yet";
-      const preciseLine = `Precise coach: ${coach.status || "Ready"}. ${coach.fix || "Add components, connect a complete loop, then run logic."}`;
+      const componentNames = Object.keys(counts);
+      const hasBattery = Boolean(counts.Battery);
+      const hasOutput = componentNames.some(type => type !== "Battery" && type !== "Resistor" && type !== "Switch");
+      const hasIssue = coach.status && !/safe|ready|working/i.test(coach.status);
+      const loadName = componentNames.find(type => type !== "Battery" && type !== "Resistor") || "component";
 
-      if(q.includes("quiz") || q.includes("test me")){
+      if(!items.length){
         return [
-          "Absolutely. Quick friendly quiz:",
-          "1. What does voltage do in a circuit?",
-          "2. Why does an LED need correct polarity?",
-          "3. How does a resistor protect a circuit?",
-          "",
-          "Reply with your answers and I will check them kindly."
+          "Status: Partial",
+          "Why: No Battery or component is on the workspace yet.",
+          "Fix: Add a Battery, then add an LED or Motor.",
+          "Tip: A circuit starts with a power source and one load."
         ].join("\n");
       }
 
-      if(q.includes("debug") || q.includes("fix") || q.includes("wrong") || q.includes("not") || q.includes("coach")){
+      if(!hasBattery){
         return [
-          "I checked the circuit like a teacher sitting next to you.",
-          "",
-          `Workspace: ${parts}. ${wires.length} wire${wires.length === 1 ? "" : "s"}. Battery: ${snapshot.defaultBatteryVoltage || 0}V.`,
-          preciseLine,
-          "",
-          "Best next move: fix the first coach suggestion, then run logic again so I can re-check it."
+          "Status: Partial",
+          `Why: The ${loadName} cannot work without a Battery.`,
+          "Fix: Add a Battery and connect it into the loop.",
+          "Tip: The Battery pushes current through the circuit."
         ].join("\n");
       }
 
-      if(q.includes("voltage") || q.includes("current")){
-        return "Voltage is the electrical push. Current is the flow. A component works when it has a complete loop, correct polarity, and enough voltage. " + preciseLine;
+      if(!hasOutput){
+        return [
+          "Status: Partial",
+          "Why: The Battery is placed, but no output component is connected.",
+          "Fix: Add an LED, Motor, or Buzzer after the Battery.",
+          "Tip: A load is the part that uses electrical energy."
+        ].join("\n");
       }
 
-      if(q.includes("resistor")){
-        return "A resistor limits current. It is especially important with LEDs because it prevents too much current from damaging the LED. " + preciseLine;
+      if(!wires.length){
+        return [
+          "Status: Partial",
+          `Why: The ${loadName} is placed, but no wires connect the circuit.`,
+          "Fix: Connect Battery + through the component, then back to Battery -.",
+          "Tip: Wires make the path that current follows."
+        ].join("\n");
       }
 
-      if(q.includes("led")){
-        return "An LED is a light-emitting diode. It needs correct polarity, enough voltage, and a resistor for safer real-world wiring. " + preciseLine;
-      }
-
-      if(q.includes("switch") || q.includes("logic")){
-        return "A switch is a gate for current. In Educircuit, ON closes switches and relays, OFF opens them, and WAIT lets the output stay visible. Try ON -> WAIT 1s -> OFF.";
+      if(hasIssue){
+        return [
+          "Status: Not Working",
+          `Why: ${coach.status || "The circuit has a wiring issue."}`,
+          `Fix: ${coach.fix || "Fix the first circuit coach suggestion, then run logic again."}`,
+          "Tip: Current flows only through a complete safe loop."
+        ].join("\n");
       }
 
       return [
-        "I can help with that. I will answer kindly and connect it back to your circuit.",
-        "",
-        `Your current build: ${parts}.`,
-        preciseLine,
-        "",
-        "Ask me to explain it simpler, quiz you, debug the circuit, or show the exact first fix."
+        "Status: Working",
+        `Why: Battery and ${loadName} are connected with ${wires.length} wire${wires.length === 1 ? "" : "s"}.`,
+        `Fix: Add a Switch before the ${loadName} for better control.`,
+        "Tip: A switch opens or closes the path for current."
       ].join("\n");
     };
   }

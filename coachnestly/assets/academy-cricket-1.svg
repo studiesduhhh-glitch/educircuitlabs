@@ -1,0 +1,17 @@
+<svg width="800" height="520" viewBox="0 0 800 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="520" rx="40" fill="#0E2034" />
+  <circle cx="634" cy="109" r="150" fill="#176BFF" fill-opacity="0.22" />
+  <circle cx="131" cy="392" r="142" fill="#11B47A" fill-opacity="0.18" />
+  <rect x="54" y="66" width="692" height="388" rx="28" fill="url(#paint0_linear)" fill-opacity="0.2" stroke="rgba(255,255,255,0.2)" />
+  <rect x="122" y="168" width="78" height="160" rx="20" fill="#F6FBFF" fill-opacity="0.86" />
+  <rect x="214" y="150" width="78" height="178" rx="20" fill="#176BFF" />
+  <rect x="306" y="192" width="78" height="136" rx="20" fill="#11B47A" />
+  <text x="122" y="118" fill="white" font-size="34" font-family="Outfit, Arial, sans-serif" font-weight="700">Velocity Cricket Lab</text>
+  <text x="122" y="372" fill="#D4E2F4" font-size="22" font-family="Outfit, Arial, sans-serif">Performance nets • Match analytics • District prep</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="87" y1="84" x2="713" y2="423" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#176BFF" />
+      <stop offset="1" stop-color="#11B47A" />
+    </linearGradient>
+  </defs>
+</svg>

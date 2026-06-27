@@ -1,0 +1,17 @@
+<svg width="800" height="520" viewBox="0 0 800 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="520" rx="40" fill="#08182A" />
+  <rect x="74" y="68" width="652" height="382" rx="30" fill="#10263F" stroke="rgba(255,255,255,0.16)" />
+  <rect x="130" y="136" width="500" height="250" rx="26" fill="url(#paint0_linear)" />
+  <circle cx="676" cy="136" r="52" fill="#FF8C3C" />
+  <rect x="178" y="200" width="26" height="120" rx="13" fill="#F9FCFF" />
+  <rect x="220" y="180" width="26" height="140" rx="13" fill="#F9FCFF" />
+  <rect x="262" y="214" width="26" height="106" rx="13" fill="#F9FCFF" />
+  <text x="130" y="112" fill="white" font-size="30" font-family="Outfit, Arial, sans-serif" font-weight="700">CoachNestly Academy Detail Visual</text>
+  <text x="130" y="418" fill="#C8D7E8" font-size="22" font-family="Outfit, Arial, sans-serif">Premium image placeholder for academy galleries and cards</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="153" y1="164" x2="601" y2="358" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#176BFF" />
+      <stop offset="1" stop-color="#11B47A" />
+    </linearGradient>
+  </defs>
+</svg>

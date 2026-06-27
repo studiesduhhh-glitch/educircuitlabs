@@ -1,0 +1,9 @@
+<svg width="800" height="520" viewBox="0 0 800 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="520" rx="40" fill="#091B30" />
+  <circle cx="650" cy="120" r="140" fill="#176BFF" fill-opacity="0.25" />
+  <rect x="72" y="88" width="656" height="344" rx="32" fill="#0E2746" stroke="rgba(255,255,255,0.18)" />
+  <path d="M104 296C136 284 168 284 200 296C232 308 264 308 296 296C328 284 360 284 392 296C424 308 456 308 488 296C520 284 552 284 584 296C616 308 648 308 680 296" stroke="#8AD8FF" stroke-width="14" stroke-linecap="round" />
+  <path d="M104 340C136 328 168 328 200 340C232 352 264 352 296 340C328 328 360 328 392 340C424 352 456 352 488 340C520 328 552 328 584 340C616 352 648 352 680 340" stroke="#34B7FF" stroke-width="14" stroke-linecap="round" />
+  <text x="110" y="158" fill="white" font-size="34" font-family="Outfit, Arial, sans-serif" font-weight="700">BlueWave Swim Studio</text>
+  <text x="110" y="198" fill="#D4E2F4" font-size="24" font-family="Outfit, Arial, sans-serif">Water confidence • Stroke correction • Competition lanes</text>
+</svg>

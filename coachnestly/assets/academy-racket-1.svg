@@ -1,0 +1,9 @@
+<svg width="800" height="520" viewBox="0 0 800 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="520" rx="40" fill="#0B1B2D" />
+  <rect x="70" y="72" width="660" height="376" rx="32" fill="#102741" stroke="rgba(255,255,255,0.18)" />
+  <ellipse cx="290" cy="236" rx="106" ry="132" stroke="#F7FBFF" stroke-width="16" />
+  <rect x="360" y="288" width="150" height="28" rx="14" transform="rotate(42 360 288)" fill="#176BFF" />
+  <circle cx="548" cy="180" r="36" fill="#FF8C3C" />
+  <text x="116" y="398" fill="white" font-size="34" font-family="Outfit, Arial, sans-serif" font-weight="700">Racket sports visual</text>
+  <text x="116" y="434" fill="#D4E2F4" font-size="22" font-family="Outfit, Arial, sans-serif">Badminton and tennis programs</text>
+</svg>
