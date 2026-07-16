@@ -1156,6 +1156,51 @@ button.amber{
   transform:translateY(0);
 }
 
+:is(button, a, input, select, textarea, [tabindex]):focus-visible{
+  outline:3px solid rgba(37,99,235,.38);
+  outline-offset:3px;
+  box-shadow:0 0 0 5px rgba(37,99,235,.14);
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled{
+  cursor:not-allowed;
+  opacity:.58;
+}
+
+button,
+.btn,
+.example-item,
+.component-card,
+.dashboard-card,
+.project-card,
+.guide-step{
+  will-change:transform;
+}
+
+.toast{
+  max-width:min(420px, calc(100vw - 32px));
+  line-height:1.45;
+}
+
+.is-loading,
+[aria-busy="true"]{
+  cursor:progress;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *,
+  *::before,
+  *::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    scroll-behavior:auto !important;
+    transition-duration:.01ms !important;
+  }
+}
+
 .small-note{
   color:var(--muted);
   font-size:12px;

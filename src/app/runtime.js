@@ -93,7 +93,6 @@ auth.setPersistence?.(firebase.auth.Auth.Persistence.NONE).catch(error => {
   console.warn("Firebase auth is running without browser persistence.", error);
 });
 
-console.log("Firebase connected 🚀");
 
 const LANGUAGE_OPTIONS = [
   { code: "en", label: "English", toast: "Language switched 🌐" },
@@ -795,7 +794,7 @@ async function signUpUser(){
     const adminIds = Array.isArray(schoolData?.adminIds) ? schoolData.adminIds : [];
 
     if(payload.role === "admin" && adminIds.length){
-      alert("This school already has an admin. Use Access Model to log in instead.");
+      showToast("This school already has an admin. Use Access Model to log in instead.");
       return;
     }
 
@@ -847,7 +846,7 @@ async function signUpUser(){
     applyAuthenticatedProfile(cred.user.uid, profile);
     showToast("Account created safely");
   } catch(error){
-    alert(formatFirebaseAuthError(error, "create", payload.role));
+    showToast(formatFirebaseAuthError(error, "create", payload.role));
   }
 }
 
@@ -863,14 +862,14 @@ async function loginUser(){
     const profile = await fetchUserProfile(cred.user.uid);
 
     if(!profile){
-      alert("This account exists, but its Educircuit classroom profile is missing. Create a new account or ask the school admin to repair it.");
+      showToast("This account exists, but its Educircuit classroom profile is missing. Ask the school admin to repair it.");
       return;
     }
 
     applyAuthenticatedProfile(cred.user.uid, profile);
     showToast("Welcome, " + profile.name);
   } catch(error){
-    alert(formatFirebaseAuthError(error, "login", payload.role));
+    showToast(formatFirebaseAuthError(error, "login", payload.role));
   }
 }
 
@@ -878,7 +877,7 @@ async function logoutUser(){
   try{
     await auth.signOut();
   } catch(error){
-    alert(error.message);
+    showToast(error.message || "Could not log out right now");
   }
 }
 
@@ -2519,24 +2518,37 @@ function saveProject(options = {}){
 
 async function saveProjectToFirebase() {
   try {
-await db.collection("projects").add({
-  userId: auth.currentUser ? auth.currentUser.uid : "",
-  schoolId: state.user.schoolKey || getSchoolDocId(state.user.school),
-  userName: state.user.name,
-  role: state.user.role,
-  name: state.projectName,
-  items: JSON.parse(JSON.stringify(state.items)),
-  wires: JSON.parse(JSON.stringify(state.wires)),
-  logic: JSON.parse(JSON.stringify(state.logic)),
-  createdAt: new Date()
-});
+    if(!auth.currentUser || !state.user.schoolKey){
+      showToast("Log in to save projects to Firebase");
+      return;
+    }
 
-showToast("Project saved");
-console.log("Saved full data ✅");
+    const schoolId = state.user.schoolKey || getSchoolDocId(state.user.school);
+    const projectRef = await db.collection("schools").doc(schoolId).collection("projects").add({
+      schoolId,
+      ownerId: auth.currentUser.uid,
+      ownerName: state.user.name,
+      ownerRole: state.user.role,
+      className: state.user.className || "",
+      name: state.projectName,
+      items: JSON.parse(JSON.stringify(state.items)),
+      wires: JSON.parse(JSON.stringify(state.wires)),
+      logic: JSON.parse(JSON.stringify(state.logic)),
+      defaultBatteryVoltage: Number(state.defaultBatteryVoltage || 5),
+      status: statusText.textContent || "DRAFT",
+      visibility: document.getElementById("projectVisibilitySelect")?.value || "private",
+      grade: gradeText.textContent || "Not graded",
+      feedback: teacherCommentInput.value.trim(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    state.remoteProjectId = projectRef.id;
+    showToast("Project saved");
 
   } catch (err) {
 console.error(err);
-alert("Error saving project");
+showToast("Error saving project");
   }
 }
 

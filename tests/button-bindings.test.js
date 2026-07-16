@@ -12,6 +12,8 @@ const assignmentServiceJs = fs.readFileSync(new URL("../src/services/assignment-
 const vivaEngineJs = fs.readFileSync(new URL("../src/core/viva-engine.js", import.meta.url), "utf8");
 const classroomEngineJs = fs.readFileSync(new URL("../src/core/classroom-engine.js", import.meta.url), "utf8");
 const mainJs = fs.readFileSync(new URL("../src/main.js", import.meta.url), "utf8");
+const firebaseJson = fs.readFileSync(new URL("../firebase.json", import.meta.url), "utf8");
+const firestoreRules = fs.readFileSync(new URL("../firestore.rules", import.meta.url), "utf8");
 const allJs = `${runtimeJs}\n${fallbackJs}\n${upgradeJs}\n${assignmentServiceJs}\n${vivaEngineJs}\n${classroomEngineJs}\n${mainJs}`;
 
 function getAttr(attrs, name) {
@@ -61,6 +63,9 @@ test("deployed html stays clean and modular", () => {
   assert.doesNotMatch(indexHtml, /<<<<<<<|=======|>>>>>>>/);
   assert.doesNotMatch(`${indexHtml}\n${allJs}`, /hhere/i);
   assert.doesNotMatch(indexHtml, /<script>\s*const state\s*=/);
+  assert.match(indexHtml, /<link rel="icon" href="\/favicon\.ico" sizes="any" \/>/);
+  assert.match(indexHtml, /<link rel="icon" type="image\/png" sizes="32x32" href="\/favicon-32x32\.png" \/>/);
+  assert.match(indexHtml, /<link rel="apple-touch-icon" sizes="180x180" href="\/apple-touch-icon\.png" \/>/);
   assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260419-ai-teacher1" \/>/);
   assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260419-ai-teacher1" \/>/);
   assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260419-ai-teacher1"><\/script>/);
@@ -76,6 +81,23 @@ test("active app code does not write browser storage", () => {
   assert.match(storageGuardJs, /Storage\?\.prototype/);
   assert.match(storageGuardJs, /blockedWrites\.push/);
   assert.doesNotMatch(storageGuardJs, /\.setItem\.call|originalSet|originalRemove|originalClear/);
+});
+
+test("production app avoids blocking browser dialogs and global Firestore scans", () => {
+  assert.doesNotMatch(allJs, /\balert\(/);
+  assert.doesNotMatch(allJs, /window\.alert/);
+  assert.doesNotMatch(allJs, /db\.collection\("projects"\)\.add/);
+  assert.doesNotMatch(upgradeJs, /db\.collection\("users"\)\.get/);
+  assert.match(runtimeJs, /db\.collection\("schools"\)\.doc\(schoolId\)\.collection\("projects"\)\.add/);
+});
+
+test("Firebase deployment files are present and scoped", () => {
+  assert.match(firebaseJson, /"rules": "firestore\.rules"/);
+  assert.match(firebaseJson, /"hosting"/);
+  assert.match(firestoreRules, /match \/schools\/\{schoolId\}/);
+  assert.match(firestoreRules, /match \/projects\/\{projectId\}/);
+  assert.match(firestoreRules, /publicLikeOnly/);
+  assert.match(firestoreRules, /allow delete: if false/);
 });
 
 test("language picker includes Indian languages in native scripts", () => {

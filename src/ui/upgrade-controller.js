@@ -903,7 +903,7 @@ function installLoginStepper({
     if (!payload.role) throw new Error("Choose your role.");
   });
   stepper.onSubmit = onSubmit || stepper.onSubmit;
-  stepper.toast = toast || stepper.toast || (message => window.alert(message));
+  stepper.toast = toast || stepper.toast || (message => window.educircuitApp?.showToast?.(message) || console.warn(message));
 
   function goToLoginStep(step) {
     const nextStep = step === 2 ? 2 : 1;
@@ -2154,17 +2154,13 @@ function installSimulationUpgrade(app) {
 
 async function loadLeaderboard(services, schoolId) {
   if (!schoolId) return { students: [], schools: [], weekKey: services.gamification.getWeekKey() };
-  const [schoolSnapshot, allSnapshot] = await Promise.all([
-    services.db.collection("users").where("schoolId", "==", schoolId).get(),
-    services.db.collection("users").get()
-  ]);
+  const schoolSnapshot = await services.db.collection("users").where("schoolId", "==", schoolId).get();
   const schoolUsers = schoolSnapshot.docs.map(doc => doc.data());
-  const allUsers = allSnapshot.docs.map(doc => doc.data());
   return {
     students: services.gamification.rankWeeklyLeaderboard(
       schoolUsers.filter(user => user.role === "student")
     ),
-    schools: services.gamification.rankSchools(allUsers),
+    schools: services.gamification.rankSchools(schoolUsers),
     weekKey: services.gamification.getWeekKey()
   };
 }
@@ -2197,7 +2193,7 @@ function installGamificationPanels(app, services) {
         <div id="topStudentsLeaderboard" class="leaderboard"></div>
       </section>
       <section>
-        <h4>Top Schools</h4>
+        <h4>This School</h4>
         <div id="topSchoolsLeaderboard" class="leaderboard"></div>
       </section>
     </div>
@@ -2655,7 +2651,7 @@ function installAuthUpgrade(app, services) {
       await wait(120);
       await services.refreshAll();
     } catch (error) {
-      alert(formatAuthError(error, { mode: "create", role: payload.role }));
+      app.showToast?.(formatAuthError(error, { mode: "create", role: payload.role }));
     }
   }
 
@@ -2670,7 +2666,7 @@ function installAuthUpgrade(app, services) {
       await wait(120);
       await services.refreshAll();
     } catch (error) {
-      alert(formatAuthError(error, { mode: "login", role: payload.role }));
+      app.showToast?.(formatAuthError(error, { mode: "login", role: payload.role }));
     }
   }
 
@@ -2709,7 +2705,7 @@ function installAuthUpgrade(app, services) {
     try {
       await services.auth.logout();
     } catch (error) {
-      alert(error.message);
+      app.showToast?.(error.message || "Could not log out right now");
     }
   }
 
@@ -3094,7 +3090,7 @@ export function installVisualPolish(app = {}) {
   installBrandingAndTheme();
   installVoiceCoachToggle(app);
   installLoginStepper({
-    toast: message => app.showToast?.(message) || window.alert(message)
+    toast: message => app.showToast?.(message) || console.warn(message)
   });
 
   if (app?.state) {

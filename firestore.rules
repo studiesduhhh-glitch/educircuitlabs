@@ -1,0 +1,190 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userPath(uid) {
+      return /databases/$(database)/documents/users/$(uid);
+    }
+
+    function hasProfile() {
+      return signedIn() && exists(userPath(request.auth.uid));
+    }
+
+    function profile() {
+      return get(userPath(request.auth.uid)).data;
+    }
+
+    function hasProfileAfterWrite() {
+      return signedIn() && existsAfter(userPath(request.auth.uid));
+    }
+
+    function profileAfterWrite() {
+      return getAfter(userPath(request.auth.uid)).data;
+    }
+
+    function sameSchool(schoolId) {
+      return hasProfile() && profile().schoolId == schoolId;
+    }
+
+    function sameSchoolAfterWrite(schoolId) {
+      return hasProfileAfterWrite() && profileAfterWrite().schoolId == schoolId;
+    }
+
+    function schoolStaff(schoolId) {
+      return sameSchool(schoolId) && profile().role in ["teacher", "admin"];
+    }
+
+    function schoolAdmin(schoolId) {
+      return sameSchool(schoolId) && profile().role == "admin";
+    }
+
+    function validRole(role) {
+      return role in ["student", "teacher", "admin"];
+    }
+
+    function ownsProfile(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function createsOwnUserProfile(userId) {
+      return ownsProfile(userId)
+        && request.resource.data.uid == request.auth.uid
+        && validRole(request.resource.data.role)
+        && request.resource.data.schoolId is string
+        && request.resource.data.email is string;
+    }
+
+    function safeProjectWrite(schoolId) {
+      return signedIn()
+        && request.resource.data.schoolId == schoolId
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.visibility in ["private", "public"];
+    }
+
+    function publicLikeOnly() {
+      return signedIn()
+        && resource.data.visibility == "public"
+        && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+          "likeCount",
+          "likedBy",
+          "updatedAt"
+        ]);
+    }
+
+    match /users/{userId} {
+      allow create: if createsOwnUserProfile(userId);
+      allow get: if ownsProfile(userId) || (hasProfile() && resource.data.schoolId == profile().schoolId);
+      allow list: if hasProfile() && resource.data.schoolId == profile().schoolId;
+      allow update: if ownsProfile(userId)
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.schoolId == resource.data.schoolId
+        && request.resource.data.role == resource.data.role;
+      allow delete: if false;
+    }
+
+    match /schools/{schoolId} {
+      allow get: if true;
+      allow list: if false;
+
+      allow create: if signedIn()
+        && request.resource.data.id == schoolId
+        && (
+          (
+            request.resource.data.adminIds.hasOnly([request.auth.uid])
+            && request.resource.data.adminIds.hasAll([request.auth.uid])
+          )
+          || (
+            request.resource.data.selfServiceSignup == true
+            && request.resource.data.createdBy == request.auth.uid
+            && request.resource.data.createdByRole in ["student", "teacher"]
+            && request.resource.data.adminIds.size() == 0
+          )
+        );
+
+      allow update: if schoolAdmin(schoolId)
+        || (
+          signedIn()
+          && resource.data.adminIds.size() == 0
+          && request.resource.data.id == schoolId
+          && request.resource.data.adminIds.hasAll([request.auth.uid])
+          && request.resource.data.diff(resource.data).changedKeys().hasOnly([
+            "adminIds",
+            "updatedAt",
+            "leaderboardEnabled",
+            "name",
+            "id"
+          ])
+        )
+        || (
+          sameSchoolAfterWrite(schoolId)
+          && request.resource.data.diff(resource.data).changedKeys().hasOnly(["updatedAt"])
+        );
+
+      allow delete: if false;
+
+      match /admins/{adminId} {
+        allow read: if ownsProfile(adminId) || schoolStaff(schoolId);
+        allow create: if ownsProfile(adminId)
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.role == "admin"
+          && request.resource.data.schoolId == schoolId;
+        allow update: if ownsProfile(adminId) || schoolAdmin(schoolId);
+        allow delete: if false;
+      }
+
+      match /teachers/{teacherId} {
+        allow read: if ownsProfile(teacherId) || schoolStaff(schoolId);
+        allow create: if ownsProfile(teacherId)
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.role == "teacher"
+          && request.resource.data.schoolId == schoolId;
+        allow update: if ownsProfile(teacherId) || schoolAdmin(schoolId);
+        allow delete: if false;
+      }
+
+      match /students/{studentId} {
+        allow read: if ownsProfile(studentId) || schoolStaff(schoolId);
+        allow create: if ownsProfile(studentId)
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.role == "student"
+          && request.resource.data.schoolId == schoolId;
+        allow update: if ownsProfile(studentId) || schoolStaff(schoolId);
+        allow delete: if false;
+      }
+
+      match /assignments/{assignmentId} {
+        allow read: if sameSchool(schoolId);
+        allow create, update: if schoolStaff(schoolId)
+          && request.resource.data.schoolId == schoolId
+          && request.resource.data.createdById == request.auth.uid;
+        allow delete: if schoolAdmin(schoolId);
+      }
+
+      match /projects/{projectId} {
+        allow read: if resource.data.visibility == "public"
+          || (signedIn() && resource.data.ownerId == request.auth.uid)
+          || schoolStaff(schoolId);
+
+        allow create: if safeProjectWrite(schoolId);
+
+        allow update: if publicLikeOnly()
+          || (
+            signedIn()
+            && resource.data.ownerId == request.auth.uid
+            && request.resource.data.ownerId == resource.data.ownerId
+            && request.resource.data.schoolId == schoolId
+          )
+          || schoolStaff(schoolId);
+
+        allow delete: if signedIn() && (
+          resource.data.ownerId == request.auth.uid
+          || schoolAdmin(schoolId)
+        );
+      }
+    }
+  }
+}

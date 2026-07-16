@@ -92,7 +92,7 @@
 
     if(!valid){
       window.educircuitApp?.showToast?.("Enter your name, valid email, and role first.") ||
-        window.alert("Enter your name, valid email, and role first.");
+        console.warn("Enter your name, valid email, and role first.");
     }
 
     return valid;
