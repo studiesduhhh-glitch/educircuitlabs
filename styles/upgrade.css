@@ -566,6 +566,25 @@ html {
   line-height:1.65;
 }
 
+.landing-founder-card strong,
+.landing-founder-card .founder-mission {
+  display:block;
+}
+
+.landing-founder-card strong {
+  font-weight:900;
+}
+
+.landing-founder-card cite {
+  color:#2563eb;
+  font-weight:800;
+  margin-top:4px;
+}
+
+.landing-founder-card .founder-mission {
+  margin-top:12px;
+}
+
 .dark-mode .landing-social-proof blockquote {
   color:#dbeafe;
 }
@@ -573,6 +592,10 @@ html {
 .dark-mode .proof-stat span,
 .dark-mode .landing-social-proof cite {
   color:#9fb0c8;
+}
+
+.dark-mode .landing-founder-card cite {
+  color:#93c5fd;
 }
 
 .landing-features article {

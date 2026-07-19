@@ -66,7 +66,9 @@ test("deployed html stays clean and modular", () => {
   assert.doesNotMatch(`${indexHtml}\n${allJs}`, /hhere/i);
   assert.doesNotMatch(`${indexHtml}\n${mainJs}\n${upgradeJs}`, /20260419-ai-teacher1|20260719-auth-fix1/);
   assert.doesNotMatch(indexHtml, /<script>\s*const state\s*=/);
-  assert.match(indexHtml, /<cite>Developer and Designer<\/cite>/);
+  assert.match(indexHtml, /<blockquote class="landing-founder-card">/);
+  assert.match(indexHtml, /<cite>Head Developer and Designer<\/cite>/);
+  assert.match(indexHtml, /<span class="founder-mission">Building technology that empowers students to learn, create, and innovate through Educircuit\.<\/span>/);
   assert.match(indexHtml, /<link rel="icon" href="\/favicon\.ico" sizes="any" \/>/);
   assert.match(indexHtml, /<link rel="icon" type="image\/png" sizes="32x32" href="\/favicon-32x32\.png" \/>/);
   assert.match(indexHtml, /<link rel="apple-touch-icon" sizes="180x180" href="\/apple-touch-icon\.png" \/>/);
