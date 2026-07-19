@@ -1,20 +1,23 @@
 .dark-mode {
-  --bg:#07111f;
-  --panel:rgba(15,23,42,.82);
-  --panel-strong:#0f172a;
-  --line:rgba(148,163,184,.22);
-  --text:#e5eefb;
-  --muted:#9fb0c8;
-  --cream:#0b1220;
+  --bg:#0b0f14;
+  --panel:rgba(18,24,31,.9);
+  --panel-strong:#141b23;
+  --line:rgba(226,232,240,.14);
+  --text:#eef4f8;
+  --muted:#a6b4c2;
+  --cream:#10151b;
+  --shadow:0 20px 52px rgba(0,0,0,.28);
+  --shadow-strong:0 32px 80px rgba(0,0,0,.38);
   color-scheme: dark;
 }
 
 .dark-mode body,
 body.dark-mode {
   background:
-    radial-gradient(circle at 15% 10%, rgba(56,189,248,.16), transparent 22%),
-    radial-gradient(circle at 80% 18%, rgba(16,185,129,.12), transparent 20%),
-    linear-gradient(180deg,#07111f,#0b1220 52%,#111827);
+    linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px),
+    linear-gradient(135deg,#0b0f14 0%,#121820 50%,#0f1613 100%);
+  background-size:28px 28px, 28px 28px, auto;
 }
 
 .dark-mode .panel,
@@ -25,23 +28,25 @@ body.dark-mode {
 .dark-mode .upgrade-card,
 .dark-mode .upgrade-submission-card,
 .dark-mode .upgrade-project-card {
-  background: linear-gradient(180deg, rgba(15,23,42,.94), rgba(17,24,39,.86));
-  border-color: rgba(148,163,184,.2);
+  background:linear-gradient(180deg, rgba(22,29,38,.94), rgba(15,20,27,.9));
+  border-color:var(--line);
   color: var(--text);
+  box-shadow:var(--shadow-strong);
 }
 
 .dark-mode input,
 .dark-mode select,
 .dark-mode textarea {
-  background:#111827;
+  background:#111820;
   color:var(--text);
-  border-color:rgba(148,163,184,.24);
+  border-color:rgba(226,232,240,.16);
 }
 
 .dark-mode .project-item,
 .dark-mode .leader-item,
 .dark-mode .voltage-row {
-  background:#111827;
+  background:#121922;
+  border-color:var(--line);
 }
 
 .ai-sidebar {
@@ -93,13 +98,12 @@ html {
 }
 
 .dark-mode .saas-landing {
-  color:#f3f7f2;
+  color:var(--text);
   background:
-    linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px),
-    linear-gradient(115deg, rgba(45,212,191,.16) 0%, rgba(45,212,191,0) 40%),
-    linear-gradient(245deg, rgba(251,146,60,.17) 0%, rgba(251,146,60,0) 42%),
-    linear-gradient(135deg, #101510 0%, #151a16 54%, #241a17 100%);
+    linear-gradient(rgba(255,255,255,.032) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.032) 1px, transparent 1px),
+    linear-gradient(135deg, #0b0f14 0%, #121820 52%, #101813 100%);
+  background-size:28px 28px, 28px 28px, auto;
 }
 
 .landing-orb {
@@ -1611,6 +1615,222 @@ button,
 .voice-coach-btn {
   min-width:132px;
   white-space:nowrap;
+}
+
+.dark-mode .topbar,
+.dark-mode .ai-topbar {
+  background:rgba(13,18,24,.88);
+  border-color:rgba(226,232,240,.12);
+  box-shadow:0 18px 42px rgba(0,0,0,.26);
+}
+
+.dark-mode .brand-text p,
+.dark-mode .panel-header small,
+.dark-mode .component-meta,
+.dark-mode .terminal-hint,
+.dark-mode .auth-switch-copy {
+  color:var(--muted);
+  opacity:1;
+}
+
+.dark-mode .brand-logo,
+.dark-mode .login-logo,
+.dark-mode .logo-pulse img {
+  background:#151c24;
+  border:1px solid rgba(226,232,240,.12);
+  box-shadow:0 14px 28px rgba(0,0,0,.24);
+}
+
+.dark-mode .logo-pulse {
+  background:rgba(20,27,35,.88);
+  box-shadow:0 18px 44px rgba(0,0,0,.24);
+}
+
+.dark-mode .logo-pulse::before,
+.dark-mode .logo-pulse::after {
+  border-color:rgba(52,211,153,.28);
+}
+
+.dark-mode .panel-header,
+.dark-mode .canvas-toolbar,
+.dark-mode .ai-chat-head,
+.dark-mode .ai-inputbar {
+  background:linear-gradient(180deg, rgba(24,32,42,.92), rgba(16,22,30,.82));
+  border-color:rgba(226,232,240,.12);
+}
+
+.dark-mode .canvas-panel {
+  background:linear-gradient(180deg, rgba(22,29,38,.94), rgba(15,20,27,.9));
+}
+
+.dark-mode .workspace-area {
+  background:
+    linear-gradient(to right, rgba(226,232,240,.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(226,232,240,.055) 1px, transparent 1px),
+    linear-gradient(180deg,#111820,#0d131a);
+  background-size:24px 24px, 24px 24px, auto;
+}
+
+.dark-mode .workspace-area.grid-hidden {
+  background-size:0 0, 0 0, auto;
+}
+
+.dark-mode .logic-dock {
+  background:rgba(18,24,31,.84);
+  border-color:rgba(226,232,240,.13);
+  box-shadow:0 24px 54px rgba(0,0,0,.36);
+}
+
+.dark-mode .component-card,
+.dark-mode .example-item,
+.dark-mode .canvas-item,
+.dark-mode .ai-card,
+.dark-mode .project-page-card,
+.dark-mode .debugger-response-grid div,
+.dark-mode .learning-requirement,
+.dark-mode .learning-score-row div {
+  background:linear-gradient(180deg,#18212b,#111820);
+  border-color:rgba(226,232,240,.12);
+  box-shadow:0 14px 34px rgba(0,0,0,.26);
+}
+
+.dark-mode .component-card::after {
+  display:none;
+}
+
+.dark-mode .component-card:hover,
+.dark-mode .example-item:hover,
+.dark-mode .canvas-item:hover,
+.dark-mode .dashboard-card:hover,
+.dark-mode .upgrade-card:hover,
+.dark-mode .upgrade-project-card:hover,
+.dark-mode .upgrade-submission-card:hover {
+  border-color:rgba(52,211,153,.32);
+  box-shadow:0 22px 46px rgba(0,0,0,.34);
+}
+
+.dark-mode .component-icon,
+.dark-mode .logic-chip,
+.dark-mode .item-head,
+.dark-mode .zoom-display,
+.dark-mode .pill,
+.dark-mode .auth-form-heading,
+.dark-mode .voice-coach-select {
+  background:linear-gradient(180deg,#1b2530,#121922);
+  border-color:rgba(226,232,240,.13);
+  color:var(--text);
+  box-shadow:0 10px 24px rgba(0,0,0,.22);
+}
+
+.dark-mode .logic-chip {
+  color:#93c5fd;
+}
+
+.dark-mode .logic-chip button,
+.dark-mode .password-toggle-btn,
+.dark-mode .switch-toggle-control {
+  background:#121922;
+  border-color:rgba(226,232,240,.14);
+  color:#bfdbfe;
+}
+
+.dark-mode .switch-toggle-control:hover,
+.dark-mode .password-toggle-btn:hover {
+  background:#18212b;
+}
+
+.dark-mode .switch-closed .switch-toggle-control {
+  color:#fff;
+  background:linear-gradient(135deg,#0f62fe,#10b981);
+  border-color:rgba(52,211,153,.38);
+}
+
+.dark-mode .item-body,
+.dark-mode .ai-card p,
+.dark-mode .product-debug p,
+.dark-mode .simulation-feedback-panel p,
+.dark-mode .simulation-feedback-panel li,
+.dark-mode .debugger-response-grid p {
+  color:var(--muted);
+}
+
+.dark-mode .port {
+  border-color:#101820;
+}
+
+.dark-mode .port.negative {
+  background:#e5eefb;
+  box-shadow:0 6px 12px rgba(226,232,240,.18);
+}
+
+.dark-mode .port-label {
+  color:#e5eefb;
+}
+
+.dark-mode .port-label.positive {
+  color:#fca5a5;
+}
+
+.dark-mode .login-screen {
+  background:
+    linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px),
+    linear-gradient(135deg,#0b0f14,#121820 56%,#101813);
+  background-size:28px 28px, 28px 28px, auto;
+}
+
+.dark-mode .login-screen .premium-login-card {
+  background:rgba(18,24,31,.92);
+  border-color:rgba(226,232,240,.13);
+  box-shadow:0 36px 100px rgba(0,0,0,.42);
+}
+
+.dark-mode .project-page,
+.dark-mode .guide-page,
+.dark-mode .ai-teacher-page {
+  background:linear-gradient(135deg,#0b0f14,#121820 54%,#101813);
+  color:var(--text);
+}
+
+.dark-mode .upgrade-overlay {
+  background:rgba(3,7,12,.72);
+}
+
+.dark-mode .upgrade-overlay-shell {
+  background:linear-gradient(180deg,#161d26,#10161e);
+  border:1px solid rgba(226,232,240,.12);
+}
+
+.dark-mode .upgrade-overlay-head {
+  border-color:rgba(226,232,240,.12);
+}
+
+.dark-mode .simulation-feedback-panel {
+  background:rgba(18,24,31,.94);
+  border-color:rgba(226,232,240,.14);
+  box-shadow:0 28px 80px rgba(0,0,0,.4);
+}
+
+.dark-mode .voice-coach-btn[aria-pressed="true"] {
+  color:#bfdbfe;
+  border-color:rgba(52,211,153,.32);
+  background:rgba(16,185,129,.12);
+}
+
+body.dark-mode.upgrade-ready button.secondary,
+body.dark-mode.upgrade-ready button.quiet-action {
+  background:#151d26;
+  color:#cbd5e1;
+  border-color:rgba(226,232,240,.12);
+  box-shadow:0 10px 24px rgba(0,0,0,.22);
+}
+
+body.dark-mode.upgrade-ready button.secondary:hover,
+body.dark-mode.upgrade-ready button.quiet-action:hover {
+  background:#1b2530;
+  color:var(--text);
+  border-color:rgba(59,130,246,.28);
+  box-shadow:0 16px 32px rgba(0,0,0,.28);
 }
 
 body.upgrade-ready button.primary-action {

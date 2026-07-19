@@ -1,6 +1,6 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260419-ai-teacher1";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260419-ai-teacher1";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260419-ai-teacher1";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260719-voice-dark1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260719-voice-dark1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260719-voice-dark1";
 import {
   buildGuidedLabSteps,
   buildMultimeterReading,
@@ -8,14 +8,14 @@ import {
   buildSnapshotSignature,
   getGuidedLabNextFix,
   replayEntriesDiffer
-} from "../core/classroom-engine.js?v=20260419-ai-teacher1";
+} from "../core/classroom-engine.js?v=20260719-voice-dark1";
 import {
   buildVivaQuestions,
   evaluateVivaAnswer,
   summarizeVivaSession
-} from "../core/viva-engine.js?v=20260419-ai-teacher1";
-import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260419-ai-teacher1";
-import { formatAuthError } from "../services/auth-service.js?v=20260419-ai-teacher1";
+} from "../core/viva-engine.js?v=20260719-voice-dark1";
+import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260719-voice-dark1";
+import { formatAuthError } from "../services/auth-service.js?v=20260719-voice-dark1";
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -363,12 +363,14 @@ const runtimePrefs = window.EducircuitRuntimePrefs = window.EducircuitRuntimePre
   voiceCoachEnabled: true,
   voiceCoachVoice: ""
 };
+const DEFAULT_VOICE_KEY = "en-gb";
+const DEFAULT_VOICE_LANG = "en-GB";
 const CURATED_VOICE_GROUPS = [
   {
     label: "English",
     voices: [
-      ["en-us", "American English"],
       ["en-gb", "UK English"],
+      ["en-us", "American English"],
       ["en-in", "Indian English"]
     ]
   },
@@ -465,9 +467,18 @@ function getCuratedVoiceOptions() {
 }
 
 function getSelectedVoice() {
+  return getPreferredVoiceOption()?.voice || null;
+}
+
+function getPreferredVoiceOption(curatedOptions = getCuratedVoiceOptions()) {
   const selectedValue = runtimePrefs.voiceCoachVoice || "";
-  if (!selectedValue) return null;
-  return getCuratedVoiceOptions().find(option => getVoiceOptionValue(option.voice) === selectedValue)?.voice || null;
+  const selectedOption = selectedValue
+    ? curatedOptions.find(option => getVoiceOptionValue(option.voice) === selectedValue || option.key === selectedValue)
+    : null;
+  return selectedOption ||
+    curatedOptions.find(option => option.key === DEFAULT_VOICE_KEY) ||
+    curatedOptions.find(option => option.key.startsWith("en-")) ||
+    null;
 }
 
 function updateVoiceCoachOptions(select = document.getElementById("voiceCoachSelect")) {
@@ -484,9 +495,13 @@ function updateVoiceCoachOptions(select = document.getElementById("voiceCoachSel
   const unavailableNote = curatedOptions.length
     ? ""
     : `<option value="" disabled>No curated voices installed</option>`;
+  const preferredOption = getPreferredVoiceOption(curatedOptions);
+  const preferredValue = preferredOption ? getVoiceOptionValue(preferredOption.voice) : "";
 
-  select.innerHTML = `<option value="">Default voice</option>${groupedOptions}${unavailableNote}`;
-  select.value = curatedOptions.some(option => getVoiceOptionValue(option.voice) === selectedValue) ? selectedValue : "";
+  select.innerHTML = `<option value="">UK English default</option>${groupedOptions}${unavailableNote}`;
+  select.value = curatedOptions.some(option => getVoiceOptionValue(option.voice) === selectedValue)
+    ? selectedValue
+    : preferredValue;
 }
 
 function installVoiceCoachToggle(app) {
@@ -560,7 +575,7 @@ function speakTextWithVoice(text, app, options = {}) {
   if (selectedVoice) {
     utterance.voice = selectedVoice;
   }
-  utterance.lang = options.lang || selectedVoice?.lang || "en-US";
+  utterance.lang = options.lang || selectedVoice?.lang || DEFAULT_VOICE_LANG;
   utterance.rate = options.rate || 0.92;
   utterance.pitch = options.pitch || 1;
   window.speechSynthesis.speak(utterance);
@@ -1655,7 +1670,7 @@ function installVoiceConversationMode(app) {
     if (recognition) return recognition;
 
     recognition = new SpeechRecognition();
-    recognition.lang = getSelectedVoice()?.lang || "en-IN";
+    recognition.lang = getSelectedVoice()?.lang || DEFAULT_VOICE_LANG;
     recognition.interimResults = true;
     recognition.maxAlternatives = 1;
 
@@ -1714,7 +1729,7 @@ function installVoiceConversationMode(app) {
       if (app.state.voiceConversation.listening) {
         activeRecognition.stop();
       } else {
-        activeRecognition.lang = getSelectedVoice()?.lang || "en-IN";
+        activeRecognition.lang = getSelectedVoice()?.lang || DEFAULT_VOICE_LANG;
         activeRecognition.start();
       }
     });

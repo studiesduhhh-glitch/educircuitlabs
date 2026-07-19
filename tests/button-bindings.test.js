@@ -4,6 +4,7 @@ import fs from "node:fs";
 
 const indexHtml = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const appCss = fs.readFileSync(new URL("../styles/app.css", import.meta.url), "utf8");
+const upgradeCss = fs.readFileSync(new URL("../styles/upgrade.css", import.meta.url), "utf8");
 const runtimeJs = fs.readFileSync(new URL("../src/app/runtime.js", import.meta.url), "utf8");
 const fallbackJs = fs.readFileSync(new URL("../src/app/landing-fallback.js", import.meta.url), "utf8");
 const upgradeJs = fs.readFileSync(new URL("../src/ui/upgrade-controller.js", import.meta.url), "utf8");
@@ -63,14 +64,15 @@ test("all static buttons have an event binding path", () => {
 test("deployed html stays clean and modular", () => {
   assert.doesNotMatch(indexHtml, /<<<<<<<|=======|>>>>>>>/);
   assert.doesNotMatch(`${indexHtml}\n${allJs}`, /hhere/i);
+  assert.doesNotMatch(`${indexHtml}\n${mainJs}\n${upgradeJs}`, /20260419-ai-teacher1|20260719-auth-fix1/);
   assert.doesNotMatch(indexHtml, /<script>\s*const state\s*=/);
   assert.match(indexHtml, /<link rel="icon" href="\/favicon\.ico" sizes="any" \/>/);
   assert.match(indexHtml, /<link rel="icon" type="image\/png" sizes="32x32" href="\/favicon-32x32\.png" \/>/);
   assert.match(indexHtml, /<link rel="apple-touch-icon" sizes="180x180" href="\/apple-touch-icon\.png" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260719-auth-fix1" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260719-auth-fix1" \/>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260719-auth-fix1"><\/script>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260719-auth-fix1"><\/script>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260719-voice-dark1" \/>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260719-voice-dark1" \/>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260719-voice-dark1"><\/script>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260719-voice-dark1"><\/script>/);
   assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
   assert.match(mainJs, /createAssignmentService/);
 });
@@ -212,6 +214,9 @@ test("manual switch controls and voice coach are wired", () => {
   assert.match(upgradeJs, /voiceCoachBtn/);
   assert.match(upgradeJs, /voiceCoachSelect/);
   assert.match(upgradeJs, /CURATED_VOICE_GROUPS/);
+  assert.match(upgradeJs, /const DEFAULT_VOICE_KEY = "en-gb"/);
+  assert.match(upgradeJs, /const DEFAULT_VOICE_LANG = "en-GB"/);
+  assert.match(upgradeJs, /\["en-gb", "UK English"\]/);
   assert.match(upgradeJs, /American English/);
   assert.match(upgradeJs, /UK English/);
   assert.match(upgradeJs, /Indian Languages/);
@@ -221,12 +226,27 @@ test("manual switch controls and voice coach are wired", () => {
   assert.match(upgradeJs, /ꯃꯤꯇꯩꯂꯣꯟ/);
   assert.match(upgradeJs, /getSpeechVoices/);
   assert.match(upgradeJs, /getCuratedVoiceOptions/);
+  assert.match(upgradeJs, /getPreferredVoiceOption/);
   assert.match(upgradeJs, /getSelectedVoice/);
+  assert.match(upgradeJs, /UK English default/);
   assert.match(upgradeJs, /SpeechSynthesisUtterance/);
   assert.match(upgradeJs, /utterance\.voice = selectedVoice/);
+  assert.match(upgradeJs, /selectedVoice\?\.lang \|\| DEFAULT_VOICE_LANG/);
   assert.match(upgradeJs, /speakCircuitCoach\(report, app\)/);
   assert.match(upgradeJs, /voiceConversationBtn/);
   assert.match(upgradeJs, /SpeechRecognition \|\| window\.webkitSpeechRecognition/);
+});
+
+test("dark mode has a polished simulator surface system", () => {
+  assert.match(upgradeCss, /\.dark-mode \{\s*--bg:#0b0f14/);
+  assert.match(upgradeCss, /body\.dark-mode \{\s*background:/);
+  assert.match(upgradeCss, /\.dark-mode \.topbar,\s*\.dark-mode \.ai-topbar/);
+  assert.match(upgradeCss, /\.dark-mode \.workspace-area \{/);
+  assert.match(upgradeCss, /\.dark-mode \.logic-dock \{/);
+  assert.match(upgradeCss, /\.dark-mode \.component-card,\s*\.dark-mode \.example-item,\s*\.dark-mode \.canvas-item/);
+  assert.match(upgradeCss, /\.dark-mode \.component-card::after \{\s*display:none/);
+  assert.match(upgradeCss, /body\.dark-mode\.upgrade-ready button\.secondary/);
+  assert.match(upgradeCss, /\.dark-mode \.voice-coach-btn\[aria-pressed="true"\]/);
 });
 
 test("classroom roadmap features are connected to the current simulator", () => {
