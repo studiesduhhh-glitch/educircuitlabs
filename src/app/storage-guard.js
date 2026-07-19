@@ -1,4 +1,23 @@
 (function installEducircuitStorageGuard(global) {
+  global.__educircuitBootErrors = global.__educircuitBootErrors || [];
+  if (!global.__educircuitBootErrorCaptureInstalled) {
+    global.addEventListener("error", event => {
+      global.__educircuitBootErrors.push({
+        message: event.message,
+        source: event.filename,
+        line: event.lineno,
+        column: event.colno
+      });
+    });
+    global.addEventListener("unhandledrejection", event => {
+      global.__educircuitBootErrors.push({
+        message: event.reason?.message || String(event.reason || "Unhandled promise rejection"),
+        source: "promise"
+      });
+    });
+    global.__educircuitBootErrorCaptureInstalled = true;
+  }
+
   const blockedWrites = [];
   const storagePrototype = global.Storage?.prototype;
 

@@ -1139,6 +1139,10 @@ button.amber{
   gap:8px;
 }
 
+.login-screen .premium-login-card[data-auth-mode="login"] .auth-create-field{
+  display:none;
+}
+
 .field label{
   font-size:13px;
   color:var(--muted);

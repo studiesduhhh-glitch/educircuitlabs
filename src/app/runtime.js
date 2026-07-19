@@ -43,6 +43,7 @@ const state = window.EducircuitState || {
   burstItems: [],
   assignments: [],
   activeAssignment: null,
+  demoMode: false,
   buildReplay: {
     history: [],
     lastSignature: "",
@@ -85,11 +86,137 @@ const firebaseConfig = {
   appId: "1:1031956078247:web:3a2c0033f51773b0c98582"
 };
 
-firebase.initializeApp(firebaseConfig);
+function createOfflineFirebaseFallback(){
+  const unavailable = () => {
+    const error = new Error("Firebase is not available right now. Check your internet connection and try again.");
+    error.code = "unavailable";
+    return error;
+  };
 
-const auth = firebase.auth();
-const db = firebase.firestore();
-auth.setPersistence?.(firebase.auth.Auth.Persistence.NONE).catch(error => {
+  const emptySnapshot = {
+    empty: true,
+    docs: [],
+    forEach(){}
+  };
+
+  function createDocSnapshot(id = ""){
+    return {
+      id,
+      exists: false,
+      data: () => null
+    };
+  }
+
+  function createQueryRef(){
+    return {
+      where(){ return this; },
+      orderBy(){ return this; },
+      limit(){ return this; },
+      async get(){ return emptySnapshot; }
+    };
+  }
+
+  function createDocRef(path = ""){
+    const id = path.split("/").filter(Boolean).pop() || "";
+    return {
+      id,
+      path,
+      collection(name){ return createCollectionRef(`${path}/${name}`); },
+      async get(){ return createDocSnapshot(id); },
+      async set(){ throw unavailable(); },
+      async update(){ throw unavailable(); }
+    };
+  }
+
+  function createCollectionRef(path = ""){
+    const query = createQueryRef();
+    return {
+      path,
+      doc(id = `offline-${Date.now()}`){ return createDocRef(`${path}/${id}`); },
+      where: query.where.bind(query),
+      orderBy: query.orderBy.bind(query),
+      limit: query.limit.bind(query),
+      async get(){ return emptySnapshot; },
+      async add(){ throw unavailable(); }
+    };
+  }
+
+  const listeners = new Set();
+  const authFallback = {
+    currentUser: null,
+    setPersistence(){ return Promise.resolve(); },
+    onAuthStateChanged(callback){
+      listeners.add(callback);
+      const timer = setTimeout(() => callback(this.currentUser), 0);
+      return () => {
+        clearTimeout(timer);
+        listeners.delete(callback);
+      };
+    },
+    async createUserWithEmailAndPassword(){ throw unavailable(); },
+    async signInWithEmailAndPassword(){ throw unavailable(); },
+    async signInWithPopup(){ throw unavailable(); },
+    async signOut(){
+      this.currentUser = null;
+      listeners.forEach(callback => callback(null));
+    }
+  };
+
+  const dbFallback = {
+    collection(name){ return createCollectionRef(name); },
+    collectionGroup(){ return createQueryRef(); },
+    batch(){
+      return {
+        set(){},
+        update(){},
+        async commit(){ throw unavailable(); }
+      };
+    },
+    async runTransaction(){ throw unavailable(); }
+  };
+
+  const fallback = {
+    __offline: true,
+    initializeApp(){ return null; },
+    auth(){ return authFallback; },
+    firestore(){ return dbFallback; }
+  };
+
+  fallback.auth.Auth = { Persistence: { NONE: "none" } };
+  fallback.auth.GoogleAuthProvider = null;
+  fallback.firestore.FieldValue = {
+    arrayUnion: (...values) => values,
+    arrayRemove: () => [],
+    increment: value => value,
+    serverTimestamp: () => new Date()
+  };
+
+  return fallback;
+}
+
+const firebaseApi = window.firebase?.initializeApp && window.firebase?.auth && window.firebase?.firestore
+  ? window.firebase
+  : createOfflineFirebaseFallback();
+
+if(!window.firebase){
+  window.firebase = firebaseApi;
+}
+
+if(firebaseApi.__offline){
+  console.warn("Firebase SDK is not available; Educircuit is running in offline demo mode.");
+} else {
+  try {
+    firebaseApi.initializeApp(firebaseConfig);
+  } catch(error) {
+    if(!/already exists/i.test(error?.message || "")){
+      console.warn("Firebase initialization warning", error);
+    }
+  }
+}
+
+const auth = firebaseApi.auth();
+const db = firebaseApi.firestore();
+auth.setPersistence?.(firebaseApi.auth.Auth?.Persistence?.NONE).catch(error => {
   console.warn("Firebase auth is running without browser persistence.", error);
 });
 
@@ -667,6 +794,22 @@ function syncLoginPasswordToggle(){
   toggleLoginPasswordBtn.setAttribute("aria-pressed", String(isVisible));
 }
 
+function showLoginChooser(){
+  clearLoginErrors();
+  loginSchoolPass.type = "password";
+  syncLoginPasswordToggle();
+  loginScreen.classList.remove("hidden");
+  loginCard?.setAttribute("data-step", "1");
+  window.EducircuitAuthFlow?.setMode?.("create");
+  window.EducircuitAuthFlow?.goToLoginStep?.(1);
+  document.querySelectorAll(".login-step").forEach(panel => {
+    panel.classList.toggle("active", panel.dataset.loginStep === "1");
+  });
+  document.getElementById("loginStepOne")?.classList.add("active");
+  document.getElementById("loginStepTwo")?.classList.remove("active");
+  syncRoleFields();
+}
+
 function getLoginPayload(){
   return {
     name: loginName.value.trim(),
@@ -766,7 +909,13 @@ function ensureLocalUserRecord(profile){
   return userRecord;
 }
 
-function applyAuthenticatedProfile(uid, profile){
+function applyAuthenticatedProfile(uid, profile, options = {}){
+  if(options.demo === true || String(uid || "").startsWith("demo-")){
+    state.demoMode = true;
+  } else {
+    state.demoMode = false;
+  }
+
   state.user.uid = uid;
   state.user.name = profile.name;
   state.user.role = profile.role;
@@ -832,7 +981,7 @@ async function signUpUser(){
       batch.set(schoolRef, {
         id: schoolKey,
         name: payload.school,
-        adminIds: payload.role === "admin" ? firebase.firestore.FieldValue.arrayUnion(cred.user.uid) : adminIds,
+        adminIds: payload.role === "admin" ? firebaseApi.firestore.FieldValue.arrayUnion(cred.user.uid) : adminIds,
         updatedAt: new Date(),
         leaderboardEnabled: schoolData?.leaderboardEnabled ?? true
       }, { merge: true });
@@ -885,13 +1034,13 @@ async function loginUser(){
 }
 
 async function loginWithGoogle(){
-  if(!firebase.auth.GoogleAuthProvider || !auth.signInWithPopup){
+  if(!firebaseApi.auth.GoogleAuthProvider || !auth.signInWithPopup){
     showToast("Google sign-in is not available for this project yet.");
     return;
   }
 
   try{
-    const provider = new firebase.auth.GoogleAuthProvider();
+    const provider = new firebaseApi.auth.GoogleAuthProvider();
     const credential = await auth.signInWithPopup(provider);
     const profile = await fetchUserProfile(credential.user.uid);
 
@@ -911,6 +1060,11 @@ async function loginWithGoogle(){
 }
 
 async function logoutUser(){
+  if(state.demoMode){
+    resetAuthenticatedUser();
+    return;
+  }
+
   try{
     await auth.signOut();
   } catch(error){
@@ -919,6 +1073,7 @@ async function logoutUser(){
 }
 
 function resetAuthenticatedUser(){
+  state.demoMode = false;
   state.user.uid = "";
   state.user.name = "";
   state.user.role = "student";
@@ -928,12 +1083,9 @@ function resetAuthenticatedUser(){
   state.user.schoolUsername = "";
   state.projectOwnerName = "";
   loginRole.value = "student";
-  loginSchoolPass.type = "password";
-  syncLoginPasswordToggle();
-  loginScreen.classList.remove("hidden");
   activeUserPill.textContent = "Guest • Student";
   setMode("student");
-  syncRoleFields();
+  showLoginChooser();
 }
 
 function syncNextId(){
@@ -2491,6 +2643,11 @@ function enterLanding(){
   }
 
   document.getElementById("landingPage").classList.add("hidden");
+  if(state.user.uid || state.demoMode){
+    loginScreen.classList.add("hidden");
+    return;
+  }
+  showLoginChooser();
 }
 
 // 📘 GUIDE CONTROL
@@ -2603,7 +2760,7 @@ function loadProject(){
         console.error(error);
         resetAuthenticatedUser();
       }
-    } else {
+    } else if(!state.demoMode){
       resetAuthenticatedUser();
     }
   });
@@ -2633,8 +2790,7 @@ function fillDemo(role){
   loginSchool.value = profile.school;
   loginSchoolUser.value = profile.schoolUsername;
   loginSchoolPass.value = "School@123";
-  state.demoMode = true;
-  applyAuthenticatedProfile(profile.uid, profile);
+  applyAuthenticatedProfile(profile.uid, profile, { demo: true });
   syncRoleFields();
   showToast(`${profile.name} loaded in demo mode`);
 }
@@ -2821,7 +2977,7 @@ loginBackStepBtn?.addEventListener("click", () => {
   document.getElementById("loginStepTwo")?.classList.remove("active");
 });
 if(googleAuthBtn){
-  googleAuthBtn.hidden = !(firebase.auth.GoogleAuthProvider && auth.signInWithPopup);
+  googleAuthBtn.hidden = !(firebaseApi.auth.GoogleAuthProvider && auth.signInWithPopup);
   googleAuthBtn.addEventListener("click", loginWithGoogle);
 }
 enterBtn.addEventListener("click", enterPlatform);

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const indexHtml = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
+const appCss = fs.readFileSync(new URL("../styles/app.css", import.meta.url), "utf8");
 const runtimeJs = fs.readFileSync(new URL("../src/app/runtime.js", import.meta.url), "utf8");
 const fallbackJs = fs.readFileSync(new URL("../src/app/landing-fallback.js", import.meta.url), "utf8");
 const upgradeJs = fs.readFileSync(new URL("../src/ui/upgrade-controller.js", import.meta.url), "utf8");
@@ -66,10 +67,10 @@ test("deployed html stays clean and modular", () => {
   assert.match(indexHtml, /<link rel="icon" href="\/favicon\.ico" sizes="any" \/>/);
   assert.match(indexHtml, /<link rel="icon" type="image\/png" sizes="32x32" href="\/favicon-32x32\.png" \/>/);
   assert.match(indexHtml, /<link rel="apple-touch-icon" sizes="180x180" href="\/apple-touch-icon\.png" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260419-ai-teacher1" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260419-ai-teacher1" \/>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260419-ai-teacher1"><\/script>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260419-ai-teacher1"><\/script>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260719-auth-fix1" \/>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260719-auth-fix1" \/>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260719-auth-fix1"><\/script>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260719-auth-fix1"><\/script>/);
   assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
   assert.match(mainJs, /createAssignmentService/);
 });
@@ -156,12 +157,43 @@ test("login step is explicit and demo buttons open the simulator directly", () =
   assert.match(runtimeJs, /function openAuthMode/);
   assert.match(runtimeJs, /getAuthMode\(\) === "create"/);
   assert.match(runtimeJs, /function buildDemoProfile/);
+  assert.match(runtimeJs, /demoMode:\s*false/);
   assert.match(runtimeJs, /state\.demoMode = true/);
-  assert.match(runtimeJs, /applyAuthenticatedProfile\(profile\.uid,\s*profile\)/);
+  assert.match(runtimeJs, /applyAuthenticatedProfile\(profile\.uid,\s*profile,\s*\{\s*demo:\s*true\s*\}\)/);
+  assert.match(runtimeJs, /String\(uid \|\| ""\)\.startsWith\("demo-"\)/);
   assert.match(upgradeJs, /fillDemoCredentials/);
   assert.match(upgradeJs, /handleGoogleLogin/);
   assert.match(upgradeJs, /loginEmail\.classList\.add\("error"\)/);
   assert.match(upgradeJs, /loaded in demo mode/);
+});
+
+test("runtime boots safely when Firebase SDK is unavailable", () => {
+  assert.match(runtimeJs, /function createOfflineFirebaseFallback/);
+  assert.match(runtimeJs, /Firebase SDK is not available; Educircuit is running in offline demo mode/);
+  assert.match(runtimeJs, /const firebaseApi = window\.firebase\?\.initializeApp/);
+  assert.match(runtimeJs, /window\.firebase = firebaseApi/);
+  assert.match(runtimeJs, /firebaseApi\.auth\.GoogleAuthProvider/);
+  assert.match(runtimeJs, /firebaseApi\.firestore\.FieldValue\.arrayUnion/);
+  assert.doesNotMatch(runtimeJs, /\bfirebase\.auth/);
+  assert.doesNotMatch(runtimeJs, /\bfirebase\.firestore/);
+});
+
+test("landing launch opens the auth chooser for signed-out users", () => {
+  assert.match(indexHtml, /data-ui-action="enter-landing"/);
+  assert.match(runtimeJs, /function showLoginChooser/);
+  assert.match(runtimeJs, /function enterLanding\(\)/);
+  assert.match(runtimeJs, /document\.getElementById\("landingPage"\)\.classList\.add\("hidden"\)/);
+  assert.match(runtimeJs, /showLoginChooser\(\)/);
+  assert.match(runtimeJs, /loginCard\?\.setAttribute\("data-step", "1"\)/);
+});
+
+test("login mode hides signup-only fields after field layout rules", () => {
+  const fieldRuleIndex = appCss.lastIndexOf(".field{");
+  const loginHideRuleIndex = appCss.lastIndexOf(".login-screen .premium-login-card[data-auth-mode=\"login\"] .auth-create-field");
+
+  assert.ok(fieldRuleIndex > -1);
+  assert.ok(loginHideRuleIndex > fieldRuleIndex);
+  assert.match(appCss.slice(loginHideRuleIndex), /display:none/);
 });
 
 test("legacy auth fallback does not store shared school passwords", () => {
