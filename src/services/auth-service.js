@@ -20,13 +20,13 @@ export function formatAuthError(error, { mode = "login", role = "student" } = {}
 
   if (code === "auth/invalid-credential" || code === "auth/user-not-found" || code === "auth/wrong-password") {
     if (role === "admin") {
-      return "No matching admin account was found. Check the email and password, or set Access Model to Create to make the school admin first.";
+      return "No matching admin account was found. Check the email and password, or create the school admin account first.";
     }
-    return `No matching ${roleLabel} account was found. Check the email and password, or set Access Model to Create if this is a new account.`;
+    return `No matching ${roleLabel} account was found. Check the email and password, or choose Create Account if this is your first time.`;
   }
 
   if (code === "auth/email-already-in-use") {
-    return "That email already has an Educircuit account. Set Access Model to Log in, then use the same email and password.";
+    return "That email already has an Educircuit account. Choose Log In and use the same email and password.";
   }
 
   if (code === "auth/weak-password") {
@@ -42,7 +42,7 @@ export function formatAuthError(error, { mode = "login", role = "student" } = {}
   }
 
   if (/school already exists/i.test(message) && isCreate && role === "admin") {
-    return "This school already exists. Set Access Model to Log in for the admin account, or use a different school code for a new school.";
+    return "This school already exists. Choose Log In for the admin account, or use a different school code for a new school.";
   }
 
   if (/school not found/i.test(message)) {

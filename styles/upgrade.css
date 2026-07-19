@@ -693,9 +693,63 @@ html {
   display:block;
 }
 
-.premium-login-card[data-step="1"] .login-actions-step2,
-.premium-login-card[data-step="2"] .login-actions-step1 {
+.login-step.auth-choice-panel.active {
+  display:grid;
+}
+
+.premium-login-card[data-step="1"] .login-actions-step2 {
   display:none;
+}
+
+.auth-choice-panel {
+  gap:14px;
+}
+
+.auth-choice-panel .google-auth-btn {
+  color:var(--text);
+  background:linear-gradient(180deg,#fff,#f8fbff);
+  border:1px solid rgba(75,95,130,.14);
+  box-shadow:0 12px 24px rgba(15,23,42,.06);
+}
+
+.auth-choice-panel .google-auth-btn::before {
+  content:"G";
+  display:inline-grid;
+  place-items:center;
+  width:22px;
+  height:22px;
+  margin-right:8px;
+  border-radius:50%;
+  background:#fff;
+  color:#0f62fe;
+  border:1px solid rgba(75,95,130,.16);
+  font-weight:900;
+}
+
+.auth-switch-copy button {
+  transition:color .18s ease, transform .18s ease;
+}
+
+.auth-switch-copy button:hover {
+  color:#0b4fd8;
+  transform:translateY(-1px);
+}
+
+.auth-form-heading {
+  padding:12px 14px;
+  border:1px solid rgba(15,98,254,.10);
+  border-radius:18px;
+  background:linear-gradient(180deg,rgba(248,251,255,.92),rgba(238,245,255,.72));
+}
+
+.auth-form-grid {
+  transition:opacity .24s ease, transform .24s ease;
+}
+
+.premium-login-card[data-auth-mode="login"] .auth-form-grid {
+  max-width:420px;
+  margin-left:auto;
+  margin-right:auto;
 }
 
 .login-screen .login-demo-row {
@@ -709,15 +763,6 @@ html {
 
 .login-screen .login-actions {
   margin-top:14px;
-}
-
-.login-screen .access-model-field {
-  margin-top:12px;
-}
-
-.login-screen .access-model-copy {
-  margin:8px 0 0;
-  line-height:1.45;
 }
 
 .login-screen input,
@@ -778,11 +823,6 @@ html {
 .language-picker:focus-within {
   border-color:rgba(15,98,254,.35);
   box-shadow:0 0 0 4px rgba(15,98,254,.1), 0 8px 18px rgba(15,23,42,.05);
-}
-
-#loginAccessModel {
-  color: var(--text);
-  background: linear-gradient(180deg, #f8fbff, #eef5ff);
 }
 
 .upgrade-card {
@@ -1990,6 +2030,10 @@ body.simulation-flow-error #wireLayer .wire-path-active {
     grid-template-columns: 1fr;
   }
 
+  .auth-form-grid {
+    grid-template-columns:1fr;
+  }
+
   .field-row {
     grid-template-columns: 1fr;
   }
@@ -2494,6 +2538,7 @@ body {
   .landing-actions,
   .landing-nav-actions,
   .login-actions,
+  .auth-choice-panel,
   .login-screen .login-demo-row,
   .project-card-actions {
     align-items:stretch;
@@ -2503,6 +2548,7 @@ body {
   .landing-actions button,
   .landing-nav-actions button,
   .login-actions button,
+  .auth-choice-panel > button,
   .login-screen .login-demo-row button,
   .project-card-actions button {
     width:100%;

@@ -55,7 +55,16 @@
   });
 
   const loginCard = document.querySelector(".premium-login-card");
+  const authFormTitle = document.getElementById("authFormTitle");
+  const authModeNote = document.getElementById("authModeNote");
+  const authCreateModeBtn = document.getElementById("authCreateModeBtn");
+  const authLoginModeBtn = document.getElementById("authLoginModeBtn");
+  const enterBtn = document.getElementById("enterBtn");
+  const loginSchoolPass = document.getElementById("loginSchoolPass");
   const originalEnterPlatform = window.enterPlatform;
+  const authFlow = window.EducircuitAuthFlow || {};
+  let authMode = authFlow.getMode?.() || loginCard?.dataset.authMode || "create";
+
   function goToLoginStep(step){
     const nextStep = step === 2 ? 2 : 1;
     loginCard?.setAttribute("data-step", String(nextStep));
@@ -66,48 +75,42 @@
     document.getElementById("loginStepTwo")?.classList.toggle("active", nextStep === 2);
   }
 
-  function validateFallbackStepOne(){
-    const loginName = document.getElementById("loginName");
-    const loginEmail = document.getElementById("loginEmail");
-    const loginRole = document.getElementById("loginRole");
-    const fields = [loginName, loginEmail, loginRole].filter(Boolean);
-    let valid = true;
+  function syncAuthMode(mode = authMode, { advance = false } = {}){
+    authMode = mode === "login" ? "login" : "create";
+    loginCard?.setAttribute("data-auth-mode", authMode);
 
-    fields.forEach(field => field.classList.remove("error"));
-
-    if(!loginName?.value.trim()){
-      loginName?.classList.add("error");
-      valid = false;
+    const isLogin = authMode === "login";
+    if(authFormTitle){
+      authFormTitle.textContent = isLogin ? "Log In" : "Create Account";
+    }
+    if(authModeNote){
+      authModeNote.textContent = isLogin
+        ? "Enter your school code, email, and password to open your lab."
+        : "Fill this once to create your Educircuit classroom account.";
+    }
+    if(enterBtn){
+      enterBtn.textContent = isLogin ? "Log In" : "Create Account";
+      enterBtn.setAttribute("aria-label", isLogin ? "Log in to Educircuit" : "Create Educircuit account");
+    }
+    if(loginSchoolPass){
+      loginSchoolPass.autocomplete = isLogin ? "current-password" : "new-password";
+    }
+    const stepTwo = document.getElementById("loginStepTwo");
+    if(stepTwo){
+      stepTwo.textContent = isLogin ? "2. Login" : "2. Create";
     }
 
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginEmail?.value.trim() || "")){
-      loginEmail?.classList.add("error");
-      valid = false;
+    if(advance){
+      goToLoginStep(2);
+      setTimeout(() => {
+        const firstField = isLogin ? document.getElementById("loginSchoolUser") : document.getElementById("loginName");
+        firstField?.focus?.();
+      }, 80);
     }
-
-    if(!loginRole?.value){
-      loginRole?.classList.add("error");
-      valid = false;
-    }
-
-    if(!valid){
-      window.educircuitApp?.showToast?.("Enter your name, valid email, and role first.") ||
-        console.warn("Enter your name, valid email, and role first.");
-    }
-
-    return valid;
   }
 
-  function handleLoginNextStep(event){
-    const stepper = window.EducircuitLoginStepper;
-    if(stepper?.handleNextStep){
-      event?.preventDefault?.();
-      event?.stopPropagation?.();
-      stepper.handleNextStep();
-      return;
-    }
-    if(!validateFallbackStepOne()) return;
-    goToLoginStep(2);
+  function openAuthMode(mode){
+    syncAuthMode(mode, { advance:true });
   }
 
   function handleLoginBackStep(event){
@@ -122,8 +125,14 @@
   }
 
   document.addEventListener("click", (event) => {
-    if(event.target.closest("#loginNextStepBtn")){
-      handleLoginNextStep(event);
+    if(event.target.closest("#authCreateModeBtn")){
+      event.preventDefault();
+      openAuthMode("create");
+      return;
+    }
+    if(event.target.closest("#authLoginModeBtn")){
+      event.preventDefault();
+      openAuthMode("login");
       return;
     }
     if(event.target.closest("#loginBackStepBtn")){
@@ -132,11 +141,23 @@
   });
   window.enterPlatform = function(){
     if(loginCard?.dataset.step === "1"){
-      handleLoginNextStep();
+      openAuthMode(authMode);
       return;
     }
     originalEnterPlatform?.();
   };
+
+  if(!authFlow.installed){
+    authCreateModeBtn?.addEventListener("click", () => openAuthMode("create"));
+    authLoginModeBtn?.addEventListener("click", () => openAuthMode("login"));
+    authFlow.installed = true;
+  }
+  authFlow.getMode = () => authMode === "login" ? "login" : "create";
+  authFlow.setMode = syncAuthMode;
+  authFlow.openAuthMode = openAuthMode;
+  authFlow.goToLoginStep = goToLoginStep;
+  window.EducircuitAuthFlow = authFlow;
+  syncAuthMode(authMode);
 
   function applyThemeFallback(theme){
     window.EducircuitRuntimePrefs = window.EducircuitRuntimePrefs || {};

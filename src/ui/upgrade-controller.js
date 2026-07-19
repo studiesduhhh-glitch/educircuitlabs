@@ -874,34 +874,17 @@ function installBrandingAndTheme() {
 }
 
 function installLoginStepper({
-  getPayload,
-  validateStepOne,
   onSubmit,
   toast
 } = {}) {
   const loginCard = document.querySelector(".premium-login-card");
   if (!loginCard) return null;
 
-  const loginName = document.getElementById("loginName");
-  const loginEmail = document.getElementById("loginEmail");
-  const loginRole = document.getElementById("loginRole");
-  const loginSchool = document.getElementById("loginSchool");
-  const loginNextStepBtn = document.getElementById("loginNextStepBtn");
   const loginBackStepBtn = document.getElementById("loginBackStepBtn");
   const loginStepOne = document.getElementById("loginStepOne");
   const loginStepTwo = document.getElementById("loginStepTwo");
 
   const stepper = window.EducircuitLoginStepper || {};
-  stepper.getPayload = getPayload || stepper.getPayload || (() => ({
-    name: loginName?.value.trim(),
-    email: loginEmail?.value.trim(),
-    role: loginRole?.value
-  }));
-  stepper.validateStepOne = validateStepOne || stepper.validateStepOne || (payload => {
-    if (!payload.name) throw new Error("Enter your name first.");
-    if (!payload.email) throw new Error("Enter your email first.");
-    if (!payload.role) throw new Error("Choose your role.");
-  });
   stepper.onSubmit = onSubmit || stepper.onSubmit;
   stepper.toast = toast || stepper.toast || (message => window.educircuitApp?.showToast?.(message) || console.warn(message));
 
@@ -914,29 +897,21 @@ function installLoginStepper({
     loginStepOne?.classList.toggle("active", nextStep === 1);
     loginStepTwo?.classList.toggle("active", nextStep === 2);
     if (nextStep === 2) {
-      setTimeout(() => loginSchool?.focus(), 80);
-    }
-  }
-
-  function handleNextStep() {
-    try {
-      stepper.validateStepOne(stepper.getPayload());
-      goToLoginStep(2);
-    } catch (error) {
-      stepper.toast(error.message);
+      const authMode = window.EducircuitAuthFlow?.getMode?.() || loginCard.dataset.authMode || "create";
+      const firstFieldId = authMode === "login" ? "loginSchoolUser" : "loginName";
+      setTimeout(() => document.getElementById(firstFieldId)?.focus(), 80);
     }
   }
 
   stepper.goToLoginStep = goToLoginStep;
-  stepper.handleNextStep = handleNextStep;
 
   if (!stepper.installed) {
     stepper.originalEnterPlatform = window.enterPlatform?.bind(window);
-    loginNextStepBtn?.addEventListener("click", handleNextStep);
     loginBackStepBtn?.addEventListener("click", () => goToLoginStep(1));
     window.enterPlatform = () => {
       if (loginCard.dataset.step === "1") {
-        handleNextStep();
+        const authMode = window.EducircuitAuthFlow?.getMode?.() || loginCard.dataset.authMode || "create";
+        window.EducircuitAuthFlow?.openAuthMode?.(authMode) || goToLoginStep(2);
         return;
       }
       if (typeof stepper.onSubmit === "function") {
@@ -950,6 +925,9 @@ function installLoginStepper({
 
   window.EducircuitLoginStepper = stepper;
   goToLoginStep(Number(loginCard.dataset.step || 1));
+  if (window.EducircuitAuthFlow) {
+    window.EducircuitAuthFlow.goToLoginStep = goToLoginStep;
+  }
   return stepper;
 }
 
@@ -2509,6 +2487,7 @@ function installProjectSharing(app, services) {
 }
 
 function installAuthUpgrade(app, services) {
+  const loginCard = document.querySelector(".premium-login-card");
   const loginRole = document.getElementById("loginRole");
   const loginName = document.getElementById("loginName");
   const loginEmail = document.getElementById("loginEmail");
@@ -2516,24 +2495,22 @@ function installAuthUpgrade(app, services) {
   const loginSchool = document.getElementById("loginSchool");
   const loginSchoolUser = document.getElementById("loginSchoolUser");
   const loginSchoolPass = document.getElementById("loginSchoolPass");
-  const loginAccessModel = document.getElementById("loginAccessModel");
-  const loginAccessHint = document.getElementById("loginAccessHint");
-  const signUpBtn = replaceButton(document.getElementById("signUpBtn"), handleAccessToggle);
   const enterBtn = replaceButton(document.getElementById("enterBtn"), handlePrimaryAccess);
+  const googleAuthBtn = replaceButton(document.getElementById("googleAuthBtn"), handleGoogleLogin);
   const demoStudentBtn = replaceButton(document.getElementById("demoStudentBtn"), () => fillDemoCredentials("student"));
   const demoTeacherBtn = replaceButton(document.getElementById("demoTeacherBtn"), () => fillDemoCredentials("teacher"));
   replaceButton(document.getElementById("logoutBtn"), handleLogout);
 
   ensureRoleOption(loginRole, "admin", "School Admin");
+  const authFlow = window.EducircuitAuthFlow || {};
+  const googleAvailable = Boolean(window.firebase?.auth?.GoogleAuthProvider && app.auth?.signInWithPopup);
+  if (googleAuthBtn) {
+    googleAuthBtn.hidden = !googleAvailable;
+  }
 
-  const accessCopy = {
-    "admin:create": "Creates the school and the first admin account. Use a real email and a password with at least 6 characters.",
-    "admin:login": "Signs in to an existing school admin account. Use the same email and password used when the school was created.",
-    "teacher:create": "Creates a teacher account and sets up the school automatically if the school code is new.",
-    "teacher:login": "Signs in to an existing teacher account with that teacher's email and password.",
-    "student:create": "Creates a student account and sets up the school automatically if the school code is new.",
-    "student:login": "Signs in to an existing student account with that student's email and password."
-  };
+  function getAuthMode() {
+    return authFlow.getMode?.() || loginCard?.dataset.authMode || "create";
+  }
 
   function getPayload() {
     return {
@@ -2544,17 +2521,26 @@ function installAuthUpgrade(app, services) {
       className: loginClass.value.trim(),
       school: loginSchool.value.trim(),
       schoolCode: loginSchoolUser.value.trim(),
-      accessModel: loginAccessModel?.value || "create"
+      accessModel: getAuthMode()
     };
   }
 
-  function validateStepOne(payload) {
-    [loginName, loginEmail, loginRole].forEach(field => field.classList.remove("error"));
+  function clearAuthErrors() {
+    [loginName, loginEmail, loginRole, loginClass, loginSchool, loginSchoolUser, loginSchoolPass]
+      .forEach(field => field?.classList.remove("error"));
+  }
+
+  function focusFirstError() {
+    document.querySelector(".login-step.active .error")?.focus?.();
+  }
+
+  function validatePayload(payload) {
+    clearAuthErrors();
     const errors = [];
 
-    if (!payload.name) {
-      loginName.classList.add("error");
-      errors.push("Enter the full name for this account.");
+    if (!payload.schoolCode) {
+      loginSchoolUser.classList.add("error");
+      errors.push("Enter the school code.");
     }
     if (!payload.email) {
       loginEmail.classList.add("error");
@@ -2563,70 +2549,44 @@ function installAuthUpgrade(app, services) {
       loginEmail.classList.add("error");
       errors.push("Enter a valid email address.");
     }
-    if (!payload.role) {
-      loginRole.classList.add("error");
-      errors.push("Choose a role.");
+    if (!payload.password) {
+      loginSchoolPass.classList.add("error");
+      errors.push("Enter your password.");
+    }
+    if (payload.accessModel === "create" && payload.password.length > 0 && payload.password.length < 6) {
+      loginSchoolPass.classList.add("error");
+      errors.push("Use a password with at least 6 characters.");
+    }
+
+    if (payload.accessModel === "create") {
+      if (!payload.name) {
+        loginName.classList.add("error");
+        errors.push("Enter the full name for this account.");
+      }
+      if (!payload.role) {
+        loginRole.classList.add("error");
+        errors.push("Choose a role.");
+      }
+      if (!payload.school) {
+        loginSchool.classList.add("error");
+        errors.push("Enter the school name.");
+      }
+      if (payload.role === "student" && !payload.className) {
+        loginClass.classList.add("error");
+        errors.push("Enter your class or section.");
+      }
     }
 
     if (errors.length) {
-      document.querySelector(".login-step.active .error")?.focus?.();
+      focusFirstError();
       throw new Error(errors[0]);
     }
   }
 
-  function validatePayload(payload) {
-    validateStepOne(payload);
-    [loginSchoolPass, loginSchool, loginSchoolUser, loginClass].forEach(field => field?.classList.remove("error"));
-    if (!payload.password || payload.password.length < 6) {
-      loginSchoolPass.classList.add("error");
-      throw new Error("Use a password with at least 6 characters.");
-    }
-    if (!payload.school) {
-      loginSchool.classList.add("error");
-      throw new Error("Enter the school name.");
-    }
-    if (!payload.schoolCode) {
-      loginSchoolUser.classList.add("error");
-      throw new Error("Enter the school code.");
-    }
-    if (payload.role === "student" && !payload.className) {
-      loginClass.classList.add("error");
-      throw new Error("Enter your class or section.");
-    }
-  }
-
-  function syncAccessModel({ reset = false } = {}) {
-    const role = loginRole.value || "student";
-    const mode = reset ? "create" : (loginAccessModel?.value || "create");
-    if (loginAccessModel) {
-      loginAccessModel.value = mode;
-    }
-
-    const selectedMode = loginAccessModel?.value || "create";
-    const isCreate = selectedMode === "create";
-    const roleLabel = role === "admin" ? "Admin" : role === "teacher" ? "Teacher" : "Student";
-
-    if (loginAccessHint) {
-      loginAccessHint.textContent = accessCopy[`${role}:${selectedMode}`] || accessCopy["student:create"];
-    }
-
-    if (enterBtn) {
-      enterBtn.textContent = isCreate
-        ? role === "admin" ? "Create School Admin" : `Create ${roleLabel} Account`
-        : role === "admin" ? "Login as Admin" : `Login as ${roleLabel}`;
-    }
-
-    if (signUpBtn) {
-      signUpBtn.textContent = isCreate ? "Use Login Instead" : "Use Create Instead";
-      signUpBtn.setAttribute("aria-label", isCreate ? "Switch access model to login" : "Switch access model to create");
-    }
-  }
-
-  function handleAccessToggle() {
-    if (loginAccessModel) {
-      loginAccessModel.value = loginAccessModel.value === "create" ? "login" : "create";
-    }
-    syncAccessModel();
+  function syncRoleFields() {
+    const isFaculty = loginRole.value === "teacher" || loginRole.value === "admin";
+    loginClass.placeholder = isFaculty ? "Department / Staff (optional)" : "10-A";
+    loginClass.previousElementSibling.textContent = isFaculty ? "Department / Section" : "Class / Section";
   }
 
   async function handlePrimaryAccess() {
@@ -2670,30 +2630,52 @@ function installAuthUpgrade(app, services) {
     }
   }
 
+  async function handleGoogleLogin() {
+    if (!googleAvailable) {
+      app.showToast?.("Google sign-in is not available for this project yet.");
+      return;
+    }
+    try {
+      const provider = new window.firebase.auth.GoogleAuthProvider();
+      const credential = await app.auth.signInWithPopup(provider);
+      const profile = await services.auth.fetchUserProfile(credential.user.uid);
+      if (!profile) {
+        await services.auth.logout();
+        throw new Error("No Educircuit profile is linked to this Google account yet. Create an account with email and password first.");
+      }
+      app.applyAuthenticatedProfile(profile.uid, profileForLegacy(profile));
+      app.state.demoMode = false;
+      app.showToast(`Welcome back, ${profile.name}`);
+      await wait(120);
+      await services.refreshAll();
+    } catch (error) {
+      const message = error?.code === "auth/operation-not-allowed"
+        ? "Google sign-in is not enabled in Firebase yet."
+        : error.message || "Google sign-in could not finish.";
+      app.showToast?.(message);
+    }
+  }
+
   function fillDemoCredentials(role) {
     if (typeof app.fillDemo === "function") {
       app.fillDemo(role);
-    } else {
-      loginName.value = role === "teacher" ? "Demo Teacher" : "Demo Student";
-      loginEmail.value = `${role}@demo.educircuitlabs.app`;
-      loginRole.value = role;
-      loginClass.value = role === "teacher" ? "Robotics Lab" : "10-A";
-      loginSchool.value = "STEM Academy";
-      loginSchoolUser.value = "stem-academy";
-      loginSchoolPass.value = "School@123";
-      loginRole.dispatchEvent(new Event("change"));
+      return;
     }
-    if (loginAccessModel) {
-      loginAccessModel.value = "create";
-      syncAccessModel();
-    }
-    installLoginStepper({
-      getPayload,
-      validateStepOne,
-      onSubmit: handlePrimaryAccess,
-      toast: message => app.showToast(message)
-    })?.goToLoginStep?.(1);
-    app.showToast("Demo details filled. Access Model is set to Create for first use.");
+
+    const profile = {
+      uid: `demo-${role === "teacher" ? "teacher" : "student"}`,
+      name: role === "teacher" ? "Demo Teacher" : "Demo Student",
+      email: `${role}@demo.educircuitlabs.app`,
+      role: role === "teacher" ? "teacher" : "student",
+      className: role === "teacher" ? "Robotics Lab" : "10-A",
+      school: "STEM Academy",
+      schoolKey: "stem-academy",
+      schoolId: "stem-academy"
+    };
+
+    app.state.demoMode = true;
+    app.applyAuthenticatedProfile(profile.uid, profileForLegacy(profile));
+    app.showToast(`${profile.name} loaded in demo mode`);
   }
 
   async function handleLogout() {
@@ -2710,20 +2692,16 @@ function installAuthUpgrade(app, services) {
   }
 
   installLoginStepper({
-    getPayload,
-    validateStepOne,
     onSubmit: handlePrimaryAccess,
     toast: message => app.showToast(message)
   });
 
-  loginRole.addEventListener("change", () => {
-    syncAccessModel({ reset: true });
-  });
-  loginAccessModel?.addEventListener("change", () => syncAccessModel());
+  loginRole.addEventListener("change", syncRoleFields);
 
-  loginRole.dispatchEvent(new Event("change"));
+  syncRoleFields();
+  authFlow.setMode?.(getAuthMode());
 
-  return { signUpBtn, enterBtn, demoStudentBtn, demoTeacherBtn };
+  return { enterBtn, googleAuthBtn, demoStudentBtn, demoTeacherBtn };
 }
 
 function installSavedProjectsPortal(app, services) {

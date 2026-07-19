@@ -84,14 +84,14 @@ const fakeFirebase = {
   }
 };
 
-test("maps invalid admin credentials to an access model hint", () => {
+test("maps invalid admin credentials to create-account guidance", () => {
   const message = formatAuthError(
     { code: "auth/invalid-credential", message: "Firebase: invalid credential" },
     { mode: "login", role: "admin" }
   );
 
   assert.match(message, /No matching admin account/);
-  assert.match(message, /Access Model to Create/);
+  assert.match(message, /create the school admin account first/);
 });
 
 test("maps duplicate email to login guidance", () => {
@@ -101,7 +101,7 @@ test("maps duplicate email to login guidance", () => {
   );
 
   assert.match(message, /already has an Educircuit account/);
-  assert.match(message, /Access Model to Log in/);
+  assert.match(message, /Choose Log In/);
 });
 
 test("student account creation bootstraps a new school code", async () => {

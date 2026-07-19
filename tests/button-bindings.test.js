@@ -143,16 +143,25 @@ test("project pages split saved, graded, and explore-visible work", () => {
   assert.match(projectServiceJs, /payload\.cloneable = visibility === "public"/);
 });
 
-test("login step requires account details and demo buttons do not bypass auth", () => {
+test("login step is explicit and demo buttons open the simulator directly", () => {
+  assert.match(indexHtml, /id="authCreateModeBtn"/);
+  assert.match(indexHtml, /id="authLoginModeBtn"/);
+  assert.match(indexHtml, /id="googleAuthBtn"/);
+  assert.doesNotMatch(indexHtml, new RegExp("loginAccess" + "Model"));
+  assert.doesNotMatch(indexHtml, /Access\s+Model/);
   assert.match(runtimeJs, /const loginEmail = document\.getElementById\("loginEmail"\)/);
   assert.equal(runtimeJs.includes("/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/"), true);
-  assert.match(fallbackJs, /validateFallbackStepOne/);
-  assert.match(fallbackJs, /event\.target\.closest\("#loginNextStepBtn"\)/);
-  assert.match(fallbackJs, /handleLoginNextStep\(\)/);
+  assert.match(fallbackJs, /EducircuitAuthFlow/);
+  assert.match(fallbackJs, /event\.target\.closest\("#authLoginModeBtn"\)/);
+  assert.match(runtimeJs, /function openAuthMode/);
+  assert.match(runtimeJs, /getAuthMode\(\) === "create"/);
+  assert.match(runtimeJs, /function buildDemoProfile/);
+  assert.match(runtimeJs, /state\.demoMode = true/);
+  assert.match(runtimeJs, /applyAuthenticatedProfile\(profile\.uid,\s*profile\)/);
   assert.match(upgradeJs, /fillDemoCredentials/);
+  assert.match(upgradeJs, /handleGoogleLogin/);
   assert.match(upgradeJs, /loginEmail\.classList\.add\("error"\)/);
-  assert.doesNotMatch(upgradeJs, /loaded in demo mode/);
-  assert.doesNotMatch(upgradeJs, /applyAuthenticatedProfile\(demoProfile\.uid/);
+  assert.match(upgradeJs, /loaded in demo mode/);
 });
 
 test("legacy auth fallback does not store shared school passwords", () => {

@@ -515,10 +515,14 @@ const loginClass = document.getElementById("loginClass");
 const loginSchool = document.getElementById("loginSchool");
 const loginSchoolUser = document.getElementById("loginSchoolUser");
 const loginSchoolPass = document.getElementById("loginSchoolPass");
-const loginAccessModel = document.getElementById("loginAccessModel");
-const loginAccessHint = document.getElementById("loginAccessHint");
+const loginCard = document.querySelector(".premium-login-card");
+const authFormTitle = document.getElementById("authFormTitle");
+const authModeNote = document.getElementById("authModeNote");
+const authCreateModeBtn = document.getElementById("authCreateModeBtn");
+const authLoginModeBtn = document.getElementById("authLoginModeBtn");
+const googleAuthBtn = document.getElementById("googleAuthBtn");
+const loginBackStepBtn = document.getElementById("loginBackStepBtn");
 const toggleLoginPasswordBtn = document.getElementById("toggleLoginPasswordBtn");
-const signUpBtn = document.getElementById("signUpBtn");
 const enterBtn = document.getElementById("enterBtn");
 const demoStudentBtn = document.getElementById("demoStudentBtn");
 const demoTeacherBtn = document.getElementById("demoTeacherBtn");
@@ -611,36 +615,42 @@ function ensureSchoolContainer(school){
   return state.schools[school];
 }
 
+function getAuthMode(){
+  return window.EducircuitAuthFlow?.getMode?.() || loginCard?.dataset.authMode || "create";
+}
+
+function openAuthMode(mode){
+  if(window.EducircuitAuthFlow?.openAuthMode){
+    window.EducircuitAuthFlow.openAuthMode(mode);
+  } else {
+    const nextMode = mode === "login" ? "login" : "create";
+    loginCard?.setAttribute("data-auth-mode", nextMode);
+    loginCard?.setAttribute("data-step", "2");
+    document.querySelectorAll(".login-step").forEach(panel => {
+      panel.classList.toggle("active", panel.dataset.loginStep === "2");
+    });
+    document.getElementById("loginStepOne")?.classList.remove("active");
+    document.getElementById("loginStepTwo")?.classList.add("active");
+  }
+  syncRoleFields();
+}
+
 function syncRoleFields(){
   const isFaculty = loginRole.value === "teacher" || loginRole.value === "admin";
-  const accessMode = loginAccessModel?.value || "create";
-  const isCreate = accessMode === "create";
+  const isCreate = getAuthMode() === "create";
   loginClass.placeholder = isFaculty ? "Department / Staff (optional)" : "10-A";
   loginClass.previousElementSibling.textContent = isFaculty ? "Department / Section" : "Class / Section";
+  if(authFormTitle){
+    authFormTitle.textContent = isCreate ? "Create Account" : "Log In";
+  }
   if(enterBtn){
-    if(loginRole.value === "admin"){
-      enterBtn.textContent = isCreate ? "Create School Admin" : "Login as Admin";
-    } else {
-      const roleLabel = loginRole.value === "teacher" ? "Teacher" : "Student";
-      enterBtn.textContent = isCreate ? `Create ${roleLabel} Account` : `Login as ${roleLabel}`;
-    }
+    enterBtn.textContent = isCreate ? "Create Account" : "Log In";
+    enterBtn.setAttribute("aria-label", isCreate ? "Create Educircuit account" : "Log in to Educircuit");
   }
-  if(loginAccessHint){
-    if(loginRole.value === "admin"){
-      loginAccessHint.textContent = isCreate
-        ? "Creates the school and first admin account."
-        : "Signs in to an existing school admin account.";
-    } else {
-      loginAccessHint.textContent = isCreate
-        ? "Creates an account and sets up the school automatically if the school code is new."
-        : "Signs in to an account that already exists.";
-    }
-  }
-  const authModeNote = document.getElementById("authModeNote");
   if(authModeNote){
-    authModeNote.textContent = loginRole.value === "admin"
-      ? "Create the school admin once for each campus. That account can then onboard teachers and students."
-      : "Teachers and students can create their own account with a school code, even if it is a new school.";
+    authModeNote.textContent = isCreate
+      ? "Fill this once to create your Educircuit classroom account."
+      : "Enter your school code, email, and password to open your lab.";
   }
 }
 
@@ -653,7 +663,7 @@ function clearLoginErrors(){
 function syncLoginPasswordToggle(){
   const isVisible = loginSchoolPass.type === "text";
   toggleLoginPasswordBtn.textContent = isVisible ? "Hide" : "Show";
-  toggleLoginPasswordBtn.setAttribute("aria-label", isVisible ? "Hide school password" : "Show school password");
+  toggleLoginPasswordBtn.setAttribute("aria-label", isVisible ? "Hide password" : "Show password");
   toggleLoginPasswordBtn.setAttribute("aria-pressed", String(isVisible));
 }
 
@@ -665,7 +675,8 @@ function getLoginPayload(){
     className: loginClass.value.trim(),
     school: loginSchool.value.trim(),
     schoolUsername: loginSchoolUser.value.trim(),
-    schoolPassword: loginSchoolPass.value.trim()
+    schoolPassword: loginSchoolPass.value.trim(),
+    accessModel: getAuthMode()
   };
 }
 
@@ -673,7 +684,7 @@ function validateLoginPayload(payload){
   clearLoginErrors();
   let hasError = false;
 
-  if(payload.name.length < 3){
+  if(payload.accessModel === "create" && payload.name.length < 3){
     loginName.classList.add("error");
     hasError = true;
   }
@@ -683,12 +694,12 @@ function validateLoginPayload(payload){
     hasError = true;
   }
 
-  if(!payload.role){
+  if(payload.accessModel === "create" && !payload.role){
     loginRole.classList.add("error");
     hasError = true;
   }
 
-  if(!payload.school){
+  if(payload.accessModel === "create" && !payload.school){
     loginSchool.classList.add("error");
     hasError = true;
   }
@@ -703,7 +714,7 @@ function validateLoginPayload(payload){
     hasError = true;
   }
 
-  if(payload.role === "student" && !payload.className){
+  if(payload.accessModel === "create" && payload.role === "student" && !payload.className){
     loginClass.classList.add("error");
     hasError = true;
   }
@@ -718,11 +729,11 @@ function formatFirebaseAuthError(error, action = "login", role = "student"){
 
   if(code === "auth/invalid-credential" || code === "auth/user-not-found" || code === "auth/wrong-password"){
     return isAdmin
-      ? "No matching admin account was found. Check the email and password, or set Access Model to Create to make the school admin first."
-      : "No matching account was found. Check the email and password, or set Access Model to Create if this is a new account.";
+      ? "No matching admin account was found. Check the email and password, or create the school admin account first."
+      : "No matching account was found. Check the email and password, or choose Create Account if this is your first time.";
   }
   if(code === "auth/email-already-in-use"){
-    return "That email already has an Educircuit account. Set Access Model to Log in, then use the same email and password.";
+    return "That email already has an Educircuit account. Choose Log In and use the same email and password.";
   }
   if(code === "auth/weak-password"){
     return "Use a stronger password with at least 6 characters.";
@@ -731,7 +742,7 @@ function formatFirebaseAuthError(error, action = "login", role = "student"){
     return "Enter a valid email address before continuing.";
   }
   if(/school already/i.test(message) && action === "create"){
-    return "This school already exists. Set Access Model to Log in, or use a different school code for a new school.";
+    return "This school already exists. Choose Log In, or use a different school code for a new school.";
   }
   return message || "Something went wrong while signing in. Check the details and try again.";
 }
@@ -794,7 +805,7 @@ async function signUpUser(){
     const adminIds = Array.isArray(schoolData?.adminIds) ? schoolData.adminIds : [];
 
     if(payload.role === "admin" && adminIds.length){
-      showToast("This school already has an admin. Use Access Model to log in instead.");
+      showToast("This school already has an admin. Choose Log In to use that account.");
       return;
     }
 
@@ -870,6 +881,32 @@ async function loginUser(){
     showToast("Welcome, " + profile.name);
   } catch(error){
     showToast(formatFirebaseAuthError(error, "login", payload.role));
+  }
+}
+
+async function loginWithGoogle(){
+  if(!firebase.auth.GoogleAuthProvider || !auth.signInWithPopup){
+    showToast("Google sign-in is not available for this project yet.");
+    return;
+  }
+
+  try{
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const credential = await auth.signInWithPopup(provider);
+    const profile = await fetchUserProfile(credential.user.uid);
+
+    if(!profile){
+      await auth.signOut();
+      showToast("No Educircuit profile is linked to this Google account yet. Create an account with email and password first.");
+      return;
+    }
+
+    applyAuthenticatedProfile(credential.user.uid, profile);
+    showToast("Welcome, " + profile.name);
+  } catch(error){
+    showToast(error?.code === "auth/operation-not-allowed"
+      ? "Google sign-in is not enabled in Firebase yet."
+      : error.message || "Google sign-in could not finish.");
   }
 }
 
@@ -2572,23 +2609,42 @@ function loadProject(){
   });
 }
 
+function buildDemoProfile(role){
+  const isTeacher = role === "teacher";
+  return {
+    uid: `demo-${isTeacher ? "teacher" : "student"}`,
+    name: isTeacher ? "Demo Teacher" : "Demo Student",
+    email: isTeacher ? "teacher@demo.educircuitlabs.app" : "student@demo.educircuitlabs.app",
+    role: isTeacher ? "teacher" : "student",
+    className: isTeacher ? "Robotics Lab" : "10-A",
+    school: "STEM Academy",
+    schoolKey: "stem-academy",
+    schoolId: "stem-academy",
+    schoolUsername: "stem-academy"
+  };
+}
+
 function fillDemo(role){
-  loginName.value = role === "teacher" ? "Demo Teacher" : "Demo Student";
-  loginEmail.value = role === "teacher" ? "teacher@demo.educircuitlabs.app" : "student@demo.educircuitlabs.app";
-  loginRole.value = role;
-  loginClass.value = role === "teacher" ? "Robotics Lab" : "10-A";
-  loginSchool.value = "STEM Academy";
-  loginSchoolUser.value = "stem-academy";
+  const profile = buildDemoProfile(role);
+  loginName.value = profile.name;
+  loginEmail.value = profile.email;
+  loginRole.value = profile.role;
+  loginClass.value = profile.className;
+  loginSchool.value = profile.school;
+  loginSchoolUser.value = profile.schoolUsername;
   loginSchoolPass.value = "School@123";
-  if(loginAccessModel){
-    loginAccessModel.value = "create";
-  }
+  state.demoMode = true;
+  applyAuthenticatedProfile(profile.uid, profile);
   syncRoleFields();
-  showToast("Demo details filled. Access Model is set to Create for first use.");
+  showToast(`${profile.name} loaded in demo mode`);
 }
 
 function enterPlatform(){
-  if(loginAccessModel?.value === "create"){
+  if(loginCard?.dataset.step === "1"){
+    openAuthMode(getAuthMode());
+    return;
+  }
+  if(getAuthMode() === "create"){
     signUpUser();
     return;
   }
@@ -2754,7 +2810,20 @@ batteryVoltageRange.addEventListener("input", (e) => {
 
 demoStudentBtn.addEventListener("click", () => fillDemo("student"));
 demoTeacherBtn.addEventListener("click", () => fillDemo("teacher"));
-signUpBtn.addEventListener("click", signUpUser);
+authCreateModeBtn?.addEventListener("click", () => openAuthMode("create"));
+authLoginModeBtn?.addEventListener("click", () => openAuthMode("login"));
+loginBackStepBtn?.addEventListener("click", () => {
+  loginCard?.setAttribute("data-step", "1");
+  document.querySelectorAll(".login-step").forEach(panel => {
+    panel.classList.toggle("active", panel.dataset.loginStep === "1");
+  });
+  document.getElementById("loginStepOne")?.classList.add("active");
+  document.getElementById("loginStepTwo")?.classList.remove("active");
+});
+if(googleAuthBtn){
+  googleAuthBtn.hidden = !(firebase.auth.GoogleAuthProvider && auth.signInWithPopup);
+  googleAuthBtn.addEventListener("click", loginWithGoogle);
+}
 enterBtn.addEventListener("click", enterPlatform);
 
 document.querySelectorAll("[data-example]").forEach(el => {
@@ -2807,7 +2876,6 @@ toggleLoginPasswordBtn.addEventListener("click", () => {
 });
 
 loginRole.addEventListener("change", syncRoleFields);
-loginAccessModel?.addEventListener("change", syncRoleFields);
  
   
 document.getElementById("languageSelect")?.addEventListener("change", event => {
@@ -2945,7 +3013,9 @@ window.educircuitApp = {
     loginSchool,
     loginSchoolUser,
     loginSchoolPass,
-    signUpBtn,
+    authCreateModeBtn,
+    authLoginModeBtn,
+    googleAuthBtn,
     enterBtn,
     demoStudentBtn,
     demoTeacherBtn,

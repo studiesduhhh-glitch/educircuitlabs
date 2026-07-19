@@ -957,6 +957,73 @@ button.amber{
   margin-top:12px;
 }
 
+.auth-choice-panel{
+  display:grid;
+  gap:12px;
+}
+
+.auth-choice-panel > button{
+  width:100%;
+}
+
+.auth-switch-copy{
+  margin:2px 0 0;
+  text-align:center;
+  color:var(--muted);
+  font-size:14px;
+}
+
+.auth-switch-copy button{
+  border:0;
+  padding:0;
+  background:transparent;
+  color:var(--blue);
+  font:inherit;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.auth-form-heading h3{
+  margin:0;
+  font-size:20px;
+  letter-spacing:-.2px;
+}
+
+.auth-form-heading p{
+  margin:6px 0 0;
+}
+
+.auth-form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:14px;
+}
+
+.auth-form-grid .field{
+  min-width:0;
+}
+
+.premium-login-card[data-auth-mode="login"] .auth-create-field{
+  display:none;
+}
+
+.premium-login-card[data-auth-mode="login"] .auth-school-code-field{
+  order:1;
+}
+
+.premium-login-card[data-auth-mode="login"] .auth-email-field{
+  order:2;
+}
+
+.premium-login-card[data-auth-mode="login"] .auth-password-field{
+  order:3;
+}
+
+.premium-login-card[data-auth-mode="login"] .auth-form-grid{
+  grid-template-columns:1fr;
+}
+
 .guide-page{
   position:fixed;
   inset:0;

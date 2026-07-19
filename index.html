@@ -129,91 +129,81 @@
         </div>
       </div>
 
-      <div class="login-progress" aria-label="Login progress">
+      <div class="login-progress" aria-label="Authentication progress">
         <div class="login-progress-line"><span id="loginProgressFill"></span></div>
         <div class="login-progress-steps">
-          <span id="loginStepOne" class="active">1. Account</span>
-          <span id="loginStepTwo">2. School</span>
+          <span id="loginStepOne" class="active">1. Choose</span>
+          <span id="loginStepTwo">2. Details</span>
         </div>
       </div>
 
-      <div class="login-step active" data-login-step="1">
-        <div class="field-row">
-          <div class="field">
+      <div class="login-step active auth-choice-panel" data-login-step="1">
+        <button type="button" class="google-auth-btn" id="googleAuthBtn" hidden>Continue with Google</button>
+        <button type="button" id="authCreateModeBtn">Create Account</button>
+        <p class="auth-switch-copy">Already have an account? <button type="button" id="authLoginModeBtn">Log In</button></p>
+
+        <div class="login-demo-row">
+          <button type="button" class="secondary" id="demoStudentBtn">Demo Student</button>
+          <button type="button" class="secondary" id="demoTeacherBtn">Demo Teacher</button>
+        </div>
+      </div>
+
+      <div class="login-step auth-form-panel" data-login-step="2">
+        <div class="auth-form-heading">
+          <h3 id="authFormTitle">Create Account</h3>
+          <p class="small-note" id="authModeNote">
+            Fill this once to create your Educircuit classroom account.
+          </p>
+        </div>
+
+        <div class="auth-form-grid">
+          <div class="field auth-create-field auth-name-field">
             <label for="loginName">Full name</label>
-            <input id="loginName" type="text" placeholder="Asha Raman">
+            <input id="loginName" type="text" placeholder="Asha Raman" autocomplete="name">
           </div>
-          <div class="field">
+
+          <div class="field auth-email-field">
             <label for="loginEmail">Email</label>
-            <input id="loginEmail" type="email" placeholder="you@school.edu">
+            <input id="loginEmail" type="email" placeholder="you@school.edu" autocomplete="email">
           </div>
-        </div>
 
-        <div class="field">
-          <label for="loginRole">Role</label>
-          <select id="loginRole">
-            <option value="admin">School Admin</option>
-            <option value="student">Student</option>
-            <option value="teacher">Teacher</option>
-          </select>
-        </div>
-      </div>
+          <div class="field auth-create-field auth-role-field">
+            <label for="loginRole">Role</label>
+            <select id="loginRole">
+              <option value="student">Student</option>
+              <option value="teacher">Teacher</option>
+              <option value="admin">School Admin</option>
+            </select>
+          </div>
 
-      <div class="login-step" data-login-step="2">
-        <div class="field-row">
-          <div class="field">
+          <div class="field auth-create-field auth-school-field">
             <label for="loginSchool">School</label>
-            <input id="loginSchool" type="text" placeholder="Your school name">
+            <input id="loginSchool" type="text" placeholder="Your school name" autocomplete="organization">
           </div>
-          <div class="field">
-            <label for="loginSchoolUser">School Code</label>
-            <input id="loginSchoolUser" type="text" placeholder="stem-academy">
-          </div>
-        </div>
 
-        <div class="field-row">
-          <div class="field login-class-field">
+          <div class="field auth-school-code-field">
+            <label for="loginSchoolUser">School Code</label>
+            <input id="loginSchoolUser" type="text" placeholder="stem-academy" autocomplete="organization">
+          </div>
+
+          <div class="field auth-create-field login-class-field">
             <label for="loginClass">Class / Section</label>
             <input id="loginClass" type="text" placeholder="10-A">
           </div>
-          <div class="field">
+
+          <div class="field auth-password-field">
             <label for="loginSchoolPass">Password</label>
             <div class="password-input-wrap">
-              <input id="loginSchoolPass" type="password" placeholder="Enter your password">
-              <button type="button" class="password-toggle-btn" id="toggleLoginPasswordBtn" aria-label="Show school password" aria-pressed="false">Show</button>
+              <input id="loginSchoolPass" type="password" placeholder="Enter your password" autocomplete="current-password">
+              <button type="button" class="password-toggle-btn" id="toggleLoginPasswordBtn" aria-label="Show password" aria-pressed="false">Show</button>
             </div>
           </div>
         </div>
-
-        <div class="field access-model-field">
-          <label for="loginAccessModel">Access Model</label>
-          <select id="loginAccessModel">
-            <option value="create">Create a new account</option>
-            <option value="login">Log in to existing account</option>
-          </select>
-          <p class="small-note access-model-copy" id="loginAccessHint">
-            Choose whether this form should create the account or log in to one that already exists.
-          </p>
-        </div>
-      </div>
-
-      <div class="small-note" id="authModeNote">
-        School admins create the school once. Teachers and students then sign up with their own email and password inside that school.
-      </div>
-
-      <div class="login-demo-row">
-        <button class="secondary" id="demoStudentBtn">Demo Student</button>
-        <button class="secondary" id="demoTeacherBtn">Demo Teacher</button>
-      </div>
-
-      <div class="login-actions login-actions-step1">
-        <button id="loginNextStepBtn">Continue to School</button>
       </div>
 
       <div class="login-actions login-actions-step2">
-        <button class="secondary" id="loginBackStepBtn">Back</button>
-        <button class="secondary" id="signUpBtn">Create School User</button>
-        <button id="enterBtn">Enter Platform</button>
+        <button type="button" class="secondary" id="loginBackStepBtn">Back</button>
+        <button type="button" id="enterBtn">Create Account</button>
       </div>
     </div>
   </div>
