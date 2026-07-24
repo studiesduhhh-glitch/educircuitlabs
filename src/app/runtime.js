@@ -2610,7 +2610,7 @@ function applyGrade(){
   if(student && state.currentProjectIndex !== null && student.projects[state.currentProjectIndex]){
     const visibility = document.getElementById("projectVisibilitySelect")?.value ||
       student.projects[state.currentProjectIndex].visibility ||
-      "private";
+      "public";
     student.projects[state.currentProjectIndex].grade = value;
     student.projects[state.currentProjectIndex].feedback = feedback;
     student.projects[state.currentProjectIndex].status = "Graded";
@@ -2697,7 +2697,7 @@ function saveProject(options = {}){
       : null;
     const visibility = document.getElementById("projectVisibilitySelect")?.value ||
       existingProject?.visibility ||
-      "private";
+      "public";
     const projectRecord = {
       name: state.projectName,
       items: deepClone(state.items),
@@ -2748,7 +2748,7 @@ async function saveProjectToFirebase() {
       logic: JSON.parse(JSON.stringify(state.logic)),
       defaultBatteryVoltage: Number(state.defaultBatteryVoltage || 5),
       status: statusText.textContent || "DRAFT",
-      visibility: document.getElementById("projectVisibilitySelect")?.value || "private",
+      visibility: document.getElementById("projectVisibilitySelect")?.value || "public",
       grade: gradeText.textContent || "Not graded",
       feedback: teacherCommentInput.value.trim(),
       createdAt: new Date(),

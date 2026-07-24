@@ -1,6 +1,6 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260724-remember-auth1";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260724-remember-auth1";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260724-remember-auth1";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260724-public-gallery1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260724-public-gallery1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260724-public-gallery1";
 import {
   buildGuidedLabSteps,
   buildMultimeterReading,
@@ -8,14 +8,14 @@ import {
   buildSnapshotSignature,
   getGuidedLabNextFix,
   replayEntriesDiffer
-} from "../core/classroom-engine.js?v=20260724-remember-auth1";
+} from "../core/classroom-engine.js?v=20260724-public-gallery1";
 import {
   buildVivaQuestions,
   evaluateVivaAnswer,
   summarizeVivaSession
-} from "../core/viva-engine.js?v=20260724-remember-auth1";
-import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260724-remember-auth1";
-import { formatAuthError } from "../services/auth-service.js?v=20260724-remember-auth1";
+} from "../core/viva-engine.js?v=20260724-public-gallery1";
+import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260724-public-gallery1";
+import { formatAuthError } from "../services/auth-service.js?v=20260724-public-gallery1";
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -973,27 +973,25 @@ function getProjectVisibilitySelect() {
   if (select) return select;
 
   const studentPanel = document.getElementById("studentPanel");
-  const shareCard = createCard("Sharing", "Control who can discover this project and allow cloning.");
+  const shareCard = createCard("Publishing", "Every saved circuit is shared in Explore for the Educircuit community.");
   shareCard.id = "sharingCard";
   shareCard.innerHTML += `
-    <div class="field">
-      <label for="projectVisibilitySelect">Visibility</label>
-      <select id="projectVisibilitySelect">
-        <option value="private">Private</option>
-        <option value="school">School</option>
-        <option value="public">Public</option>
-      </select>
+    <input id="projectVisibilitySelect" type="hidden" value="public">
+    <div class="sharing-public-status" role="status">
+      <span class="sharing-public-icon" aria-hidden="true">●</span>
+      <span>
+        <strong>Public in Explore</strong>
+        <small>Classroom grades and teacher feedback are not shown on gallery cards.</small>
+      </span>
     </div>
-    <div class="small-note">Public projects appear on Explore Projects and can be cloned by other classrooms.</div>
   `;
   studentPanel.appendChild(shareCard);
   return shareCard.querySelector("#projectVisibilitySelect");
 }
 
-function setProjectVisibility(value = "private") {
+function setProjectVisibility() {
   const select = getProjectVisibilitySelect();
-  const allowed = new Set(["private", "school", "public"]);
-  select.value = allowed.has(value) ? value : "private";
+  select.value = "public";
 }
 
 function isReviewedProject(project = {}) {
@@ -1014,7 +1012,7 @@ function ensureExplorePage() {
       <div class="upgrade-overlay-head">
         <div>
           <h2>Explore Projects</h2>
-          <p>Discover public school projects and clone strong ideas into your own workspace.</p>
+          <p>Discover saved circuits from every Educircuit classroom and clone strong ideas into your own workspace.</p>
         </div>
         <button class="secondary" id="closeExploreProjectsBtn">Back</button>
       </div>
@@ -2371,7 +2369,7 @@ function installTeacherDashboard(app, services) {
         syncClassroomContextFromProject(app, project);
         app.state.remoteProjectId = project.id;
         app.state.currentProjectMeta = project;
-        setProjectVisibility(project.visibility || "private");
+        setProjectVisibility();
         app.showToast(`${project.name} loaded for review`);
       });
     });
@@ -2385,7 +2383,7 @@ function installTeacherDashboard(app, services) {
         app.applyProjectSnapshot(project, { ownerName: project.ownerName, projectId: project.id });
         syncClassroomContextFromProject(app, project);
         app.state.currentProjectMeta = project;
-        setProjectVisibility(project.visibility || "private");
+        setProjectVisibility();
         document.getElementById("teacherGrade").value = grade.grade;
         document.getElementById("teacherComment").value = grade.feedback;
         app.state.pendingAutoGrade = grade;
@@ -2407,33 +2405,44 @@ function installProjectSharing(app, services) {
 
   const explorePage = ensureExplorePage();
   const exploreList = explorePage.querySelector("#exploreProjectsList");
+  getProjectVisibilitySelect();
+
+  async function publishCurrentScope() {
+    if (app.state.demoMode || !app.state.user.uid || !app.state.user.schoolKey) return 0;
+    const scopeKey = `${app.state.user.schoolKey}:${app.state.user.uid}`;
+    if (app.state.publicGalleryMigrationKey === scopeKey) return 0;
+    const publishedCount = await services.projects.publishSavedProjects({
+      schoolId: app.state.user.schoolKey,
+      ownerId: app.state.user.uid
+    });
+    app.state.publicGalleryMigrationKey = scopeKey;
+    return publishedCount;
+  }
 
   async function renderExploreProjects() {
-    exploreList.innerHTML = "<p class=\"upgrade-muted\">Loading public projects...</p>";
+    exploreList.innerHTML = "<p class=\"upgrade-muted\">Loading saved projects...</p>";
     try {
-      const projects = await services.projects.listPublicProjects({
-        schoolId: app.state.user.schoolKey || null
-      });
+      const projects = await services.projects.listPublicProjects();
       exploreList.innerHTML = projects.length
         ? projects
             .map(project => `
-              <article class="upgrade-project-card ${(project.likedBy || []).includes(app.state.user.uid) ? "liked" : ""}" data-project-id="${project.id}">
+              <article class="upgrade-project-card ${Array.isArray(project.likedBy) && project.likedBy.includes(app.state.user.uid) ? "liked" : ""}" data-project-id="${escapeHtml(project.id)}">
                 <div>
-                  <h3>${project.name}</h3>
-                  <p>${project.ownerName || "Unknown"} • ${project.schoolId || "School"}</p>
-                  ${project.assignmentTitle ? `<p>${project.assignmentTitle}</p>` : ""}
-                  <p>${project.simulation?.summary || "Shared public project"}</p>
-                  <span class="upgrade-like-count">♥ ${project.likeCount || 0}</span>
+                  <h3>${escapeHtml(project.name || "Untitled Circuit")}</h3>
+                  <p>${escapeHtml(project.ownerName || "Educircuit Student")} • ${escapeHtml(project.sourceSchoolId || project.schoolId || "School")}</p>
+                  ${project.assignmentTitle ? `<p>${escapeHtml(project.assignmentTitle)}</p>` : ""}
+                  <p>${escapeHtml(project.simulation?.summary || "Saved Educircuit project")}</p>
+                  <span class="upgrade-like-count">♥ ${Number(project.likeCount || 0)}</span>
                 </div>
                 <div class="upgrade-inline-actions">
-                  <button class="secondary" data-action="preview" data-project-id="${project.id}">Preview</button>
-                  <button data-action="clone" data-project-id="${project.id}">Clone</button>
-                  <button class="secondary" data-action="like" data-project-id="${project.id}">Like</button>
+                  <button class="secondary" data-action="preview" data-project-id="${escapeHtml(project.id)}">Preview</button>
+                  <button data-action="clone" data-project-id="${escapeHtml(project.id)}">Clone</button>
+                  <button class="secondary" data-action="like" data-project-id="${escapeHtml(project.id)}">Like</button>
                 </div>
               </article>
             `)
             .join("")
-        : "<p class=\"upgrade-muted\">No public projects available yet.</p>";
+        : "<p class=\"upgrade-muted\">No saved projects are available yet. Save a circuit to publish the first one.</p>";
 
       exploreList.querySelectorAll("[data-action='preview']").forEach(button => {
         button.addEventListener("click", () => {
@@ -2442,7 +2451,7 @@ function installProjectSharing(app, services) {
           app.applyProjectSnapshot(project, { ownerName: project.ownerName, projectId: project.id });
           syncClassroomContextFromProject(app, project);
           app.state.currentProjectMeta = project;
-          setProjectVisibility(project.visibility || "public");
+          setProjectVisibility();
           explorePage.classList.add("hidden");
           app.showToast(`${project.name} preview loaded`);
         });
@@ -2456,10 +2465,10 @@ function installProjectSharing(app, services) {
           app.applyProjectSnapshot(cloned, { ownerName: app.state.user.name, projectId: null });
           syncClassroomContextFromProject(app, cloned);
           app.state.currentProjectMeta = {
-            visibility: "private",
+            visibility: "public",
             clonedFrom: project.id
           };
-          setProjectVisibility("private");
+          setProjectVisibility();
           explorePage.classList.add("hidden");
           app.showToast("Project cloned into your workspace");
         });
@@ -2472,7 +2481,7 @@ function installProjectSharing(app, services) {
           const userId = app.state.user.uid || `guest-${Date.now()}`;
           try {
             const result = await services.projects.likeProject({
-              schoolId: project.schoolId,
+              schoolId: project.schoolId || "public-gallery",
               projectId: project.id,
               userId
             });
@@ -2495,10 +2504,15 @@ function installProjectSharing(app, services) {
 
   exploreBtn.addEventListener("click", async () => {
     explorePage.classList.remove("hidden");
+    await publishCurrentScope();
     await renderExploreProjects();
   });
 
-  return { renderExploreProjects, getVisibility: () => getProjectVisibilitySelect().value };
+  return {
+    publishCurrentScope,
+    renderExploreProjects,
+    getVisibility: () => getProjectVisibilitySelect().value
+  };
 }
 
 function installAuthUpgrade(app, services) {
@@ -2768,7 +2782,7 @@ function installSavedProjectsPortal(app, services) {
           <article class="upgrade-submission-card" data-project-id="${escapeHtml(project.id)}">
             <div>
               <h4>${escapeHtml(project.name || "Untitled Project")}</h4>
-              <p>${escapeHtml(project.status || "DRAFT")} • ${escapeHtml(project.visibility || "private")}</p>
+              <p>${escapeHtml(project.status || "DRAFT")} • ${escapeHtml(project.visibility || "public")}</p>
               ${project.assignmentTitle ? `<p>${escapeHtml(project.assignmentTitle)}</p>` : ""}
               <p>${escapeHtml(project.simulation?.summary || "Saved circuit project")}</p>
             </div>
@@ -2787,7 +2801,7 @@ function installSavedProjectsPortal(app, services) {
         app.applyProjectSnapshot(project, { ownerName: project.ownerName, projectId: project.id });
         syncClassroomContextFromProject(app, project);
         app.state.currentProjectMeta = project;
-        setProjectVisibility(project.visibility || "private");
+        setProjectVisibility();
         page?.classList.add("hidden");
         app.showToast(`${project.name || "Project"} opened from My Projects`);
       });
@@ -2886,7 +2900,7 @@ function installStudentProjectPortal(app, services) {
         app.applyProjectSnapshot(project, { ownerName: project.ownerName, projectId: project.id });
         syncClassroomContextFromProject(app, project);
         app.state.currentProjectMeta = project;
-        setProjectVisibility(project.visibility || "private");
+        setProjectVisibility();
         page?.classList.add("hidden");
         app.showToast(`${project.name} loaded with teacher feedback`);
       });
@@ -2995,7 +3009,8 @@ function installActionOverrides(app, services, sharing, teacherDashboard, gamifi
       });
     }
 
-    app.showToast("Project saved to Firestore");
+    app.showToast("Project saved and published to Explore");
+    await sharing.renderExploreProjects();
     await services.refreshAll();
     await teacherDashboard.refreshTeacherDashboard();
     await gamificationUi.refreshGamificationUi();
@@ -3131,6 +3146,7 @@ export async function bootstrapUpgrade(app, services) {
   services.refreshAll = async function refreshAll() {
     try {
       if (app.state.user.schoolKey) {
+        await sharing.publishCurrentScope();
         await teacherDashboard.refreshTeacherDashboard();
       }
       await assignmentSystem.refreshAssignments();

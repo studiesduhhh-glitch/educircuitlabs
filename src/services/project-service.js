@@ -4,6 +4,15 @@ function toNumericGrade(value) {
   return match ? Number(match[0]) : null;
 }
 
+function timestampToMillis(value) {
+  if (typeof value?.toMillis === "function") return value.toMillis();
+  if (typeof value?.seconds === "number") return value.seconds * 1000;
+  const parsed = new Date(value || 0).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+const PUBLIC_GALLERY_SCHOOL_ID = "public-gallery";
+
 export function createProjectService({ db, firebase }) {
   const FieldValue = firebase?.firestore?.FieldValue;
   const serverTimestamp = () => FieldValue?.serverTimestamp?.() || new Date();
@@ -13,6 +22,58 @@ export function createProjectService({ db, firebase }) {
 
   function schoolProjectsRef(schoolId) {
     return db.collection("schools").doc(schoolId).collection("projects");
+  }
+
+  function publicGalleryProjectsRef() {
+    return schoolProjectsRef(PUBLIC_GALLERY_SCHOOL_ID);
+  }
+
+  function buildGalleryProjectId(schoolId, projectId) {
+    return `${String(schoolId).replaceAll("/", "-")}--${String(projectId).replaceAll("/", "-")}`;
+  }
+
+  function buildGalleryPayload(source, sourceSchoolId, sourceProjectId) {
+    const payload = {
+      id: buildGalleryProjectId(sourceSchoolId, sourceProjectId),
+      schoolId: PUBLIC_GALLERY_SCHOOL_ID,
+      sourceSchoolId,
+      sourceProjectId,
+      name: source.name || "Untitled Circuit",
+      items: source.items || [],
+      wires: source.wires || [],
+      logic: source.logic || [],
+      defaultBatteryVoltage: Number(source.defaultBatteryVoltage || 5),
+      ownerId: source.ownerId,
+      ownerName: source.ownerName || "Educircuit Student",
+      ownerRole: source.ownerRole || "student",
+      status: source.status || "DRAFT",
+      visibility: "public",
+      cloneable: true,
+      assignmentTitle: source.assignmentTitle || "",
+      challengeId: source.challengeId || "",
+      metrics: {
+        componentCount: Number(source.metrics?.componentCount || 0),
+        wireCount: Number(source.metrics?.wireCount || 0),
+        logicCount: Number(source.metrics?.logicCount || 0),
+        diagnosticsCount: Number(source.metrics?.diagnosticsCount || 0),
+        qualityScore: Number(source.metrics?.qualityScore || 0)
+      },
+      simulation: {
+        summary: source.simulation?.summary || "",
+        outputs: source.simulation?.outputs || {},
+        diagnostics: source.simulation?.diagnostics || []
+      },
+      createdAt: source.createdAt || serverTimestamp(),
+      updatedAt: source.updatedAt || serverTimestamp()
+    };
+
+    if (source.likeCount !== undefined) {
+      payload.likeCount = Number(source.likeCount || 0);
+    }
+    if (Array.isArray(source.likedBy)) {
+      payload.likedBy = source.likedBy;
+    }
+    return payload;
   }
 
   function buildMetrics(projectSnapshot, analysis) {
@@ -31,10 +92,10 @@ export function createProjectService({ db, firebase }) {
     owner,
     projectSnapshot,
     analysis,
-    visibility = "private",
     projectId = null,
     status = "DRAFT"
   }) {
+    const publishedVisibility = "public";
     const ref = projectId ? schoolProjectsRef(schoolId).doc(projectId) : schoolProjectsRef(schoolId).doc();
     const payload = {
       id: ref.id,
@@ -49,8 +110,8 @@ export function createProjectService({ db, firebase }) {
       ownerRole: owner.role,
       className: owner.className || "",
       status,
-      visibility,
-      cloneable: visibility === "public",
+      visibility: publishedVisibility,
+      cloneable: true,
       grade: projectSnapshot.grade || "Not graded",
       feedback: projectSnapshot.feedback || "",
       assignmentId: projectSnapshot.assignmentId || null,
@@ -78,17 +139,21 @@ export function createProjectService({ db, firebase }) {
       payload.submittedAt = serverTimestamp();
     }
 
-    await ref.set(payload, { merge: true });
+    const galleryPayload = buildGalleryPayload(payload, schoolId, ref.id);
+    const galleryRef = publicGalleryProjectsRef().doc(galleryPayload.id);
+    await Promise.all([
+      ref.set(payload, { merge: true }),
+      galleryRef.set(galleryPayload, { merge: true })
+    ]);
     return { ...payload, createdAt: payload.createdAt || new Date(), id: ref.id };
   }
 
-  async function submitProject({ schoolId, projectId, owner, projectSnapshot, analysis, visibility }) {
+  async function submitProject({ schoolId, projectId, owner, projectSnapshot, analysis }) {
     return saveProject({
       schoolId,
       owner,
       projectSnapshot,
       analysis,
-      visibility,
       projectId,
       status: "SUBMITTED"
     });
@@ -146,14 +211,35 @@ export function createProjectService({ db, firebase }) {
     return snapshot.docs.map(doc => doc.data());
   }
 
-  async function listPublicProjects({ schoolId = null, limit = 24 } = {}) {
-    let query = schoolId
-      ? schoolProjectsRef(schoolId).where("visibility", "==", "public")
-      : db.collectionGroup("projects").where("visibility", "==", "public");
-
-    query = query.orderBy("updatedAt", "desc").limit(limit);
+  async function publishSavedProjects({ schoolId, ownerId }) {
+    const query = schoolProjectsRef(schoolId).where("ownerId", "==", ownerId);
     const snapshot = await query.get();
-    return snapshot.docs.map(doc => doc.data());
+    await Promise.all(snapshot.docs.map(async doc => {
+      const data = doc.data();
+      const sourceProjectId = data.id || doc.id;
+      const sourceRef = doc.ref || schoolProjectsRef(schoolId).doc(sourceProjectId);
+      const galleryPayload = buildGalleryPayload(data, schoolId, sourceProjectId);
+      const galleryRef = publicGalleryProjectsRef().doc(galleryPayload.id);
+      const writes = [galleryRef.set(galleryPayload, { merge: true })];
+      if (data.visibility !== "public") {
+        writes.push(sourceRef.set({
+          visibility: "public",
+          cloneable: true,
+          updatedAt: serverTimestamp()
+        }, { merge: true }));
+      }
+      await Promise.all(writes);
+    }));
+    return snapshot.docs.length;
+  }
+
+  async function listPublicProjects() {
+    const snapshot = await publicGalleryProjectsRef()
+      .where("visibility", "==", "public")
+      .get();
+    return snapshot.docs
+      .map(doc => ({ ...doc.data(), id: doc.data().id || doc.id }))
+      .sort((a, b) => timestampToMillis(b.updatedAt) - timestampToMillis(a.updatedAt));
   }
 
   async function likeProject({ schoolId, projectId, userId }) {
@@ -215,7 +301,7 @@ export function createProjectService({ db, firebase }) {
       wires: project.wires || [],
       logic: project.logic || [],
       defaultBatteryVoltage: Number(project.defaultBatteryVoltage || 5),
-      visibility: "private",
+      visibility: "public",
       status: "DRAFT",
       grade: "Not graded",
       feedback: "",
@@ -234,6 +320,7 @@ export function createProjectService({ db, firebase }) {
     gradeProject,
     listStudentProjects,
     listTeacherSubmissions,
+    publishSavedProjects,
     listPublicProjects,
     likeProject,
     buildClonePayload

@@ -871,6 +871,32 @@ html {
   opacity:.78;
 }
 
+.sharing-public-status {
+  display:grid;
+  grid-template-columns:10px minmax(0, 1fr);
+  align-items:start;
+  gap:10px;
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid rgba(148,163,184,.18);
+}
+
+.sharing-public-icon {
+  color:#10b981;
+  line-height:1.4;
+}
+
+.sharing-public-status strong,
+.sharing-public-status small {
+  display:block;
+}
+
+.sharing-public-status small {
+  margin-top:3px;
+  color:var(--muted);
+  line-height:1.45;
+}
+
 .login-screen .login-demo-row {
   display:flex;
   justify-content:space-between;

@@ -171,12 +171,14 @@ Stores the canonical identity record used after Firebase Auth login.
 1. `schools/{schoolId}/projects` on `ownerId ASC, updatedAt DESC`
 2. `schools/{schoolId}/projects` on `visibility ASC, updatedAt DESC`
 3. `users` on `schoolId ASC, stats.weekKey ASC, stats.weeklyXp DESC`
-4. Collection group `projects` on `visibility ASC, updatedAt DESC`
+
+Explore reads the centralized `schools/public-gallery/projects` collection and sorts projects in the client. Each gallery document is a public circuit-only copy, so the query needs no collection-group index.
 
 ## Security Rule Direction
 
 - Only authenticated users can read their own `users/{uid}` doc.
 - School admins can write `schools/{schoolId}` and nested `teachers` / `students`.
 - Teachers and admins can read all `schools/{schoolId}/projects`.
-- Students can write projects where `ownerId == request.auth.uid`.
-- Public project reads should allow only docs with `visibility == "public"`.
+- Students can write projects where `ownerId == request.auth.uid`; new saves are public by default.
+- Explore uses `schools/public-gallery/projects` so public projects from every school are discoverable without a collection-group index.
+- Existing owner projects are copied to the public gallery when the owner signs in.

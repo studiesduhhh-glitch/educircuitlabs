@@ -12,7 +12,7 @@ Video demo: https://youtu.be/5_uD6pUBvkw
 - AI Teacher feedback with short, classroom-friendly guidance.
 - Voice coach and multilingual interface support.
 - Firebase Authentication for students, teachers, and school admins.
-- Firestore-backed saved projects, submissions, grading, assignments, XP, leaderboards, and public project sharing.
+- Firestore-backed saved projects, submissions, grading, assignments, XP, leaderboards, and an all-school public Explore gallery.
 - Teacher dashboard with submissions, auto-grading, feedback, and classroom summaries.
 - Desktop/laptop optimized simulator layout.
 
