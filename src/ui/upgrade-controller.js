@@ -1,6 +1,6 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260724-firebase-hardening1";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260724-firebase-hardening1";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260724-firebase-hardening1";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260724-firebase-save-fix1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260724-firebase-save-fix1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260724-firebase-save-fix1";
 import {
   buildGuidedLabSteps,
   buildMultimeterReading,
@@ -8,14 +8,14 @@ import {
   buildSnapshotSignature,
   getGuidedLabNextFix,
   replayEntriesDiffer
-} from "../core/classroom-engine.js?v=20260724-firebase-hardening1";
+} from "../core/classroom-engine.js?v=20260724-firebase-save-fix1";
 import {
   buildVivaQuestions,
   evaluateVivaAnswer,
   summarizeVivaSession
-} from "../core/viva-engine.js?v=20260724-firebase-hardening1";
-import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260724-firebase-hardening1";
-import { formatAuthError } from "../services/auth-service.js?v=20260724-firebase-hardening1";
+} from "../core/viva-engine.js?v=20260724-firebase-save-fix1";
+import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260724-firebase-save-fix1";
+import { formatAuthError } from "../services/auth-service.js?v=20260724-firebase-save-fix1";
 
 const EXPLORE_MODERATOR_EMAIL = "studiesduhhh@gmail.com";
 
@@ -3006,57 +3006,69 @@ function installActionOverrides(app, services, sharing, teacherDashboard, gamifi
   });
   if (runLogicBtn) runLogicBtn.dataset.upgradeOverride = "true";
 
-  replaceButton(document.getElementById("saveBtn"), async () => {
+  const saveActionBtn = replaceButton(document.getElementById("saveBtn"), async () => {
     if (app.state.demoMode || !app.state.user.uid || !app.state.user.schoolKey) {
       app.showToast("Log in to save projects to Firebase");
       return;
     }
 
-    app.saveProject({ silent: true });
-    const snapshot = buildEnhancedProjectSnapshot(app);
-    const report = app.state.simulationReport || analyzeCircuit(snapshot);
-    const visibility = sharing.getVisibility();
-    const savedProject = await services.projects.saveProject({
-      schoolId: app.state.user.schoolKey,
-      owner: app.state.user,
-      projectSnapshot: snapshot,
-      analysis: report,
-      visibility,
-      projectId: app.state.remoteProjectId,
-      status: snapshot.status === "Graded" ? "GRADED" : "DRAFT"
-    });
+    saveActionBtn.disabled = true;
+    saveActionBtn.setAttribute("aria-busy", "true");
 
-    app.state.remoteProjectId = savedProject.id;
-    app.state.currentProjectMeta = savedProject;
-
-    const updated = services.gamification.applyEvent(app.state.userProgress?.stats, "save");
-    app.state.userProgress = updated;
-    await services.auth.updateUserProgress({
-      uid: app.state.user.uid,
-      schoolId: app.state.user.schoolKey,
-      role: app.state.user.role,
-      stats: updated.stats,
-      badges: updated.badges
-    });
-
-    if (visibility === "public") {
-      const publicUpdated = services.gamification.applyEvent(updated.stats, "publicShare", { visibility });
-      app.state.userProgress = publicUpdated;
-      await services.auth.updateUserProgress({
-        uid: app.state.user.uid,
+    try {
+      app.saveProject({ silent: true });
+      const snapshot = buildEnhancedProjectSnapshot(app);
+      const report = app.state.simulationReport || analyzeCircuit(snapshot);
+      const visibility = sharing.getVisibility();
+      const savedProject = await services.projects.saveProject({
         schoolId: app.state.user.schoolKey,
-        role: app.state.user.role,
-        stats: publicUpdated.stats,
-        badges: publicUpdated.badges
+        owner: app.state.user,
+        projectSnapshot: snapshot,
+        analysis: report,
+        visibility,
+        projectId: app.state.remoteProjectId,
+        status: snapshot.status === "Graded" ? "GRADED" : "DRAFT"
       });
-    }
 
-    app.showToast("Project saved and published to Explore");
-    await sharing.renderExploreProjects();
-    await services.refreshAll();
-    await teacherDashboard.refreshTeacherDashboard();
-    await gamificationUi.refreshGamificationUi();
-    await savedProjectPortal.refresh();
+      app.state.remoteProjectId = savedProject.id;
+      app.state.currentProjectMeta = savedProject;
+      app.showToast("Project saved and published to Explore");
+
+      let updated = services.gamification.applyEvent(app.state.userProgress?.stats, "save");
+      if (visibility === "public") {
+        updated = services.gamification.applyEvent(updated.stats, "publicShare", { visibility });
+      }
+      app.state.userProgress = updated;
+
+      try {
+        await services.auth.updateUserProgress({
+          uid: app.state.user.uid,
+          schoolId: app.state.user.schoolKey,
+          role: app.state.user.role,
+          stats: updated.stats,
+          badges: updated.badges
+        });
+      } catch (error) {
+        console.warn("Project saved, but progress could not be synchronized", error);
+      }
+
+      const refreshResults = await Promise.allSettled([
+        sharing.renderExploreProjects(),
+        services.refreshAll()
+      ]);
+      refreshResults
+        .filter(result => result.status === "rejected")
+        .forEach(result => console.warn("Post-save Firebase refresh failed", result.reason));
+    } catch (error) {
+      console.error("Firebase project save failed", error);
+      const message = error?.code === "permission-denied"
+        ? "Firebase blocked the save. Refresh the page, log in again, and retry."
+        : "Project could not be saved. Check your connection and try again.";
+      app.showToast(message);
+    } finally {
+      saveActionBtn.disabled = false;
+      saveActionBtn.removeAttribute("aria-busy");
+    }
   });
 
   replaceButton(document.getElementById("submitBtn"), async () => {

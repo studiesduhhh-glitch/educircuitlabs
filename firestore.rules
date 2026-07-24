@@ -164,10 +164,13 @@ service cloud.firestore {
       allow get: if ownsProfile(userId) || (hasProfile() && resource.data.schoolId == profile().schoolId);
       allow list: if hasProfile() && resource.data.schoolId == profile().schoolId;
       allow update: if ownsProfile(userId)
-        && request.resource.data.uid == request.auth.uid
-        && request.resource.data.schoolId == resource.data.schoolId
-        && request.resource.data.role == resource.data.role
-        && request.resource.data.email == resource.data.email;
+        && request.resource.data.get("uid", request.auth.uid) == request.auth.uid
+        && request.resource.data.get("schoolId", "")
+          == resource.data.get("schoolId", "")
+        && request.resource.data.get("role", "")
+          == resource.data.get("role", "")
+        && request.resource.data.get("email", "")
+          == resource.data.get("email", "");
       allow delete: if false;
     }
 
@@ -221,9 +224,12 @@ service cloud.firestore {
           && request.resource.data.schoolId == schoolId;
         allow update: if (
             ownsProfile(adminId)
-            && request.resource.data.uid == resource.data.uid
-            && request.resource.data.role == resource.data.role
-            && request.resource.data.schoolId == resource.data.schoolId
+            && request.resource.data.get("uid", adminId)
+              == resource.data.get("uid", adminId)
+            && request.resource.data.get("role", "admin")
+              == resource.data.get("role", "admin")
+            && request.resource.data.get("schoolId", schoolId)
+              == resource.data.get("schoolId", schoolId)
           )
           || schoolAdmin(schoolId);
         allow delete: if false;
@@ -237,9 +243,12 @@ service cloud.firestore {
           && request.resource.data.schoolId == schoolId;
         allow update: if (
             ownsProfile(teacherId)
-            && request.resource.data.uid == resource.data.uid
-            && request.resource.data.role == resource.data.role
-            && request.resource.data.schoolId == resource.data.schoolId
+            && request.resource.data.get("uid", teacherId)
+              == resource.data.get("uid", teacherId)
+            && request.resource.data.get("role", "teacher")
+              == resource.data.get("role", "teacher")
+            && request.resource.data.get("schoolId", schoolId)
+              == resource.data.get("schoolId", schoolId)
           )
           || schoolAdmin(schoolId);
         allow delete: if false;
@@ -253,9 +262,12 @@ service cloud.firestore {
           && request.resource.data.schoolId == schoolId;
         allow update: if (
             ownsProfile(studentId)
-            && request.resource.data.uid == resource.data.uid
-            && request.resource.data.role == resource.data.role
-            && request.resource.data.schoolId == resource.data.schoolId
+            && request.resource.data.get("uid", studentId)
+              == resource.data.get("uid", studentId)
+            && request.resource.data.get("role", "student")
+              == resource.data.get("role", "student")
+            && request.resource.data.get("schoolId", schoolId)
+              == resource.data.get("schoolId", schoolId)
           )
           || schoolStaff(schoolId);
         allow delete: if false;

@@ -102,6 +102,35 @@ test("Firebase saves source and gallery projects in one atomic batch", async () 
   assert.equal(db.writes.length, 0);
 });
 
+test("ordinary updates never overwrite teacher assessment fields", async () => {
+  const db = createSaveDb();
+  const service = createProjectService({ db, firebase: {} });
+
+  await service.saveProject({
+    schoolId: "school-1",
+    owner: {
+      uid: "student-1",
+      name: "Student One",
+      role: "student"
+    },
+    projectId: "existing-project",
+    projectSnapshot: {
+      name: "Updated Circuit",
+      items: [],
+      wires: [],
+      logic: [],
+      grade: "A+",
+      feedback: "This stale page value must not be written."
+    },
+    analysis: null
+  });
+
+  const sourceWrite = db.writes.find(write => write.schoolId === "school-1");
+  assert.equal("grade" in sourceWrite.payload, false);
+  assert.equal("feedback" in sourceWrite.payload, false);
+  assert.equal("numericGrade" in sourceWrite.payload.metrics, false);
+});
+
 test("Explore loads public projects across schools and sorts newest first", async () => {
   const calls = [];
   const docs = [

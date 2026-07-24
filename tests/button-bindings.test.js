@@ -74,10 +74,10 @@ test("deployed html stays clean and modular", () => {
   assert.match(indexHtml, /<link rel="icon" href="\/favicon\.ico" sizes="any" \/>/);
   assert.match(indexHtml, /<link rel="icon" type="image\/png" sizes="32x32" href="\/favicon-32x32\.png" \/>/);
   assert.match(indexHtml, /<link rel="apple-touch-icon" sizes="180x180" href="\/apple-touch-icon\.png" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260724-firebase-hardening1" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260724-firebase-hardening1" \/>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260724-firebase-hardening1"><\/script>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260724-firebase-hardening1"><\/script>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260724-firebase-save-fix1" \/>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260724-firebase-save-fix1" \/>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260724-firebase-save-fix1"><\/script>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260724-firebase-save-fix1"><\/script>/);
   assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
   assert.match(mainJs, /createAssignmentService/);
 });
@@ -172,6 +172,9 @@ test("project pages split saved, graded, and explore-visible work", () => {
   assert.match(upgradeJs, /services\.projects\.deletePublicProject/);
   assert.match(firestoreRules, /request\.auth\.token\.email == "studiesduhhh@gmail\.com"/);
   assert.match(firestoreRules, /schoolId == "public-gallery"/);
+  assert.match(upgradeJs, /Project saved, but progress could not be synchronized/);
+  assert.match(upgradeJs, /Promise\.allSettled/);
+  assert.match(upgradeJs, /Firebase project save failed/);
   assert.match(projectServiceJs, /visibility = null/);
   assert.match(projectServiceJs, /payload\.visibility = visibility/);
   assert.match(projectServiceJs, /payload\.cloneable = visibility === "public"/);

@@ -266,24 +266,22 @@ export function createAuthService({ auth, db, firebase }) {
     const memberRef = db.collection("schools").doc(schoolId).collection(memberCollection).doc(uid);
     const rootRef = db.collection("users").doc(uid);
 
-    await Promise.all([
-      rootRef.set(
-        {
-          stats,
-          badges,
-          updatedAt: serverTimestamp()
-        },
-        { merge: true }
-      ),
-      memberRef.set(
-        {
-          stats,
-          badges,
-          updatedAt: serverTimestamp()
-        },
-        { merge: true }
-      )
-    ]);
+    const progressPayload = {
+      stats,
+      badges,
+      updatedAt: serverTimestamp()
+    };
+
+    await rootRef.set(progressPayload, { merge: true });
+
+    try {
+      const memberDoc = await memberRef.get();
+      if (memberDoc.exists) {
+        await memberRef.set(progressPayload, { merge: true });
+      }
+    } catch (error) {
+      console.warn("Firebase member progress mirror could not be updated", error);
+    }
   }
 
   return {

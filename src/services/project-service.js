@@ -82,8 +82,7 @@ export function createProjectService({ db, firebase }) {
       wireCount: (projectSnapshot.wires || []).length,
       logicCount: (projectSnapshot.logic || []).length,
       diagnosticsCount: analysis?.diagnostics?.length || 0,
-      qualityScore: analysis?.qualityScore || 0,
-      numericGrade: toNumericGrade(projectSnapshot.grade)
+      qualityScore: analysis?.qualityScore || 0
     };
   }
 
@@ -112,8 +111,6 @@ export function createProjectService({ db, firebase }) {
       status,
       visibility: publishedVisibility,
       cloneable: true,
-      grade: projectSnapshot.grade || "Not graded",
-      feedback: projectSnapshot.feedback || "",
       assignmentId: projectSnapshot.assignmentId || null,
       assignmentTitle: projectSnapshot.assignmentTitle || "",
       assignmentDueDate: projectSnapshot.assignmentDueDate || "",
@@ -131,6 +128,8 @@ export function createProjectService({ db, firebase }) {
       payload.createdAt = serverTimestamp();
       payload.likeCount = Number(projectSnapshot.likeCount || 0);
       payload.likedBy = projectSnapshot.likedBy || [];
+      payload.grade = "Not graded";
+      payload.feedback = "";
     } else if (projectSnapshot.likeCount !== undefined) {
       payload.likeCount = Number(projectSnapshot.likeCount || 0);
     }
@@ -152,7 +151,13 @@ export function createProjectService({ db, firebase }) {
         galleryRef.set(galleryPayload, { merge: true })
       ]);
     }
-    return { ...payload, createdAt: payload.createdAt || new Date(), id: ref.id };
+    return {
+      ...payload,
+      grade: projectSnapshot.grade || "Not graded",
+      feedback: projectSnapshot.feedback || "",
+      createdAt: payload.createdAt || new Date(),
+      id: ref.id
+    };
   }
 
   async function submitProject({ schoolId, projectId, owner, projectSnapshot, analysis }) {

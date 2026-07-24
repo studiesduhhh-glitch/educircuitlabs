@@ -42,6 +42,11 @@ function createMockDb(seed = {}) {
           exists: Boolean(data),
           data: () => data
         };
+      },
+      async set(data, options) {
+        const write = { type: "set", path, data, options };
+        writes.push(write);
+        applyWrite(write);
       }
     };
   }
@@ -246,4 +251,32 @@ test("login signs out an Auth account that has no Firestore profile", async () =
   );
 
   assert.equal(signOutCalls, 1);
+});
+
+test("progress sync succeeds when a legacy member mirror is missing", async () => {
+  const db = createMockDb({
+    users: {
+      "legacy-student": {
+        uid: "legacy-student",
+        email: "legacy@example.com",
+        role: "student",
+        schoolId: "legacy-school"
+      }
+    }
+  });
+  const service = createAuthService({ auth: {}, db, firebase: fakeFirebase });
+
+  await service.updateUserProgress({
+    uid: "legacy-student",
+    schoolId: "legacy-school",
+    role: "student",
+    stats: { xp: 20 },
+    badges: ["first-save"]
+  });
+
+  assert.deepEqual(
+    db.writes.map(write => write.path),
+    ["users/legacy-student"]
+  );
+  assert.deepEqual(db.users["legacy-student"].stats, { xp: 20 });
 });
