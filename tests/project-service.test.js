@@ -126,6 +126,39 @@ test("Explore loads public projects across schools and sorts newest first", asyn
   assert.deepEqual(projects.map(project => project.id), ["newer", "older"]);
 });
 
+test("deleting an Explore project targets only the public gallery copy", async () => {
+  const deletes = [];
+  const db = {
+    collection(name) {
+      assert.equal(name, "schools");
+      return {
+        doc(schoolId) {
+          assert.equal(schoolId, "public-gallery");
+          return {
+            collection(collectionName) {
+              assert.equal(collectionName, "projects");
+              return {
+                doc(projectId) {
+                  return {
+                    async delete() {
+                      deletes.push(projectId);
+                    }
+                  };
+                }
+              };
+            }
+          };
+        }
+      };
+    }
+  };
+  const service = createProjectService({ db, firebase: {} });
+
+  await service.deletePublicProject("school-1--project-1");
+
+  assert.deepEqual(deletes, ["school-1--project-1"]);
+});
+
 test("existing owner projects are upgraded and mirrored to the public gallery", async () => {
   const writes = [];
   const docs = [

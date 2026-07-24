@@ -1,6 +1,6 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260724-public-gallery1";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260724-public-gallery1";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260724-public-gallery1";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260724-explore-moderator1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260724-explore-moderator1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260724-explore-moderator1";
 import {
   buildGuidedLabSteps,
   buildMultimeterReading,
@@ -8,14 +8,16 @@ import {
   buildSnapshotSignature,
   getGuidedLabNextFix,
   replayEntriesDiffer
-} from "../core/classroom-engine.js?v=20260724-public-gallery1";
+} from "../core/classroom-engine.js?v=20260724-explore-moderator1";
 import {
   buildVivaQuestions,
   evaluateVivaAnswer,
   summarizeVivaSession
-} from "../core/viva-engine.js?v=20260724-public-gallery1";
-import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260724-public-gallery1";
-import { formatAuthError } from "../services/auth-service.js?v=20260724-public-gallery1";
+} from "../core/viva-engine.js?v=20260724-explore-moderator1";
+import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260724-explore-moderator1";
+import { formatAuthError } from "../services/auth-service.js?v=20260724-explore-moderator1";
+
+const EXPLORE_MODERATOR_EMAIL = "studiesduhhh@gmail.com";
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -2407,6 +2409,10 @@ function installProjectSharing(app, services) {
   const exploreList = explorePage.querySelector("#exploreProjectsList");
   getProjectVisibilitySelect();
 
+  function canModerateExplore() {
+    return services.auth.getAuthenticatedEmail() === EXPLORE_MODERATOR_EMAIL;
+  }
+
   async function publishCurrentScope() {
     if (app.state.demoMode || !app.state.user.uid || !app.state.user.schoolKey) return 0;
     const scopeKey = `${app.state.user.schoolKey}:${app.state.user.uid}`;
@@ -2438,6 +2444,7 @@ function installProjectSharing(app, services) {
                   <button class="secondary" data-action="preview" data-project-id="${escapeHtml(project.id)}">Preview</button>
                   <button data-action="clone" data-project-id="${escapeHtml(project.id)}">Clone</button>
                   <button class="secondary" data-action="like" data-project-id="${escapeHtml(project.id)}">Like</button>
+                  ${canModerateExplore() ? `<button class="red explore-delete-btn" data-action="delete" data-project-id="${escapeHtml(project.id)}">Delete</button>` : ""}
                 </div>
               </article>
             `)
@@ -2493,6 +2500,41 @@ function installProjectSharing(app, services) {
           } catch (error) {
             console.error(error);
             app.showToast("Could not update like right now");
+          }
+        });
+      });
+
+      exploreList.querySelectorAll("[data-action='delete']").forEach(button => {
+        button.addEventListener("click", async () => {
+          if (!canModerateExplore()) {
+            app.showToast("Only the Explore moderator can delete gallery projects");
+            return;
+          }
+          if (button.dataset.confirmDelete !== "true") {
+            button.dataset.confirmDelete = "true";
+            button.textContent = "Confirm delete";
+            window.setTimeout(() => {
+              if (!button.isConnected) return;
+              button.dataset.confirmDelete = "false";
+              button.textContent = "Delete";
+            }, 4000);
+            return;
+          }
+
+          const project = projects.find(entry => entry.id === button.dataset.projectId);
+          if (!project) return;
+          button.disabled = true;
+          button.textContent = "Deleting...";
+          try {
+            await services.projects.deletePublicProject(project.id);
+            app.showToast(`${project.name || "Project"} removed from Explore`);
+            await renderExploreProjects();
+          } catch (error) {
+            console.error(error);
+            button.disabled = false;
+            button.dataset.confirmDelete = "false";
+            button.textContent = "Delete";
+            app.showToast("Could not delete this Explore project");
           }
         });
       });

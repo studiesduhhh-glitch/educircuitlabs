@@ -182,3 +182,4 @@ Explore reads the centralized `schools/public-gallery/projects` collection and s
 - Students can write projects where `ownerId == request.auth.uid`; new saves are public by default.
 - Explore uses `schools/public-gallery/projects` so public projects from every school are discoverable without a collection-group index.
 - Existing owner projects are copied to the public gallery when the owner signs in.
+- Only the authenticated account `studiesduhhh@gmail.com` can delete documents from the shared Explore gallery. Source classroom records keep their existing owner/admin deletion rules.

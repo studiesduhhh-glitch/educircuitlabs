@@ -9,6 +9,7 @@ const runtimeJs = fs.readFileSync(new URL("../src/app/runtime.js", import.meta.u
 const fallbackJs = fs.readFileSync(new URL("../src/app/landing-fallback.js", import.meta.url), "utf8");
 const upgradeJs = fs.readFileSync(new URL("../src/ui/upgrade-controller.js", import.meta.url), "utf8");
 const storageGuardJs = fs.readFileSync(new URL("../src/app/storage-guard.js", import.meta.url), "utf8");
+const authServiceJs = fs.readFileSync(new URL("../src/services/auth-service.js", import.meta.url), "utf8");
 const projectServiceJs = fs.readFileSync(new URL("../src/services/project-service.js", import.meta.url), "utf8");
 const assignmentServiceJs = fs.readFileSync(new URL("../src/services/assignment-service.js", import.meta.url), "utf8");
 const vivaEngineJs = fs.readFileSync(new URL("../src/core/viva-engine.js", import.meta.url), "utf8");
@@ -72,10 +73,10 @@ test("deployed html stays clean and modular", () => {
   assert.match(indexHtml, /<link rel="icon" href="\/favicon\.ico" sizes="any" \/>/);
   assert.match(indexHtml, /<link rel="icon" type="image\/png" sizes="32x32" href="\/favicon-32x32\.png" \/>/);
   assert.match(indexHtml, /<link rel="apple-touch-icon" sizes="180x180" href="\/apple-touch-icon\.png" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260724-public-gallery1" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260724-public-gallery1" \/>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260724-public-gallery1"><\/script>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260724-public-gallery1"><\/script>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260724-explore-moderator1" \/>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260724-explore-moderator1" \/>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260724-explore-moderator1"><\/script>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260724-explore-moderator1"><\/script>/);
   assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
   assert.match(mainJs, /createAssignmentService/);
 });
@@ -154,6 +155,14 @@ test("project pages split saved, graded, and explore-visible work", () => {
   assert.match(projectServiceJs, /publicGalleryProjectsRef\(\)/);
   assert.match(projectServiceJs, /visibility:\s*publishedVisibility/);
   assert.match(projectServiceJs, /async function publishSavedProjects/);
+  assert.match(projectServiceJs, /async function deletePublicProject/);
+  assert.match(upgradeJs, /EXPLORE_MODERATOR_EMAIL = "studiesduhhh@gmail\.com"/);
+  assert.match(authServiceJs, /auth\?\.currentUser\?\.email/);
+  assert.match(upgradeJs, /services\.auth\.getAuthenticatedEmail\(\) === EXPLORE_MODERATOR_EMAIL/);
+  assert.match(upgradeJs, /data-action="delete"/);
+  assert.match(upgradeJs, /services\.projects\.deletePublicProject/);
+  assert.match(firestoreRules, /request\.auth\.token\.email == "studiesduhhh@gmail\.com"/);
+  assert.match(firestoreRules, /schoolId == "public-gallery"/);
   assert.match(projectServiceJs, /visibility = null/);
   assert.match(projectServiceJs, /payload\.visibility = visibility/);
   assert.match(projectServiceJs, /payload\.cloneable = visibility === "public"/);

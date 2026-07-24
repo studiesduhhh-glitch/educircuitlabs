@@ -239,6 +239,10 @@ export function createAuthService({ auth, db, firebase }) {
     await auth.signOut();
   }
 
+  function getAuthenticatedEmail() {
+    return String(auth?.currentUser?.email || "").trim().toLowerCase();
+  }
+
   async function updateUserProgress({ uid, schoolId, role, stats, badges = [] }) {
     if (!uid || !schoolId) return;
     const memberCollection =
@@ -274,6 +278,7 @@ export function createAuthService({ auth, db, firebase }) {
     registerMember,
     login,
     logout,
+    getAuthenticatedEmail,
     updateUserProgress
   };
 }

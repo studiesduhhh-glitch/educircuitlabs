@@ -242,6 +242,13 @@ export function createProjectService({ db, firebase }) {
       .sort((a, b) => timestampToMillis(b.updatedAt) - timestampToMillis(a.updatedAt));
   }
 
+  async function deletePublicProject(projectId) {
+    if (!projectId) {
+      throw new Error("A gallery project ID is required");
+    }
+    await publicGalleryProjectsRef().doc(projectId).delete();
+  }
+
   async function likeProject({ schoolId, projectId, userId }) {
     const ref = schoolProjectsRef(schoolId).doc(projectId);
 
@@ -322,6 +329,7 @@ export function createProjectService({ db, firebase }) {
     listTeacherSubmissions,
     publishSavedProjects,
     listPublicProjects,
+    deletePublicProject,
     likeProject,
     buildClonePayload
   };

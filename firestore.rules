@@ -50,6 +50,11 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == userId;
     }
 
+    function exploreModerator() {
+      return signedIn()
+        && request.auth.token.email == "studiesduhhh@gmail.com";
+    }
+
     function createsOwnUserProfile(userId) {
       return ownsProfile(userId)
         && request.resource.data.uid == request.auth.uid
@@ -181,10 +186,18 @@ service cloud.firestore {
           )
           || schoolStaff(schoolId);
 
-        allow delete: if signedIn() && (
-          resource.data.ownerId == request.auth.uid
-          || schoolAdmin(schoolId)
-        );
+        allow delete: if (
+            schoolId == "public-gallery"
+            && exploreModerator()
+          )
+          || (
+            schoolId != "public-gallery"
+            && signedIn()
+            && (
+              resource.data.ownerId == request.auth.uid
+              || schoolAdmin(schoolId)
+            )
+          );
       }
     }
   }

@@ -1033,6 +1033,15 @@ html {
   flex-wrap: wrap;
 }
 
+.explore-delete-btn {
+  margin-left: auto;
+}
+
+.explore-delete-btn:disabled {
+  cursor: wait;
+  opacity: .72;
+}
+
 .upgrade-submission-list,
 .upgrade-project-grid {
   display: grid;
