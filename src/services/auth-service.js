@@ -61,6 +61,15 @@ export function createAuthService({ auth, db, firebase }) {
   const serverTimestamp = () => FieldValue?.serverTimestamp?.() || new Date();
   const appendToArray = value => FieldValue?.arrayUnion?.(value) || [value];
 
+  async function configurePersistence(remember = false) {
+    if (typeof auth?.setPersistence !== "function") return;
+    const persistence = remember
+      ? firebase?.auth?.Auth?.Persistence?.LOCAL
+      : firebase?.auth?.Auth?.Persistence?.SESSION;
+    if (!persistence) return;
+    await auth.setPersistence(persistence);
+  }
+
   function buildSchoolId(schoolName, schoolCode = "") {
     return slugify(schoolCode || schoolName) || "default-school";
   }
@@ -259,6 +268,7 @@ export function createAuthService({ auth, db, firebase }) {
 
   return {
     buildSchoolId,
+    configurePersistence,
     fetchUserProfile,
     registerSchoolAdmin,
     registerMember,

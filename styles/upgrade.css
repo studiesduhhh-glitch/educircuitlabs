@@ -662,6 +662,14 @@ html {
   box-shadow:0 36px 110px rgba(15,23,42,.18);
 }
 
+.login-screen {
+  background:
+    linear-gradient(rgba(37,99,235,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37,99,235,.035) 1px, transparent 1px),
+    linear-gradient(135deg,#f8fbff,#f2f7fb 56%,#f4fbf7);
+  background-size:28px 28px, 28px 28px, auto;
+}
+
 .dark-mode .login-screen {
   background:
     radial-gradient(circle at 18% 12%, rgba(59,130,246,.18), transparent 22%),
@@ -777,6 +785,90 @@ html {
   max-width:420px;
   margin-left:auto;
   margin-right:auto;
+}
+
+.remember-me-control {
+  display:grid;
+  grid-template-columns:20px minmax(0, 1fr);
+  align-items:center;
+  gap:10px;
+  width:100%;
+  padding:2px 0;
+  color:var(--text);
+  cursor:pointer;
+  user-select:none;
+}
+
+.remember-me-control input {
+  position:absolute;
+  width:1px;
+  height:1px;
+  margin:-1px;
+  padding:0;
+  overflow:hidden;
+  clip:rect(0 0 0 0);
+  white-space:nowrap;
+  border:0;
+}
+
+.remember-me-check {
+  width:20px;
+  height:20px;
+  border:1px solid rgba(75,95,130,.26);
+  border-radius:6px;
+  background:#fff;
+  box-shadow:0 4px 10px rgba(15,23,42,.06);
+  transition:background .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.remember-me-control:hover .remember-me-check {
+  border-color:rgba(15,98,254,.48);
+  transform:translateY(-1px);
+}
+
+.remember-me-control input:checked + .remember-me-check {
+  border-color:#0f62fe;
+  background:#0f62fe;
+  box-shadow:0 6px 14px rgba(15,98,254,.22);
+}
+
+.remember-me-control input:checked + .remember-me-check::after {
+  content:"";
+  display:block;
+  width:5px;
+  height:9px;
+  margin:3px 0 0 6px;
+  border:solid #fff;
+  border-width:0 2px 2px 0;
+  transform:rotate(45deg);
+}
+
+.remember-me-control input:focus-visible + .remember-me-check {
+  outline:3px solid rgba(15,98,254,.18);
+  outline-offset:2px;
+}
+
+.remember-me-copy {
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  min-width:0;
+}
+
+.remember-me-copy strong {
+  font-size:13px;
+  line-height:1.25;
+}
+
+.remember-me-copy small {
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.35;
+}
+
+.login-actions button[aria-busy="true"] {
+  cursor:wait;
+  opacity:.78;
 }
 
 .login-screen .login-demo-row {
@@ -1766,6 +1858,17 @@ button,
   color:#fff;
   background:linear-gradient(135deg,#0f62fe,#10b981);
   border-color:rgba(52,211,153,.38);
+}
+
+.dark-mode .remember-me-check {
+  background:#121922;
+  border-color:rgba(226,232,240,.22);
+  box-shadow:0 6px 14px rgba(0,0,0,.2);
+}
+
+.dark-mode .remember-me-control input:checked + .remember-me-check {
+  background:#3b82f6;
+  border-color:#60a5fa;
 }
 
 .dark-mode .item-body,

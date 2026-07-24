@@ -80,6 +80,7 @@
     loginCard?.setAttribute("data-auth-mode", authMode);
 
     const isLogin = authMode === "login";
+    const activeEnterBtn = document.getElementById("enterBtn");
     if(authFormTitle){
       authFormTitle.textContent = isLogin ? "Log In" : "Create Account";
     }
@@ -88,9 +89,9 @@
         ? "Enter your school code, email, and password to open your lab."
         : "Fill this once to create your Educircuit classroom account.";
     }
-    if(enterBtn){
-      enterBtn.textContent = isLogin ? "Log In" : "Create Account";
-      enterBtn.setAttribute("aria-label", isLogin ? "Log in to Educircuit" : "Create Educircuit account");
+    if(activeEnterBtn){
+      activeEnterBtn.textContent = isLogin ? "Log In" : "Create Account";
+      activeEnterBtn.setAttribute("aria-label", isLogin ? "Log in to Educircuit" : "Create Educircuit account");
     }
     if(loginSchoolPass){
       loginSchoolPass.autocomplete = isLogin ? "current-password" : "new-password";

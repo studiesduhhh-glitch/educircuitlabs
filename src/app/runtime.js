@@ -182,7 +182,13 @@ function createOfflineFirebaseFallback(){
     firestore(){ return dbFallback; }
   };
 
-  fallback.auth.Auth = { Persistence: { NONE: "none" } };
+  fallback.auth.Auth = {
+    Persistence: {
+      LOCAL: "local",
+      SESSION: "session",
+      NONE: "none"
+    }
+  };
   fallback.auth.GoogleAuthProvider = null;
   fallback.firestore.FieldValue = {
     arrayUnion: (...values) => values,
@@ -216,9 +222,6 @@ if(firebaseApi.__offline){
 
 const auth = firebaseApi.auth();
 const db = firebaseApi.firestore();
-auth.setPersistence?.(firebaseApi.auth.Auth?.Persistence?.NONE).catch(error => {
-  console.warn("Firebase auth is running without browser persistence.", error);
-});
 
 
 const LANGUAGE_OPTIONS = [
@@ -650,6 +653,7 @@ const authLoginModeBtn = document.getElementById("authLoginModeBtn");
 const googleAuthBtn = document.getElementById("googleAuthBtn");
 const loginBackStepBtn = document.getElementById("loginBackStepBtn");
 const toggleLoginPasswordBtn = document.getElementById("toggleLoginPasswordBtn");
+const rememberLogin = document.getElementById("rememberLogin");
 const enterBtn = document.getElementById("enterBtn");
 const demoStudentBtn = document.getElementById("demoStudentBtn");
 const demoTeacherBtn = document.getElementById("demoTeacherBtn");
@@ -765,14 +769,15 @@ function openAuthMode(mode){
 function syncRoleFields(){
   const isFaculty = loginRole.value === "teacher" || loginRole.value === "admin";
   const isCreate = getAuthMode() === "create";
+  const activeEnterBtn = document.getElementById("enterBtn");
   loginClass.placeholder = isFaculty ? "Department / Staff (optional)" : "10-A";
   loginClass.previousElementSibling.textContent = isFaculty ? "Department / Section" : "Class / Section";
   if(authFormTitle){
     authFormTitle.textContent = isCreate ? "Create Account" : "Log In";
   }
-  if(enterBtn){
-    enterBtn.textContent = isCreate ? "Create Account" : "Log In";
-    enterBtn.setAttribute("aria-label", isCreate ? "Create Educircuit account" : "Log in to Educircuit");
+  if(activeEnterBtn){
+    activeEnterBtn.textContent = isCreate ? "Create Account" : "Log In";
+    activeEnterBtn.setAttribute("aria-label", isCreate ? "Create Educircuit account" : "Log in to Educircuit");
   }
   if(authModeNote){
     authModeNote.textContent = isCreate
@@ -797,6 +802,7 @@ function syncLoginPasswordToggle(){
 function showLoginChooser(){
   clearLoginErrors();
   loginSchoolPass.type = "password";
+  rememberLogin.checked = false;
   syncLoginPasswordToggle();
   loginScreen.classList.remove("hidden");
   loginCard?.setAttribute("data-step", "1");
@@ -808,6 +814,15 @@ function showLoginChooser(){
   document.getElementById("loginStepOne")?.classList.add("active");
   document.getElementById("loginStepTwo")?.classList.remove("active");
   syncRoleFields();
+}
+
+async function configureAuthPersistence(remember = false){
+  if(typeof auth.setPersistence !== "function") return;
+  const persistence = remember
+    ? firebaseApi.auth.Auth?.Persistence?.LOCAL
+    : firebaseApi.auth.Auth?.Persistence?.SESSION;
+  if(!persistence) return;
+  await auth.setPersistence(persistence);
 }
 
 function getLoginPayload(){
@@ -948,6 +963,7 @@ async function signUpUser(){
   const schoolKey = getSchoolDocId(payload.school);
 
   try{
+    await configureAuthPersistence(false);
     const schoolRef = db.collection("schools").doc(schoolKey);
     const schoolDoc = await schoolRef.get();
     const schoolData = schoolDoc.exists ? schoolDoc.data() : null;
@@ -1018,6 +1034,7 @@ async function loginUser(){
   }
 
   try{
+    await configureAuthPersistence(rememberLogin.checked);
     const cred = await auth.signInWithEmailAndPassword(payload.email, payload.schoolPassword);
     const profile = await fetchUserProfile(cred.user.uid);
 
@@ -1040,6 +1057,7 @@ async function loginWithGoogle(){
   }
 
   try{
+    await configureAuthPersistence(false);
     const provider = new firebaseApi.auth.GoogleAuthProvider();
     const credential = await auth.signInWithPopup(provider);
     const profile = await fetchUserProfile(credential.user.uid);
@@ -3169,6 +3187,7 @@ window.educircuitApp = {
     loginSchool,
     loginSchoolUser,
     loginSchoolPass,
+    rememberLogin,
     authCreateModeBtn,
     authLoginModeBtn,
     googleAuthBtn,

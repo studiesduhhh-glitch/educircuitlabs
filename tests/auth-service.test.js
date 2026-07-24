@@ -76,6 +76,14 @@ function createMockDb(seed = {}) {
 }
 
 const fakeFirebase = {
+  auth: {
+    Auth: {
+      Persistence: {
+        LOCAL: "local",
+        SESSION: "session"
+      }
+    }
+  },
   firestore: {
     FieldValue: {
       serverTimestamp: () => "SERVER_TIME",
@@ -83,6 +91,21 @@ const fakeFirebase = {
     }
   }
 };
+
+test("configures Firebase persistence from the remember-me choice", async () => {
+  const selectedPersistence = [];
+  const auth = {
+    async setPersistence(persistence) {
+      selectedPersistence.push(persistence);
+    }
+  };
+  const service = createAuthService({ auth, db: createMockDb(), firebase: fakeFirebase });
+
+  await service.configurePersistence(true);
+  await service.configurePersistence(false);
+
+  assert.deepEqual(selectedPersistence, ["local", "session"]);
+});
 
 test("maps invalid admin credentials to create-account guidance", () => {
   const message = formatAuthError(

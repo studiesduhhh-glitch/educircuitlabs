@@ -1020,6 +1020,15 @@ button.amber{
   order:3;
 }
 
+.auth-remember-row{
+  display:none;
+}
+
+.premium-login-card[data-auth-mode="login"] .auth-remember-row{
+  display:block;
+  order:4;
+}
+
 .premium-login-card[data-auth-mode="login"] .auth-form-grid{
   grid-template-columns:1fr;
 }

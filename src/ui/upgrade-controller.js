@@ -1,6 +1,6 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260719-voice-dark1";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260719-voice-dark1";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260719-voice-dark1";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260724-remember-auth1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260724-remember-auth1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260724-remember-auth1";
 import {
   buildGuidedLabSteps,
   buildMultimeterReading,
@@ -8,14 +8,14 @@ import {
   buildSnapshotSignature,
   getGuidedLabNextFix,
   replayEntriesDiffer
-} from "../core/classroom-engine.js?v=20260719-voice-dark1";
+} from "../core/classroom-engine.js?v=20260724-remember-auth1";
 import {
   buildVivaQuestions,
   evaluateVivaAnswer,
   summarizeVivaSession
-} from "../core/viva-engine.js?v=20260719-voice-dark1";
-import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260719-voice-dark1";
-import { formatAuthError } from "../services/auth-service.js?v=20260719-voice-dark1";
+} from "../core/viva-engine.js?v=20260724-remember-auth1";
+import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260724-remember-auth1";
+import { formatAuthError } from "../services/auth-service.js?v=20260724-remember-auth1";
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -2510,6 +2510,7 @@ function installAuthUpgrade(app, services) {
   const loginSchool = document.getElementById("loginSchool");
   const loginSchoolUser = document.getElementById("loginSchoolUser");
   const loginSchoolPass = document.getElementById("loginSchoolPass");
+  const rememberLogin = document.getElementById("rememberLogin");
   const enterBtn = replaceButton(document.getElementById("enterBtn"), handlePrimaryAccess);
   const googleAuthBtn = replaceButton(document.getElementById("googleAuthBtn"), handleGoogleLogin);
   const demoStudentBtn = replaceButton(document.getElementById("demoStudentBtn"), () => fillDemoCredentials("student"));
@@ -2605,11 +2606,23 @@ function installAuthUpgrade(app, services) {
   }
 
   async function handlePrimaryAccess() {
+    if (enterBtn?.disabled) return;
     const payload = getPayload();
-    if (payload.accessModel === "create") {
-      await handleSignUp();
-    } else {
-      await handleLogin();
+    const pendingLabel = payload.accessModel === "create" ? "Creating account..." : "Logging in...";
+    const idleLabel = payload.accessModel === "create" ? "Create Account" : "Log In";
+    enterBtn.disabled = true;
+    enterBtn.setAttribute("aria-busy", "true");
+    enterBtn.textContent = pendingLabel;
+    try {
+      if (payload.accessModel === "create") {
+        await handleSignUp();
+      } else {
+        await handleLogin();
+      }
+    } finally {
+      enterBtn.disabled = false;
+      enterBtn.removeAttribute("aria-busy");
+      enterBtn.textContent = idleLabel;
     }
   }
 
@@ -2617,6 +2630,7 @@ function installAuthUpgrade(app, services) {
     const payload = getPayload();
     try {
       validatePayload(payload);
+      await services.auth.configurePersistence(false);
       const profile = payload.role === "admin"
         ? await services.auth.registerSchoolAdmin(payload)
         : await services.auth.registerMember(payload);
@@ -2634,6 +2648,7 @@ function installAuthUpgrade(app, services) {
     const payload = getPayload();
     try {
       validatePayload(payload);
+      await services.auth.configurePersistence(Boolean(rememberLogin?.checked));
       const profile = await services.auth.login(payload);
       app.applyAuthenticatedProfile(profile.uid, profileForLegacy(profile));
       app.state.demoMode = false;
@@ -2651,6 +2666,7 @@ function installAuthUpgrade(app, services) {
       return;
     }
     try {
+      await services.auth.configurePersistence(false);
       const provider = new window.firebase.auth.GoogleAuthProvider();
       const credential = await app.auth.signInWithPopup(provider);
       const profile = await services.auth.fetchUserProfile(credential.user.uid);

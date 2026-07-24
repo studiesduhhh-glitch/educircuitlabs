@@ -72,10 +72,10 @@ test("deployed html stays clean and modular", () => {
   assert.match(indexHtml, /<link rel="icon" href="\/favicon\.ico" sizes="any" \/>/);
   assert.match(indexHtml, /<link rel="icon" type="image\/png" sizes="32x32" href="\/favicon-32x32\.png" \/>/);
   assert.match(indexHtml, /<link rel="apple-touch-icon" sizes="180x180" href="\/apple-touch-icon\.png" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260719-voice-dark1" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260719-voice-dark1" \/>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260719-voice-dark1"><\/script>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260719-voice-dark1"><\/script>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260724-remember-auth1" \/>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260724-remember-auth1" \/>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260724-remember-auth1"><\/script>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260724-remember-auth1"><\/script>/);
   assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
   assert.match(mainJs, /createAssignmentService/);
 });
@@ -86,7 +86,9 @@ test("active app code does not write browser storage", () => {
   assert.doesNotMatch(allJs, /stem_schools/);
   assert.match(storageGuardJs, /Storage\?\.prototype/);
   assert.match(storageGuardJs, /blockedWrites\.push/);
-  assert.doesNotMatch(storageGuardJs, /\.setItem\.call|originalSet|originalRemove|originalClear/);
+  assert.match(storageGuardJs, /firebase:authUser:/);
+  assert.match(storageGuardJs, /firebaseAuthPersistenceAllowed/);
+  assert.doesNotMatch(storageGuardJs, /stem_schools|project|password|email/i);
 });
 
 test("production app avoids blocking browser dialogs and global Firestore scans", () => {
@@ -153,13 +155,19 @@ test("login step is explicit and demo buttons open the simulator directly", () =
   assert.match(indexHtml, /id="authCreateModeBtn"/);
   assert.match(indexHtml, /id="authLoginModeBtn"/);
   assert.match(indexHtml, /id="googleAuthBtn"/);
+  assert.match(indexHtml, /id="rememberLogin"/);
+  assert.match(indexHtml, /Stay signed in on this private device\./);
   assert.doesNotMatch(indexHtml, new RegExp("loginAccess" + "Model"));
   assert.doesNotMatch(indexHtml, /Access\s+Model/);
   assert.match(runtimeJs, /const loginEmail = document\.getElementById\("loginEmail"\)/);
   assert.equal(runtimeJs.includes("/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/"), true);
   assert.match(fallbackJs, /EducircuitAuthFlow/);
   assert.match(fallbackJs, /event\.target\.closest\("#authLoginModeBtn"\)/);
+  assert.match(fallbackJs, /const activeEnterBtn = document\.getElementById\("enterBtn"\)/);
   assert.match(runtimeJs, /function openAuthMode/);
+  assert.match(runtimeJs, /Persistence\?\.LOCAL/);
+  assert.match(runtimeJs, /Persistence\?\.SESSION/);
+  assert.match(runtimeJs, /configureAuthPersistence\(rememberLogin\.checked\)/);
   assert.match(runtimeJs, /getAuthMode\(\) === "create"/);
   assert.match(runtimeJs, /function buildDemoProfile/);
   assert.match(runtimeJs, /demoMode:\s*false/);
@@ -168,6 +176,8 @@ test("login step is explicit and demo buttons open the simulator directly", () =
   assert.match(runtimeJs, /String\(uid \|\| ""\)\.startsWith\("demo-"\)/);
   assert.match(upgradeJs, /fillDemoCredentials/);
   assert.match(upgradeJs, /handleGoogleLogin/);
+  assert.match(upgradeJs, /services\.auth\.configurePersistence\(Boolean\(rememberLogin\?\.checked\)\)/);
+  assert.match(upgradeJs, /aria-busy/);
   assert.match(upgradeJs, /loginEmail\.classList\.add\("error"\)/);
   assert.match(upgradeJs, /loaded in demo mode/);
 });

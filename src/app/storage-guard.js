@@ -23,6 +23,9 @@
 
   if (!storagePrototype || storagePrototype.__educircuitGuarded) return;
 
+  const nativeSetItem = storagePrototype.setItem;
+  const nativeRemoveItem = storagePrototype.removeItem;
+
   function storageName(storage) {
     if (storage === global.localStorage) return "localStorage";
     if (storage === global.sessionStorage) return "sessionStorage";
@@ -34,9 +37,20 @@
     configurable: false
   });
 
+  function isFirebaseAuthStorageKey(key) {
+    const normalizedKey = String(key || "");
+    return normalizedKey.startsWith("firebase:authUser:") ||
+      normalizedKey.startsWith("firebase:redirectUser:") ||
+      normalizedKey.startsWith("firebase:persistence:") ||
+      normalizedKey.startsWith("__sak");
+  }
+
   Object.defineProperty(storagePrototype, "setItem", {
     configurable: true,
     value(key, value) {
+      if (isFirebaseAuthStorageKey(key)) {
+        return Reflect.apply(nativeSetItem, this, [key, value]);
+      }
       blockedWrites.push({
         storage: storageName(this),
         key: String(key),
@@ -49,6 +63,9 @@
   Object.defineProperty(storagePrototype, "removeItem", {
     configurable: true,
     value(key) {
+      if (isFirebaseAuthStorageKey(key)) {
+        return Reflect.apply(nativeRemoveItem, this, [key]);
+      }
       blockedWrites.push({
         storage: storageName(this),
         key: String(key),
@@ -71,6 +88,7 @@
 
   global.EducircuitStorageGuard = {
     enabled: true,
+    firebaseAuthPersistenceAllowed: true,
     blockedWrites
   };
 })(window);
