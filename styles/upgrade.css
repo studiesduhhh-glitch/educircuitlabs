@@ -216,6 +216,97 @@ html {
   z-index:2;
 }
 
+.lightning-bolt[data-easter-egg-trigger] {
+  cursor:pointer;
+  user-select:none;
+}
+
+.lightning-bolt[data-easter-egg-trigger]:focus-visible {
+  outline:3px solid rgba(37,99,235,.4);
+  outline-offset:3px;
+}
+
+.electron-party-overlay {
+  position:fixed;
+  inset:0;
+  z-index:15000;
+  overflow:hidden;
+  pointer-events:none;
+  isolation:isolate;
+}
+
+.electron-party-spark {
+  position:absolute;
+  left:var(--party-origin-x);
+  top:var(--party-origin-y);
+  width:10px;
+  height:18px;
+  border-radius:4px;
+  background:var(--party-color);
+  box-shadow:0 0 18px color-mix(in srgb, var(--party-color) 72%, transparent);
+  opacity:0;
+  transform:translate(-50%,-50%) rotate(35deg) scale(.4);
+  animation:electronSpark 1.35s cubic-bezier(.16,.84,.3,1) var(--party-delay) forwards;
+}
+
+.electron-party-spark::after {
+  content:"";
+  position:absolute;
+  inset:3px -3px;
+  border-radius:4px;
+  background:inherit;
+  transform:rotate(90deg);
+}
+
+.electron-party-badge {
+  position:absolute;
+  left:50%;
+  top:50%;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:min(360px, calc(100vw - 40px));
+  padding:16px 18px;
+  border:1px solid rgba(255,255,255,.72);
+  border-radius:8px;
+  background:rgba(15,23,42,.94);
+  color:#fff;
+  box-shadow:0 24px 70px rgba(15,23,42,.34);
+  transform:translate(-50%,-50%) scale(.82);
+  opacity:0;
+  animation:electronBadge 2.25s cubic-bezier(.2,.8,.2,1) forwards;
+}
+
+.electron-party-icon {
+  flex:0 0 42px;
+  width:42px;
+  height:42px;
+  display:grid;
+  place-items:center;
+  border-radius:8px;
+  background:linear-gradient(135deg,#f97316,#facc15);
+  font-size:23px;
+}
+
+.electron-party-badge b,
+.electron-party-badge small {
+  display:block;
+}
+
+.electron-party-badge b {
+  font-size:16px;
+}
+
+.electron-party-badge small {
+  margin-top:3px;
+  color:#cbd5e1;
+  font-size:12px;
+}
+
+.electron-party-triggered {
+  animation:electronBoltParty .48s ease-in-out 3 !important;
+}
+
 .landing-nav-actions,
 .landing-actions,
 .landing-footer-row {
@@ -1595,6 +1686,30 @@ button,
   50% { transform:rotate(8deg) scale(1.14); }
 }
 
+@keyframes electronSpark {
+  0% {
+    opacity:0;
+    transform:translate(-50%,-50%) rotate(35deg) scale(.35);
+  }
+  18% { opacity:1; }
+  75% { opacity:1; }
+  100% {
+    opacity:0;
+    transform:translate(calc(-50% + var(--party-x)), calc(-50% + var(--party-y))) rotate(215deg) scale(1);
+  }
+}
+
+@keyframes electronBadge {
+  0% { opacity:0; transform:translate(-50%,-46%) scale(.82); }
+  14%, 78% { opacity:1; transform:translate(-50%,-50%) scale(1); }
+  100% { opacity:0; transform:translate(-50%,-54%) scale(.96); }
+}
+
+@keyframes electronBoltParty {
+  0%, 100% { transform:rotate(-8deg) scale(1); }
+  50% { transform:rotate(14deg) scale(1.35); }
+}
+
 @keyframes landingFloat {
   0%, 100% { transform:translate3d(0,0,0); }
   50% { transform:translate3d(20px,-18px,0); }
@@ -2334,6 +2449,19 @@ body.simulation-flow-error #wireLayer .wire-path-active {
     animation:none;
     display:none;
   }
+
+  .electron-party-spark {
+    display:none;
+  }
+
+  .electron-party-badge {
+    animation:electronBadgeReduced 1.4s ease forwards;
+  }
+}
+
+@keyframes electronBadgeReduced {
+  0%, 100% { opacity:0; }
+  15%, 82% { opacity:1; }
 }
 
 @keyframes burstPulse {

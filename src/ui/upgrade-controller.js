@@ -1,6 +1,6 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260724-firebase-save-fix1";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260724-firebase-save-fix1";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260724-firebase-save-fix1";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260724-electron-party1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260724-electron-party1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260724-electron-party1";
 import {
   buildGuidedLabSteps,
   buildMultimeterReading,
@@ -8,14 +8,14 @@ import {
   buildSnapshotSignature,
   getGuidedLabNextFix,
   replayEntriesDiffer
-} from "../core/classroom-engine.js?v=20260724-firebase-save-fix1";
+} from "../core/classroom-engine.js?v=20260724-electron-party1";
 import {
   buildVivaQuestions,
   evaluateVivaAnswer,
   summarizeVivaSession
-} from "../core/viva-engine.js?v=20260724-firebase-save-fix1";
-import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260724-firebase-save-fix1";
-import { formatAuthError } from "../services/auth-service.js?v=20260724-firebase-save-fix1";
+} from "../core/viva-engine.js?v=20260724-electron-party1";
+import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260724-electron-party1";
+import { formatAuthError } from "../services/auth-service.js?v=20260724-electron-party1";
 
 const EXPLORE_MODERATOR_EMAIL = "studiesduhhh@gmail.com";
 
@@ -887,6 +887,99 @@ function installBrandingAndTheme() {
     btn.addEventListener("click", () => {
       applyTheme(document.body.classList.contains("dark-mode") ? "light" : "dark");
     });
+  });
+}
+
+function installElectronParty(app) {
+  document.querySelectorAll(".lightning-bolt").forEach(bolt => {
+    bolt.dataset.easterEggTrigger = "true";
+    bolt.setAttribute("role", "button");
+    bolt.setAttribute("tabindex", "0");
+    bolt.setAttribute("aria-label", "Educircuit energy mark");
+  });
+
+  if (document.body.dataset.electronPartyInstalled === "true") return;
+  document.body.dataset.electronPartyInstalled = "true";
+
+  let activationCount = 0;
+  let resetTimer = 0;
+  let partyActive = false;
+
+  function launchElectronParty(trigger) {
+    if (partyActive) return;
+    partyActive = true;
+    activationCount = 0;
+    window.clearTimeout(resetTimer);
+
+    const overlay = document.createElement("div");
+    overlay.className = "electron-party-overlay";
+    overlay.setAttribute("role", "status");
+    overlay.setAttribute("aria-live", "polite");
+    overlay.setAttribute("aria-label", "Secret unlocked: Electron Party");
+
+    const triggerRect = trigger.getBoundingClientRect();
+    overlay.style.setProperty("--party-origin-x", `${triggerRect.left + (triggerRect.width / 2)}px`);
+    overlay.style.setProperty("--party-origin-y", `${triggerRect.top + (triggerRect.height / 2)}px`);
+
+    const colors = ["#2563eb", "#0ea5e9", "#10b981", "#f59e0b", "#f43f5e"];
+    for (let index = 0; index < 24; index += 1) {
+      const angle = (Math.PI * 2 * index) / 24;
+      const distance = 130 + ((index % 5) * 34);
+      const spark = document.createElement("span");
+      spark.className = "electron-party-spark";
+      spark.style.setProperty("--party-x", `${Math.cos(angle) * distance}px`);
+      spark.style.setProperty("--party-y", `${Math.sin(angle) * distance}px`);
+      spark.style.setProperty("--party-delay", `${(index % 6) * 35}ms`);
+      spark.style.setProperty("--party-color", colors[index % colors.length]);
+      overlay.appendChild(spark);
+    }
+
+    const badge = document.createElement("div");
+    badge.className = "electron-party-badge";
+    badge.innerHTML = `
+      <span class="electron-party-icon" aria-hidden="true">⚡</span>
+      <span><b>Electron Party unlocked</b><small>You found Educircuit's secret circuit.</small></span>
+    `;
+    overlay.appendChild(badge);
+    document.body.appendChild(overlay);
+    document.body.classList.add("electron-party-active");
+    trigger.classList.add("electron-party-triggered");
+    app.showToast?.("Secret unlocked: Electron Party");
+
+    const duration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 1600 : 2600;
+    window.setTimeout(() => {
+      overlay.remove();
+      document.body.classList.remove("electron-party-active");
+      trigger.classList.remove("electron-party-triggered");
+      partyActive = false;
+    }, duration);
+  }
+
+  function registerActivation(trigger) {
+    activationCount += 1;
+    window.clearTimeout(resetTimer);
+    resetTimer = window.setTimeout(() => {
+      activationCount = 0;
+    }, 1500);
+
+    if (activationCount >= 5) launchElectronParty(trigger);
+  }
+
+  document.addEventListener("click", event => {
+    const trigger = event.target instanceof Element
+      ? event.target.closest("[data-easter-egg-trigger]")
+      : null;
+    if (trigger) registerActivation(trigger);
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const trigger = event.target instanceof Element
+      ? event.target.closest("[data-easter-egg-trigger]")
+      : null;
+    if (!trigger) return;
+    event.preventDefault();
+    registerActivation(trigger);
   });
 }
 
@@ -3166,6 +3259,7 @@ export function installVisualPolish(app = {}) {
   installLandingInteractions();
   installMicroInteractions();
   installBrandingAndTheme();
+  installElectronParty(app);
   installVoiceCoachToggle(app);
   installLoginStepper({
     toast: message => app.showToast?.(message) || console.warn(message)
