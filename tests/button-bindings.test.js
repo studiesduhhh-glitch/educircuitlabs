@@ -74,17 +74,18 @@ test("deployed html stays clean and modular", () => {
   assert.match(indexHtml, /<link rel="icon" href="\/favicon\.ico" sizes="any" \/>/);
   assert.match(indexHtml, /<link rel="icon" type="image\/png" sizes="32x32" href="\/favicon-32x32\.png" \/>/);
   assert.match(indexHtml, /<link rel="apple-touch-icon" sizes="180x180" href="\/apple-touch-icon\.png" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260724-electron-party1" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260724-electron-party1" \/>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260724-electron-party1"><\/script>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260724-electron-party1"><\/script>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260724-electron-party2" \/>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260724-electron-party2" \/>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260724-electron-party2"><\/script>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260724-electron-party2"><\/script>/);
   assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
   assert.match(mainJs, /createAssignmentService/);
 });
 
 test("hidden Electron Party easter egg is accessible and self-contained", () => {
   assert.match(upgradeJs, /function installElectronParty\(app\)/);
-  assert.match(upgradeJs, /activationCount >= 5/);
+  assert.doesNotMatch(upgradeJs, /activationCount|registerActivation/);
+  assert.match(upgradeJs, /if \(trigger\) launchElectronParty\(trigger\)/);
   assert.match(upgradeJs, /electron-party-overlay/);
   assert.match(upgradeJs, /aria-label", "Educircuit energy mark"/);
   assert.match(upgradeJs, /prefers-reduced-motion: reduce/);

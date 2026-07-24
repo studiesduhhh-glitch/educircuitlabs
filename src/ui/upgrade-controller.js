@@ -1,6 +1,6 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260724-electron-party1";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260724-electron-party1";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260724-electron-party1";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260724-electron-party2";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260724-electron-party2";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260724-electron-party2";
 import {
   buildGuidedLabSteps,
   buildMultimeterReading,
@@ -8,14 +8,14 @@ import {
   buildSnapshotSignature,
   getGuidedLabNextFix,
   replayEntriesDiffer
-} from "../core/classroom-engine.js?v=20260724-electron-party1";
+} from "../core/classroom-engine.js?v=20260724-electron-party2";
 import {
   buildVivaQuestions,
   evaluateVivaAnswer,
   summarizeVivaSession
-} from "../core/viva-engine.js?v=20260724-electron-party1";
-import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260724-electron-party1";
-import { formatAuthError } from "../services/auth-service.js?v=20260724-electron-party1";
+} from "../core/viva-engine.js?v=20260724-electron-party2";
+import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260724-electron-party2";
+import { formatAuthError } from "../services/auth-service.js?v=20260724-electron-party2";
 
 const EXPLORE_MODERATOR_EMAIL = "studiesduhhh@gmail.com";
 
@@ -901,15 +901,11 @@ function installElectronParty(app) {
   if (document.body.dataset.electronPartyInstalled === "true") return;
   document.body.dataset.electronPartyInstalled = "true";
 
-  let activationCount = 0;
-  let resetTimer = 0;
   let partyActive = false;
 
   function launchElectronParty(trigger) {
     if (partyActive) return;
     partyActive = true;
-    activationCount = 0;
-    window.clearTimeout(resetTimer);
 
     const overlay = document.createElement("div");
     overlay.className = "electron-party-overlay";
@@ -955,21 +951,11 @@ function installElectronParty(app) {
     }, duration);
   }
 
-  function registerActivation(trigger) {
-    activationCount += 1;
-    window.clearTimeout(resetTimer);
-    resetTimer = window.setTimeout(() => {
-      activationCount = 0;
-    }, 1500);
-
-    if (activationCount >= 5) launchElectronParty(trigger);
-  }
-
   document.addEventListener("click", event => {
     const trigger = event.target instanceof Element
       ? event.target.closest("[data-easter-egg-trigger]")
       : null;
-    if (trigger) registerActivation(trigger);
+    if (trigger) launchElectronParty(trigger);
   });
 
   document.addEventListener("keydown", event => {
@@ -979,7 +965,7 @@ function installElectronParty(app) {
       : null;
     if (!trigger) return;
     event.preventDefault();
-    registerActivation(trigger);
+    launchElectronParty(trigger);
   });
 }
 
