@@ -67,6 +67,9 @@ function createMockDb(seed = {}) {
           pending.push({ type: "update", path: ref.path, data, options: { merge: true } });
         },
         async commit() {
+          if (seed.failCommit) {
+            throw new Error("Firestore registration write failed");
+          }
           writes.push(...pending);
           pending.forEach(applyWrite);
         }
@@ -187,4 +190,60 @@ test("admin can claim a self-service school that has no admin yet", async () => 
   assert.equal(profile.role, "admin");
   assert.equal(schoolWrite.options.merge, true);
   assert.deepEqual(schoolWrite.data.adminIds, { arrayUnion: ["admin-1"] });
+});
+
+test("failed profile creation removes the incomplete Firebase Auth account", async () => {
+  const db = createMockDb({ failCommit: true });
+  let deleteCalls = 0;
+  const auth = {
+    async createUserWithEmailAndPassword() {
+      return {
+        user: {
+          uid: "student-orphan",
+          async delete() {
+            deleteCalls += 1;
+          }
+        }
+      };
+    }
+  };
+  const service = createAuthService({ auth, db, firebase: fakeFirebase });
+
+  await assert.rejects(
+    service.registerMember({
+      name: "Student Orphan",
+      email: "orphan@example.com",
+      password: "secret123",
+      role: "student",
+      className: "10-A",
+      school: "VVA",
+      schoolCode: "cleanup-school"
+    }),
+    /Firestore registration write failed/
+  );
+
+  assert.equal(deleteCalls, 1);
+});
+
+test("login signs out an Auth account that has no Firestore profile", async () => {
+  let signOutCalls = 0;
+  const auth = {
+    async signInWithEmailAndPassword() {
+      return { user: { uid: "missing-profile" } };
+    },
+    async signOut() {
+      signOutCalls += 1;
+    }
+  };
+  const service = createAuthService({ auth, db: createMockDb(), firebase: fakeFirebase });
+
+  await assert.rejects(
+    service.login({
+      email: "missing@example.com",
+      password: "secret123"
+    }),
+    /profile is missing/
+  );
+
+  assert.equal(signOutCalls, 1);
 });

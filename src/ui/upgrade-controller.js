@@ -1,6 +1,6 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260724-explore-moderator1";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260724-explore-moderator1";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260724-explore-moderator1";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260724-firebase-hardening1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260724-firebase-hardening1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260724-firebase-hardening1";
 import {
   buildGuidedLabSteps,
   buildMultimeterReading,
@@ -8,14 +8,14 @@ import {
   buildSnapshotSignature,
   getGuidedLabNextFix,
   replayEntriesDiffer
-} from "../core/classroom-engine.js?v=20260724-explore-moderator1";
+} from "../core/classroom-engine.js?v=20260724-firebase-hardening1";
 import {
   buildVivaQuestions,
   evaluateVivaAnswer,
   summarizeVivaSession
-} from "../core/viva-engine.js?v=20260724-explore-moderator1";
-import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260724-explore-moderator1";
-import { formatAuthError } from "../services/auth-service.js?v=20260724-explore-moderator1";
+} from "../core/viva-engine.js?v=20260724-firebase-hardening1";
+import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260724-firebase-hardening1";
+import { formatAuthError } from "../services/auth-service.js?v=20260724-firebase-hardening1";
 
 const EXPLORE_MODERATOR_EMAIL = "studiesduhhh@gmail.com";
 

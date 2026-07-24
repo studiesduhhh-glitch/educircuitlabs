@@ -1,8 +1,8 @@
-import { createAuthService } from "./services/auth-service.js?v=20260724-explore-moderator1";
-import { createProjectService } from "./services/project-service.js?v=20260724-explore-moderator1";
-import { createGamificationService } from "./services/gamification-service.js?v=20260724-explore-moderator1";
-import { createAssignmentService } from "./services/assignment-service.js?v=20260724-explore-moderator1";
-import { bootstrapUpgrade, installVisualPolish } from "./ui/upgrade-controller.js?v=20260724-explore-moderator1";
+import { createAuthService } from "./services/auth-service.js?v=20260724-firebase-hardening1";
+import { createProjectService } from "./services/project-service.js?v=20260724-firebase-hardening1";
+import { createGamificationService } from "./services/gamification-service.js?v=20260724-firebase-hardening1";
+import { createAssignmentService } from "./services/assignment-service.js?v=20260724-firebase-hardening1";
+import { bootstrapUpgrade, installVisualPolish } from "./ui/upgrade-controller.js?v=20260724-firebase-hardening1";
 
 async function waitForLegacyApp() {
   if (typeof window === "undefined") {

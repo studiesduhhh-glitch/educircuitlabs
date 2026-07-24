@@ -67,17 +67,96 @@ service cloud.firestore {
       return signedIn()
         && request.resource.data.schoolId == schoolId
         && request.resource.data.ownerId == request.auth.uid
-        && request.resource.data.visibility == "public";
+        && request.resource.data.visibility == "public"
+        && (
+          schoolId == "public-gallery"
+          || (
+            request.resource.data.get("grade", "Not graded") == "Not graded"
+            && request.resource.data.get("feedback", "") == ""
+            && !request.resource.data.keys().hasAny([
+              "gradedAt",
+              "gradedById",
+              "gradedByName",
+              "autoGrade"
+            ])
+          )
+        );
     }
 
-    function publicLikeOnly() {
+    function preservesTeacherAssessment() {
+      return request.resource.data.get("grade", "Not graded")
+          == resource.data.get("grade", "Not graded")
+        && request.resource.data.get("feedback", "")
+          == resource.data.get("feedback", "")
+        && request.resource.data.get("gradedAt", null)
+          == resource.data.get("gradedAt", null)
+        && request.resource.data.get("gradedById", "")
+          == resource.data.get("gradedById", "")
+        && request.resource.data.get("gradedByName", "")
+          == resource.data.get("gradedByName", "")
+        && request.resource.data.get("autoGrade", null)
+          == resource.data.get("autoGrade", null);
+    }
+
+    function preservesGalleryReactions(schoolId) {
+      return schoolId != "public-gallery"
+        || (
+          request.resource.data.get("likeCount", 0)
+            == resource.data.get("likeCount", 0)
+          && request.resource.data.get("likedBy", [])
+            == resource.data.get("likedBy", [])
+        );
+    }
+
+    function ownerProjectUpdate(schoolId) {
       return signedIn()
+        && resource.data.ownerId == request.auth.uid
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.schoolId == schoolId
+        && request.resource.data.visibility == "public"
+        && (
+          schoolId == "public-gallery"
+          || preservesTeacherAssessment()
+        )
+        && preservesGalleryReactions(schoolId);
+    }
+
+    function publicLikeOnly(schoolId) {
+      let before = resource.data.get("likedBy", []);
+      let after = request.resource.data.get("likedBy", []);
+      let userId = request.auth.uid;
+
+      return signedIn()
+        && schoolId == "public-gallery"
         && resource.data.visibility == "public"
+        && request.resource.data.visibility == "public"
+        && request.resource.data.likeCount is int
+        && request.resource.data.likeCount >= 0
         && request.resource.data.diff(resource.data).changedKeys().hasOnly([
           "likeCount",
           "likedBy",
           "updatedAt"
-        ]);
+        ])
+        && (
+          (
+            !before.hasAny([userId])
+            && after.hasAny([userId])
+            && after.size() == before.size() + 1
+            && after.toSet().difference(before.toSet()).hasOnly([userId])
+            && before.toSet().difference(after.toSet()).size() == 0
+            && request.resource.data.likeCount
+              == resource.data.get("likeCount", 0) + 1
+          )
+          || (
+            before.hasAny([userId])
+            && !after.hasAny([userId])
+            && after.size() == before.size() - 1
+            && before.toSet().difference(after.toSet()).hasOnly([userId])
+            && after.toSet().difference(before.toSet()).size() == 0
+            && request.resource.data.likeCount
+              == resource.data.get("likeCount", 0) - 1
+          )
+        );
     }
 
     match /users/{userId} {
@@ -87,7 +166,8 @@ service cloud.firestore {
       allow update: if ownsProfile(userId)
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.schoolId == resource.data.schoolId
-        && request.resource.data.role == resource.data.role;
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.email == resource.data.email;
       allow delete: if false;
     }
 
@@ -115,6 +195,8 @@ service cloud.firestore {
           signedIn()
           && resource.data.adminIds.size() == 0
           && request.resource.data.id == schoolId
+          && request.resource.data.adminIds.size() == 1
+          && request.resource.data.adminIds.hasOnly([request.auth.uid])
           && request.resource.data.adminIds.hasAll([request.auth.uid])
           && request.resource.data.diff(resource.data).changedKeys().hasOnly([
             "adminIds",
@@ -137,7 +219,13 @@ service cloud.firestore {
           && request.resource.data.uid == request.auth.uid
           && request.resource.data.role == "admin"
           && request.resource.data.schoolId == schoolId;
-        allow update: if ownsProfile(adminId) || schoolAdmin(schoolId);
+        allow update: if (
+            ownsProfile(adminId)
+            && request.resource.data.uid == resource.data.uid
+            && request.resource.data.role == resource.data.role
+            && request.resource.data.schoolId == resource.data.schoolId
+          )
+          || schoolAdmin(schoolId);
         allow delete: if false;
       }
 
@@ -147,7 +235,13 @@ service cloud.firestore {
           && request.resource.data.uid == request.auth.uid
           && request.resource.data.role == "teacher"
           && request.resource.data.schoolId == schoolId;
-        allow update: if ownsProfile(teacherId) || schoolAdmin(schoolId);
+        allow update: if (
+            ownsProfile(teacherId)
+            && request.resource.data.uid == resource.data.uid
+            && request.resource.data.role == resource.data.role
+            && request.resource.data.schoolId == resource.data.schoolId
+          )
+          || schoolAdmin(schoolId);
         allow delete: if false;
       }
 
@@ -157,7 +251,13 @@ service cloud.firestore {
           && request.resource.data.uid == request.auth.uid
           && request.resource.data.role == "student"
           && request.resource.data.schoolId == schoolId;
-        allow update: if ownsProfile(studentId) || schoolStaff(schoolId);
+        allow update: if (
+            ownsProfile(studentId)
+            && request.resource.data.uid == resource.data.uid
+            && request.resource.data.role == resource.data.role
+            && request.resource.data.schoolId == resource.data.schoolId
+          )
+          || schoolStaff(schoolId);
         allow delete: if false;
       }
 
@@ -170,20 +270,17 @@ service cloud.firestore {
       }
 
       match /projects/{projectId} {
-        allow read: if resource.data.visibility == "public"
+        allow read: if (
+            schoolId == "public-gallery"
+            && resource.data.visibility == "public"
+          )
           || (signedIn() && resource.data.ownerId == request.auth.uid)
           || schoolStaff(schoolId);
 
         allow create: if safeProjectWrite(schoolId);
 
-        allow update: if publicLikeOnly()
-          || (
-            signedIn()
-            && resource.data.ownerId == request.auth.uid
-            && request.resource.data.ownerId == resource.data.ownerId
-            && request.resource.data.schoolId == schoolId
-            && request.resource.data.visibility == "public"
-          )
+        allow update: if publicLikeOnly(schoolId)
+          || ownerProjectUpdate(schoolId)
           || schoolStaff(schoolId);
 
         allow delete: if (

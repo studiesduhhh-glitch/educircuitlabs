@@ -67,6 +67,41 @@ test("saved projects are always public and cloneable", async () => {
   assert.equal("feedback" in galleryWrite.payload, false);
 });
 
+test("Firebase saves source and gallery projects in one atomic batch", async () => {
+  const db = createSaveDb();
+  const stagedWrites = [];
+  let commitCalls = 0;
+  db.batch = () => ({
+    set(ref, payload, options) {
+      stagedWrites.push({ ref, payload, options });
+    },
+    async commit() {
+      commitCalls += 1;
+    }
+  });
+  const service = createProjectService({ db, firebase: {} });
+
+  await service.saveProject({
+    schoolId: "school-atomic",
+    owner: {
+      uid: "student-atomic",
+      name: "Atomic Student",
+      role: "student"
+    },
+    projectSnapshot: {
+      name: "Atomic LED",
+      items: [],
+      wires: [],
+      logic: []
+    },
+    analysis: null
+  });
+
+  assert.equal(stagedWrites.length, 2);
+  assert.equal(commitCalls, 1);
+  assert.equal(db.writes.length, 0);
+});
+
 test("Explore loads public projects across schools and sorts newest first", async () => {
   const calls = [];
   const docs = [

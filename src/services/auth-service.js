@@ -106,6 +106,19 @@ export function createAuthService({ auth, db, firebase }) {
     return doc.exists ? doc.data() : null;
   }
 
+  async function commitRegistration(batch, user) {
+    try {
+      await batch.commit();
+    } catch (error) {
+      try {
+        await user?.delete?.();
+      } catch (cleanupError) {
+        console.warn("Could not remove incomplete Firebase Auth account", cleanupError);
+      }
+      throw error;
+    }
+  }
+
   async function registerSchoolAdmin(payload) {
     const schoolId = buildSchoolId(payload.school, payload.schoolCode);
     const schoolRef = db.collection("schools").doc(schoolId);
@@ -158,7 +171,7 @@ export function createAuthService({ auth, db, firebase }) {
       })
     );
 
-    await batch.commit();
+    await commitRegistration(batch, cred.user);
     return fetchUserProfile(cred.user.uid);
   }
 
@@ -224,14 +237,17 @@ export function createAuthService({ auth, db, firebase }) {
       });
     }
 
-    await batch.commit();
+    await commitRegistration(batch, cred.user);
     return fetchUserProfile(cred.user.uid);
   }
 
   async function login(payload) {
     const cred = await auth.signInWithEmailAndPassword(payload.email, payload.password);
     const profile = await fetchUserProfile(cred.user.uid);
-    assert(profile, "This account exists, but its Educircuit classroom profile is missing. Create the account again or ask the school admin to repair it.");
+    if (!profile) {
+      await auth.signOut();
+      throw new Error("This account exists, but its Educircuit classroom profile is missing. Create the account again or ask the school admin to repair it.");
+    }
     return profile;
   }
 

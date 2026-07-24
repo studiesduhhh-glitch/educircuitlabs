@@ -141,10 +141,17 @@ export function createProjectService({ db, firebase }) {
 
     const galleryPayload = buildGalleryPayload(payload, schoolId, ref.id);
     const galleryRef = publicGalleryProjectsRef().doc(galleryPayload.id);
-    await Promise.all([
-      ref.set(payload, { merge: true }),
-      galleryRef.set(galleryPayload, { merge: true })
-    ]);
+    if (typeof db.batch === "function") {
+      const batch = db.batch();
+      batch.set(ref, payload, { merge: true });
+      batch.set(galleryRef, galleryPayload, { merge: true });
+      await batch.commit();
+    } else {
+      await Promise.all([
+        ref.set(payload, { merge: true }),
+        galleryRef.set(galleryPayload, { merge: true })
+      ]);
+    }
     return { ...payload, createdAt: payload.createdAt || new Date(), id: ref.id };
   }
 
