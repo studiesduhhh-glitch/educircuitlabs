@@ -583,6 +583,30 @@ LANGUAGE_OPTIONS.forEach(language => {
   }
 });
 
+const TRANSLATABLE_TEXT_KEYS = new Set(
+  Object.values(translations).flatMap(language => Object.keys(language))
+);
+const DYNAMIC_TEXT_IDS = new Set([
+  "activeUserPill",
+  "zoomDisplay",
+  "toast",
+  "statusText",
+  "gradeText",
+  "projectNameText",
+  "batteryVoltageValue",
+  "ledStateText",
+  "motorStateText",
+  "buzzerStateText",
+  "coachStatusText",
+  "coachHintText",
+  "coachFixText",
+  "teacherSubmissionState",
+  "teacherGradeState",
+  "teacherComponentCount",
+  "teacherWireCount",
+  "teacherLogicCount"
+]);
+
 if (!LANGUAGE_CODES.has(state.lang)) {
   state.lang = "en";
 }
@@ -669,6 +693,11 @@ const canvasWorld = document.getElementById("canvasWorld");
 const workspaceArea = document.getElementById("workspaceArea");
 const zoomDisplay = document.getElementById("zoomDisplay");
 const toast = document.getElementById("toast");
+const projectRenameModal = document.getElementById("projectRenameModal");
+const projectRenameForm = document.getElementById("projectRenameForm");
+const projectRenameInput = document.getElementById("projectRenameInput");
+const projectRenameCloseBtn = document.getElementById("projectRenameCloseBtn");
+const projectRenameCancelBtn = document.getElementById("projectRenameCancelBtn");
 const batteryVoltageValue = document.getElementById("batteryVoltageValue");
 const batteryVoltageRange = document.getElementById("batteryVoltageRange");
 const voltageGuideList = document.getElementById("voltageGuideList");
@@ -828,12 +857,12 @@ async function configureAuthPersistence(remember = false){
 function getLoginPayload(){
   return {
     name: loginName.value.trim(),
-    email: loginEmail.value.trim(),
+    email: loginEmail.value.trim().toLowerCase(),
     role: loginRole.value,
     className: loginClass.value.trim(),
     school: loginSchool.value.trim(),
     schoolUsername: loginSchoolUser.value.trim(),
-    schoolPassword: loginSchoolPass.value.trim(),
+    schoolPassword: loginSchoolPass.value,
     accessModel: getAuthMode()
   };
 }
@@ -872,6 +901,11 @@ function validateLoginPayload(payload){
     hasError = true;
   }
 
+  if(payload.accessModel === "create" && payload.schoolPassword.length > 0 && payload.schoolPassword.length < 6){
+    loginSchoolPass.classList.add("error");
+    hasError = true;
+  }
+
   if(payload.accessModel === "create" && payload.role === "student" && !payload.className){
     loginClass.classList.add("error");
     hasError = true;
@@ -898,6 +932,18 @@ function formatFirebaseAuthError(error, action = "login", role = "student"){
   }
   if(code === "auth/invalid-email"){
     return "Enter a valid email address before continuing.";
+  }
+  if(code === "auth/school-code-mismatch"){
+    return "That school code does not match this account. Check the code and try again.";
+  }
+  if(code === "auth/operation-not-allowed"){
+    return "Email and password accounts are not enabled in Firebase yet.";
+  }
+  if(code === "auth/network-request-failed"){
+    return "The network interrupted Firebase. Check your connection and try again.";
+  }
+  if(code === "permission-denied" || code === "firestore/permission-denied"){
+    return "Firebase blocked this account action. Check the school code and role, then try again.";
   }
   if(/school already/i.test(message) && action === "create"){
     return "This school already exists. Choose Log In, or use a different school code for a new school.";
@@ -960,21 +1006,45 @@ async function signUpUser(){
     return;
   }
 
-  const schoolKey = getSchoolDocId(payload.school);
+  const schoolKey = getSchoolDocId(payload.schoolUsername || payload.school);
+  let credential = null;
+  let createdAuthUser = false;
+  let registrationCommitted = false;
 
   try{
     await configureAuthPersistence(false);
+    try{
+      credential = await auth.createUserWithEmailAndPassword(payload.email, payload.schoolPassword);
+      createdAuthUser = true;
+    } catch(error){
+      if(error?.code !== "auth/email-already-in-use" || typeof auth.signInWithEmailAndPassword !== "function"){
+        throw error;
+      }
+
+      try{
+        credential = await auth.signInWithEmailAndPassword(payload.email, payload.schoolPassword);
+      } catch{
+        throw error;
+      }
+
+      const existingProfile = await fetchUserProfile(credential.user.uid);
+      if(existingProfile){
+        await auth.signOut();
+        throw error;
+      }
+    }
+
     const schoolRef = db.collection("schools").doc(schoolKey);
     const schoolDoc = await schoolRef.get();
     const schoolData = schoolDoc.exists ? schoolDoc.data() : null;
     const adminIds = Array.isArray(schoolData?.adminIds) ? schoolData.adminIds : [];
+    const canonicalSchoolName = String(schoolData?.name || payload.school).trim();
 
     if(payload.role === "admin" && adminIds.length){
-      showToast("This school already has an admin. Choose Log In to use that account.");
-      return;
+      throw new Error("This school already has an admin. Choose Log In to use that account.");
     }
 
-    const cred = await auth.createUserWithEmailAndPassword(payload.email, payload.schoolPassword);
+    const cred = credential;
     const collectionName = getMemberCollectionName(payload.role);
     const profilePath = `schools/${schoolKey}/${collectionName}/${cred.user.uid}`;
     const batch = db.batch();
@@ -984,7 +1054,7 @@ async function signUpUser(){
       email: payload.email,
       role: payload.role,
       className: payload.className,
-      school: payload.school,
+      school: canonicalSchoolName,
       schoolKey,
       schoolId: schoolKey,
       schoolUsername: payload.schoolUsername,
@@ -996,7 +1066,7 @@ async function signUpUser(){
     if(schoolDoc.exists){
       batch.set(schoolRef, {
         id: schoolKey,
-        name: payload.school,
+        name: canonicalSchoolName,
         adminIds: payload.role === "admin" ? firebaseApi.firestore.FieldValue.arrayUnion(cred.user.uid) : adminIds,
         updatedAt: new Date(),
         leaderboardEnabled: schoolData?.leaderboardEnabled ?? true
@@ -1004,7 +1074,7 @@ async function signUpUser(){
     } else {
       batch.set(schoolRef, {
         id: schoolKey,
-        name: payload.school,
+        name: canonicalSchoolName,
         adminIds: payload.role === "admin" ? [cred.user.uid] : [],
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -1018,10 +1088,22 @@ async function signUpUser(){
     batch.set(schoolRef.collection(collectionName).doc(cred.user.uid), profile);
     batch.set(db.collection("users").doc(cred.user.uid), profile);
     await batch.commit();
+    registrationCommitted = true;
 
     applyAuthenticatedProfile(cred.user.uid, profile);
     showToast("Account created safely");
   } catch(error){
+    if(credential?.user && !registrationCommitted){
+      try{
+        if(createdAuthUser){
+          await credential.user.delete?.();
+        } else {
+          await auth.signOut();
+        }
+      } catch(cleanupError){
+        console.warn("Could not clean up incomplete Firebase registration", cleanupError);
+      }
+    }
     showToast(formatFirebaseAuthError(error, "create", payload.role));
   }
 }
@@ -1039,8 +1121,18 @@ async function loginUser(){
     const profile = await fetchUserProfile(cred.user.uid);
 
     if(!profile){
+      await auth.signOut();
       showToast("This account exists, but its Educircuit classroom profile is missing. Ask the school admin to repair it.");
       return;
+    }
+
+    const suppliedSchoolKey = getSchoolDocId(payload.schoolUsername);
+    const profileSchoolKey = profile.schoolId || profile.schoolKey || getSchoolDocId(profile.school);
+    if(suppliedSchoolKey !== profileSchoolKey){
+      const error = new Error("The supplied school code does not match this account.");
+      error.code = "auth/school-code-mismatch";
+      await auth.signOut();
+      throw error;
     }
 
     applyAuthenticatedProfile(cred.user.uid, profile);
@@ -1101,8 +1193,8 @@ function resetAuthenticatedUser(){
   state.user.schoolUsername = "";
   state.projectOwnerName = "";
   loginRole.value = "student";
-  activeUserPill.textContent = "Guest • Student";
   setMode("student");
+  activeUserPill.textContent = "Not logged in";
   showLoginChooser();
 }
 
@@ -1349,11 +1441,25 @@ function showToast(message){
   showToast.t = setTimeout(() => toast.classList.remove("show"), 1800);
 }
 
+function bindTileAction(element, action, label){
+  element.setAttribute("role", "button");
+  element.setAttribute("tabindex", "0");
+  if(label){
+    element.setAttribute("aria-label", label);
+  }
+  element.addEventListener("click", action);
+  element.addEventListener("keydown", event => {
+    if(event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    action();
+  });
+}
+
 function renderComponentCards(){
   componentGrid.innerHTML = "";
   componentCatalog.forEach(comp => {
     const card = UI.componentCard(comp);
-    card.addEventListener("click", () => addComponent(comp.type));
+    bindTileAction(card, () => addComponent(comp.type), `Add ${comp.type} to workspace`);
     componentGrid.appendChild(card);
   });
 }
@@ -1362,7 +1468,7 @@ function renderLogicCards(){
   logicBlockList.innerHTML = "";
   logicCatalog.forEach(name => {
     const item = UI.logicCard(name);
-    item.addEventListener("click", () => addLogic(name));
+    bindTileAction(item, () => addLogic(name), `Add ${name} logic block`);
     logicBlockList.appendChild(item);
   });
 }
@@ -2625,12 +2731,38 @@ function applyGrade(){
 }
 
 function renameProject(){
-  const next = prompt("Enter project name", state.projectName);
-  if(next && next.trim()){
-    state.projectName = next.trim();
-    projectNameText.textContent = state.projectName;
-    showToast("Project renamed");
+  projectRenameInput.value = state.projectName;
+  projectRenameInput.classList.remove("error");
+  projectRenameModal.classList.remove("hidden");
+  projectRenameModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+  setTimeout(() => {
+    projectRenameInput.focus();
+    projectRenameInput.select();
+  }, 40);
+}
+
+function closeProjectRenameModal(){
+  projectRenameModal.classList.add("hidden");
+  projectRenameModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+  document.getElementById("renameBtn")?.focus();
+}
+
+function saveProjectName(event){
+  event.preventDefault();
+  const nextName = projectRenameInput.value.trim();
+  if(!nextName){
+    projectRenameInput.classList.add("error");
+    projectRenameInput.focus();
+    showToast("Enter a project name");
+    return;
   }
+
+  state.projectName = nextName;
+  projectNameText.textContent = state.projectName;
+  closeProjectRenameModal();
+  showToast("Project renamed");
 }
 
 function copyProjectSummary(){
@@ -2960,6 +3092,19 @@ document.getElementById("clearBtn").addEventListener("click", clearProject);
 document.getElementById("submitBtn").addEventListener("click", submitProject);
 document.getElementById("applyGradeBtn").addEventListener("click", applyGrade);
 document.getElementById("renameBtn").addEventListener("click", renameProject);
+projectRenameForm?.addEventListener("submit", saveProjectName);
+projectRenameCloseBtn?.addEventListener("click", closeProjectRenameModal);
+projectRenameCancelBtn?.addEventListener("click", closeProjectRenameModal);
+projectRenameModal?.addEventListener("click", event => {
+  if(event.target === projectRenameModal){
+    closeProjectRenameModal();
+  }
+});
+document.addEventListener("keydown", event => {
+  if(event.key === "Escape" && !projectRenameModal?.classList.contains("hidden")){
+    closeProjectRenameModal();
+  }
+});
 document.getElementById("copyProjectBtn").addEventListener("click", copyProjectSummary);
 document.getElementById("clearLogicBtn").addEventListener("click", () => {
   state.logic = [];
@@ -3001,7 +3146,8 @@ if(googleAuthBtn){
 enterBtn.addEventListener("click", enterPlatform);
 
 document.querySelectorAll("[data-example]").forEach(el => {
-  el.addEventListener("click", () => loadExample(el.dataset.example));
+  const title = el.querySelector("b")?.textContent?.trim() || "example";
+  bindTileAction(el, () => loadExample(el.dataset.example), `Load ${title} project`);
 });
 
 aiTeacherSendBtn.addEventListener("click", sendAiTeacherMessage);
@@ -3072,9 +3218,14 @@ workspaceArea.addEventListener("wheel", (e) => {
 
 function captureText(){
   document.querySelectorAll("h1, h2, h3, button, label, span, p, b, small").forEach(el => {
-    if(el.children.length === 0){
-      el.setAttribute("data-en", el.textContent.trim());
-   }
+    const text = el.textContent.trim();
+    if(
+      el.children.length === 0 &&
+      !DYNAMIC_TEXT_IDS.has(el.id) &&
+      TRANSLATABLE_TEXT_KEYS.has(text)
+    ){
+      el.setAttribute("data-en", text);
+    }
   });
 }
 

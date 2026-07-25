@@ -12,6 +12,12 @@ function assert(condition, message) {
   }
 }
 
+function authError(code, message) {
+  const error = new Error(message);
+  error.code = code;
+  return error;
+}
+
 export function formatAuthError(error, { mode = "login", role = "student" } = {}) {
   const code = error?.code || "";
   const message = error?.message || "";
@@ -37,7 +43,23 @@ export function formatAuthError(error, { mode = "login", role = "student" } = {}
     return "Enter a valid email address before continuing.";
   }
 
-  if (code === "permission-denied") {
+  if (code === "auth/school-code-mismatch") {
+    return "That school code does not match this account. Check the code and try again.";
+  }
+
+  if (code === "auth/operation-not-allowed") {
+    return "Email and password accounts are not enabled in Firebase yet.";
+  }
+
+  if (code === "auth/network-request-failed") {
+    return "The network interrupted Firebase. Check your connection and try again.";
+  }
+
+  if (code === "auth/too-many-requests") {
+    return "Firebase temporarily paused sign-in attempts. Wait a moment, then try again.";
+  }
+
+  if (code === "permission-denied" || code === "firestore/permission-denied") {
     return "Firebase blocked this account action. Check that the school exists and that this role is allowed, then try again.";
   }
 
@@ -74,6 +96,31 @@ export function createAuthService({ auth, db, firebase }) {
     return slugify(schoolCode || schoolName) || "default-school";
   }
 
+  function normalizeRegistrationPayload(payload = {}) {
+    const normalized = {
+      ...payload,
+      name: String(payload.name || "").trim(),
+      email: String(payload.email || "").trim().toLowerCase(),
+      password: String(payload.password || ""),
+      role: String(payload.role || "").trim().toLowerCase(),
+      className: String(payload.className || "").trim(),
+      school: String(payload.school || "").trim(),
+      schoolCode: String(payload.schoolCode || "").trim()
+    };
+
+    assert(normalized.name.length >= 2, "Enter the full name for this account.");
+    assert(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized.email), "Enter a valid email address.");
+    assert(normalized.password.length >= 6, "Use a password with at least 6 characters.");
+    assert(["student", "teacher", "admin"].includes(normalized.role), "Choose a valid account role.");
+    assert(normalized.school, "Enter the school name.");
+    assert(normalized.schoolCode, "Enter the school code.");
+    if (normalized.role === "student") {
+      assert(normalized.className, "Enter your class or section.");
+    }
+
+    return normalized;
+  }
+
   function buildRootProfile(uid, payload) {
     return {
       uid,
@@ -106,98 +153,136 @@ export function createAuthService({ auth, db, firebase }) {
     return doc.exists ? doc.data() : null;
   }
 
-  async function commitRegistration(batch, user) {
+  async function removeIncompleteUser(user, shouldDelete) {
     try {
-      await batch.commit();
-    } catch (error) {
-      try {
+      if (shouldDelete) {
         await user?.delete?.();
-      } catch (cleanupError) {
-        console.warn("Could not remove incomplete Firebase Auth account", cleanupError);
+      } else {
+        await auth.signOut?.();
       }
+    } catch (cleanupError) {
+      console.warn("Could not clean up incomplete Firebase registration", cleanupError);
+    }
+  }
+
+  async function createOrRecoverCredential(payload) {
+    try {
+      return {
+        credential: await auth.createUserWithEmailAndPassword(payload.email, payload.password),
+        createdAuthUser: true
+      };
+    } catch (error) {
+      if (error?.code !== "auth/email-already-in-use" || typeof auth.signInWithEmailAndPassword !== "function") {
+        throw error;
+      }
+
+      let credential;
+      try {
+        credential = await auth.signInWithEmailAndPassword(payload.email, payload.password);
+      } catch {
+        throw error;
+      }
+
+      const existingProfile = await fetchUserProfile(credential.user.uid);
+      if (existingProfile) {
+        await auth.signOut?.();
+        throw error;
+      }
+
+      return {
+        credential,
+        createdAuthUser: false
+      };
+    }
+  }
+
+  async function runRegistration(payload, registerProfile) {
+    const { credential, createdAuthUser } = await createOrRecoverCredential(payload);
+    try {
+      return await registerProfile(credential.user);
+    } catch (error) {
+      await removeIncompleteUser(credential.user, createdAuthUser);
       throw error;
     }
   }
 
-  async function registerSchoolAdmin(payload) {
+  async function registerSchoolAdmin(rawPayload) {
+    const payload = normalizeRegistrationPayload({
+      ...rawPayload,
+      role: "admin"
+    });
     const schoolId = buildSchoolId(payload.school, payload.schoolCode);
     const schoolRef = db.collection("schools").doc(schoolId);
-    const existingSchool = await schoolRef.get();
-    const existingSchoolData = existingSchool.exists ? existingSchool.data() : null;
-    const hasAdmin = Array.isArray(existingSchoolData?.adminIds) && existingSchoolData.adminIds.length > 0;
-    assert(!hasAdmin, "School already exists. Use the member sign-up flow or log in.");
+    return runRegistration(payload, async user => {
+      const existingSchool = await schoolRef.get();
+      const existingSchoolData = existingSchool.exists ? existingSchool.data() : null;
+      const hasAdmin = Array.isArray(existingSchoolData?.adminIds) && existingSchoolData.adminIds.length > 0;
+      assert(!hasAdmin, "School already exists. Use the member sign-up flow or log in.");
 
-    const cred = await auth.createUserWithEmailAndPassword(payload.email, payload.password);
-    const adminRef = schoolRef.collection("admins").doc(cred.user.uid);
-    const profilePath = adminRef.path;
-    const batch = db.batch();
+      const schoolName = String(existingSchoolData?.name || payload.school).trim();
+      const adminRef = schoolRef.collection("admins").doc(user.uid);
+      const profilePath = adminRef.path;
+      const batch = db.batch();
+      const schoolPayload = {
+        id: schoolId,
+        name: schoolName,
+        adminIds: existingSchool.exists ? appendToArray(user.uid) : [user.uid],
+        updatedAt: serverTimestamp(),
+        leaderboardEnabled: true
+      };
 
-    const schoolPayload = {
-      id: schoolId,
-      name: payload.school,
-      adminIds: existingSchool.exists ? appendToArray(cred.user.uid) : [cred.user.uid],
-      updatedAt: serverTimestamp(),
-      leaderboardEnabled: true
-    };
+      if (existingSchool.exists) {
+        batch.set(schoolRef, schoolPayload, { merge: true });
+      } else {
+        batch.set(schoolRef, {
+          ...schoolPayload,
+          createdAt: serverTimestamp()
+        });
+      }
 
-    if (existingSchool.exists) {
-      batch.set(schoolRef, schoolPayload, { merge: true });
-    } else {
-      batch.set(schoolRef, {
-        ...schoolPayload,
-        createdAt: serverTimestamp()
+      batch.set(adminRef, {
+        uid: user.uid,
+        name: payload.name,
+        email: payload.email,
+        role: "admin",
+        school: schoolName,
+        schoolId,
+        className: payload.className,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
       });
-    }
 
-    batch.set(adminRef, {
-      uid: cred.user.uid,
-      name: payload.name,
-      email: payload.email,
-      role: "admin",
-      school: payload.school,
-      schoolId,
-      className: payload.className || "",
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp()
-    });
-
-    batch.set(
-      db.collection("users").doc(cred.user.uid),
-      buildRootProfile(cred.user.uid, {
+      const rootProfile = buildRootProfile(user.uid, {
         ...payload,
         role: "admin",
+        school: schoolName,
         schoolId,
         profilePath
-      })
-    );
-
-    await commitRegistration(batch, cred.user);
-    return fetchUserProfile(cred.user.uid);
+      });
+      batch.set(db.collection("users").doc(user.uid), rootProfile);
+      await batch.commit();
+      return {
+        ...rootProfile,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+    });
   }
 
-  async function registerMember(payload) {
+  async function registerMember(rawPayload) {
+    const payload = normalizeRegistrationPayload(rawPayload);
     assert(payload.role === "teacher" || payload.role === "student", "Members must be teachers or students.");
     const schoolId = buildSchoolId(payload.school, payload.schoolCode);
     const schoolRef = db.collection("schools").doc(schoolId);
-    const schoolDoc = await schoolRef.get();
-
-    const cred = await auth.createUserWithEmailAndPassword(payload.email, payload.password);
-    const collectionName = payload.role === "teacher" ? "teachers" : "students";
-    const memberRef = schoolRef.collection(collectionName).doc(cred.user.uid);
-    const profilePath = memberRef.path;
-    const batch = db.batch();
-
-    batch.set(memberRef, {
-      uid: cred.user.uid,
-      name: payload.name,
-      email: payload.email,
-      role: payload.role,
-      school: payload.school,
-      schoolId,
-      className: payload.className || "",
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      stats: {
+    return runRegistration(payload, async user => {
+      const schoolDoc = await schoolRef.get();
+      const schoolData = schoolDoc.exists ? schoolDoc.data() : null;
+      const schoolName = String(schoolData?.name || payload.school).trim();
+      const collectionName = payload.role === "teacher" ? "teachers" : "students";
+      const memberRef = schoolRef.collection(collectionName).doc(user.uid);
+      const profilePath = memberRef.path;
+      const batch = db.batch();
+      const stats = {
         xp: 0,
         level: 1,
         weeklyXp: 0,
@@ -206,39 +291,57 @@ export function createAuthService({ auth, db, firebase }) {
         projectsSubmitted: 0,
         projectsGraded: 0,
         publicProjects: 0
-      },
-      badges: []
-    });
+      };
 
-    batch.set(
-      db.collection("users").doc(cred.user.uid),
-      buildRootProfile(cred.user.uid, {
-        ...payload,
+      batch.set(memberRef, {
+        uid: user.uid,
+        name: payload.name,
+        email: payload.email,
+        role: payload.role,
+        school: schoolName,
         schoolId,
-        profilePath
-      })
-    );
-
-    if (schoolDoc.exists) {
-      batch.update(schoolRef, {
-        updatedAt: serverTimestamp()
-      });
-    } else {
-      batch.set(schoolRef, {
-        id: schoolId,
-        name: payload.school,
-        adminIds: [],
+        className: payload.className,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-        leaderboardEnabled: true,
-        selfServiceSignup: true,
-        createdBy: cred.user.uid,
-        createdByRole: payload.role
+        stats,
+        badges: []
       });
-    }
 
-    await commitRegistration(batch, cred.user);
-    return fetchUserProfile(cred.user.uid);
+      const rootProfile = buildRootProfile(user.uid, {
+        ...payload,
+        school: schoolName,
+        schoolId,
+        profilePath,
+        stats,
+        badges: []
+      });
+      batch.set(db.collection("users").doc(user.uid), rootProfile);
+
+      if (schoolDoc.exists) {
+        batch.update(schoolRef, {
+          updatedAt: serverTimestamp()
+        });
+      } else {
+        batch.set(schoolRef, {
+          id: schoolId,
+          name: schoolName,
+          adminIds: [],
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+          leaderboardEnabled: true,
+          selfServiceSignup: true,
+          createdBy: user.uid,
+          createdByRole: payload.role
+        });
+      }
+
+      await batch.commit();
+      return {
+        ...rootProfile,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+    });
   }
 
   async function login(payload) {
@@ -247,6 +350,11 @@ export function createAuthService({ auth, db, firebase }) {
     if (!profile) {
       await auth.signOut();
       throw new Error("This account exists, but its Educircuit classroom profile is missing. Create the account again or ask the school admin to repair it.");
+    }
+    const suppliedSchoolId = buildSchoolId("", payload.schoolCode);
+    if (!payload.schoolCode || suppliedSchoolId !== profile.schoolId) {
+      await auth.signOut();
+      throw authError("auth/school-code-mismatch", "The supplied school code does not match this account.");
     }
     return profile;
   }

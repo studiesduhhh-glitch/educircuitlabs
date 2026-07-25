@@ -1,6 +1,6 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260724-electron-party2";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260724-electron-party2";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260724-electron-party2";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260725-auth-integrity1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260725-auth-integrity1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260725-auth-integrity1";
 import {
   buildGuidedLabSteps,
   buildMultimeterReading,
@@ -8,14 +8,14 @@ import {
   buildSnapshotSignature,
   getGuidedLabNextFix,
   replayEntriesDiffer
-} from "../core/classroom-engine.js?v=20260724-electron-party2";
+} from "../core/classroom-engine.js?v=20260725-auth-integrity1";
 import {
   buildVivaQuestions,
   evaluateVivaAnswer,
   summarizeVivaSession
-} from "../core/viva-engine.js?v=20260724-electron-party2";
-import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260724-electron-party2";
-import { formatAuthError } from "../services/auth-service.js?v=20260724-electron-party2";
+} from "../core/viva-engine.js?v=20260725-auth-integrity1";
+import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260725-auth-integrity1";
+import { formatAuthError } from "../services/auth-service.js?v=20260725-auth-integrity1";
 
 const EXPLORE_MODERATOR_EMAIL = "studiesduhhh@gmail.com";
 
@@ -2274,7 +2274,7 @@ function installGamificationPanels(app, services) {
 
   async function refreshGamificationUi() {
     const currentUser = app.state.user;
-    if (!currentUser?.uid || !currentUser.schoolKey) return;
+    if (app.state.demoMode || !currentUser?.uid || !currentUser.schoolKey) return;
     const profile = await services.auth.fetchUserProfile(currentUser.uid);
     const stats = profile?.stats || services.gamification.createEmptyStats();
     app.state.userProgress = {
@@ -2564,7 +2564,11 @@ function installProjectSharing(app, services) {
         button.addEventListener("click", async () => {
           const project = projects.find(entry => entry.id === button.dataset.projectId);
           if (!project) return;
-          const userId = app.state.user.uid || `guest-${Date.now()}`;
+          if (app.state.demoMode || !app.auth?.currentUser || !app.state.user.uid) {
+            app.showToast("Log in to like public projects");
+            return;
+          }
+          const userId = app.state.user.uid;
           try {
             const result = await services.projects.likeProject({
               schoolId: project.schoolId || "public-gallery",
@@ -2666,8 +2670,8 @@ function installAuthUpgrade(app, services) {
   function getPayload() {
     return {
       name: loginName.value.trim(),
-      email: loginEmail.value.trim(),
-      password: loginSchoolPass.value.trim(),
+      email: loginEmail.value.trim().toLowerCase(),
+      password: loginSchoolPass.value,
       role: loginRole.value,
       className: loginClass.value.trim(),
       school: loginSchool.value.trim(),
@@ -2689,24 +2693,24 @@ function installAuthUpgrade(app, services) {
     clearAuthErrors();
     const errors = [];
 
-    if (!payload.schoolCode) {
-      loginSchoolUser.classList.add("error");
-      errors.push("Enter the school code.");
+    function validateEmail() {
+      if (!payload.email) {
+        loginEmail.classList.add("error");
+        errors.push("Enter an email address.");
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
+        loginEmail.classList.add("error");
+        errors.push("Enter a valid email address.");
+      }
     }
-    if (!payload.email) {
-      loginEmail.classList.add("error");
-      errors.push("Enter an email address.");
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
-      loginEmail.classList.add("error");
-      errors.push("Enter a valid email address.");
-    }
-    if (!payload.password) {
-      loginSchoolPass.classList.add("error");
-      errors.push("Enter your password.");
-    }
-    if (payload.accessModel === "create" && payload.password.length > 0 && payload.password.length < 6) {
-      loginSchoolPass.classList.add("error");
-      errors.push("Use a password with at least 6 characters.");
+
+    function validatePassword() {
+      if (!payload.password) {
+        loginSchoolPass.classList.add("error");
+        errors.push("Enter your password.");
+      } else if (payload.accessModel === "create" && payload.password.length < 6) {
+        loginSchoolPass.classList.add("error");
+        errors.push("Use a password with at least 6 characters.");
+      }
     }
 
     if (payload.accessModel === "create") {
@@ -2714,6 +2718,7 @@ function installAuthUpgrade(app, services) {
         loginName.classList.add("error");
         errors.push("Enter the full name for this account.");
       }
+      validateEmail();
       if (!payload.role) {
         loginRole.classList.add("error");
         errors.push("Choose a role.");
@@ -2722,10 +2727,22 @@ function installAuthUpgrade(app, services) {
         loginSchool.classList.add("error");
         errors.push("Enter the school name.");
       }
+      if (!payload.schoolCode) {
+        loginSchoolUser.classList.add("error");
+        errors.push("Enter the school code.");
+      }
       if (payload.role === "student" && !payload.className) {
         loginClass.classList.add("error");
         errors.push("Enter your class or section.");
       }
+      validatePassword();
+    } else {
+      if (!payload.schoolCode) {
+        loginSchoolUser.classList.add("error");
+        errors.push("Enter the school code.");
+      }
+      validateEmail();
+      validatePassword();
     }
 
     if (errors.length) {
@@ -3279,7 +3296,13 @@ export async function bootstrapUpgrade(app, services) {
 
   services.refreshAll = async function refreshAll() {
     try {
-      if (app.state.user.schoolKey) {
+      const canSyncFirebase = Boolean(
+        !app.state.demoMode &&
+        app.auth?.currentUser &&
+        app.state.user.uid &&
+        app.state.user.schoolKey
+      );
+      if (canSyncFirebase) {
         await sharing.publishCurrentScope();
         await teacherDashboard.refreshTeacherDashboard();
       }

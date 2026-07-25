@@ -135,6 +135,21 @@ test("maps duplicate email to login guidance", () => {
   assert.match(message, /Choose Log In/);
 });
 
+test("maps school-code mismatch and Firebase availability errors clearly", () => {
+  assert.match(
+    formatAuthError({ code: "auth/school-code-mismatch" }),
+    /school code does not match/i
+  );
+  assert.match(
+    formatAuthError({ code: "auth/operation-not-allowed" }),
+    /not enabled in Firebase/i
+  );
+  assert.match(
+    formatAuthError({ code: "firestore/permission-denied" }),
+    /Firebase blocked/i
+  );
+});
+
 test("student account creation bootstraps a new school code", async () => {
   const db = createMockDb();
   const auth = {
@@ -230,6 +245,115 @@ test("failed profile creation removes the incomplete Firebase Auth account", asy
   assert.equal(deleteCalls, 1);
 });
 
+test("create account repairs an older Auth user that has no Firestore profile", async () => {
+  const db = createMockDb();
+  let signInCalls = 0;
+  const auth = {
+    async createUserWithEmailAndPassword() {
+      const error = new Error("Email already exists");
+      error.code = "auth/email-already-in-use";
+      throw error;
+    },
+    async signInWithEmailAndPassword(email, password) {
+      signInCalls += 1;
+      assert.equal(email, "recover@example.com");
+      assert.equal(password, "secret123");
+      return { user: { uid: "recovered-student" } };
+    }
+  };
+  const service = createAuthService({ auth, db, firebase: fakeFirebase });
+
+  const profile = await service.registerMember({
+    name: "Recovered Student",
+    email: "RECOVER@example.com",
+    password: "secret123",
+    role: "student",
+    className: "10-A",
+    school: "Recovery School",
+    schoolCode: "recovery-school"
+  });
+
+  assert.equal(signInCalls, 1);
+  assert.equal(profile.uid, "recovered-student");
+  assert.equal(profile.email, "recover@example.com");
+  assert.equal(db.users["recovered-student"].schoolId, "recovery-school");
+});
+
+test("create account does not overwrite a complete existing profile", async () => {
+  const db = createMockDb({
+    users: {
+      "existing-student": {
+        uid: "existing-student",
+        email: "existing@example.com",
+        role: "student",
+        schoolId: "existing-school"
+      }
+    }
+  });
+  let signOutCalls = 0;
+  const auth = {
+    async createUserWithEmailAndPassword() {
+      const error = new Error("Email already exists");
+      error.code = "auth/email-already-in-use";
+      throw error;
+    },
+    async signInWithEmailAndPassword() {
+      return { user: { uid: "existing-student" } };
+    },
+    async signOut() {
+      signOutCalls += 1;
+    }
+  };
+  const service = createAuthService({ auth, db, firebase: fakeFirebase });
+
+  await assert.rejects(
+    service.registerMember({
+      name: "Existing Student",
+      email: "existing@example.com",
+      password: "secret123",
+      role: "student",
+      className: "10-A",
+      school: "Existing School",
+      schoolCode: "existing-school"
+    }),
+    error => error.code === "auth/email-already-in-use"
+  );
+
+  assert.equal(signOutCalls, 1);
+  assert.deepEqual(db.writes, []);
+});
+
+test("existing school membership uses the canonical Firebase school name", async () => {
+  const db = createMockDb({
+    schools: {
+      "canonical-school": {
+        id: "canonical-school",
+        name: "Canonical Academy",
+        adminIds: []
+      }
+    }
+  });
+  const auth = {
+    async createUserWithEmailAndPassword() {
+      return { user: { uid: "canonical-student" } };
+    }
+  };
+  const service = createAuthService({ auth, db, firebase: fakeFirebase });
+
+  const profile = await service.registerMember({
+    name: "Canonical Student",
+    email: "canonical@example.com",
+    password: "secret123",
+    role: "student",
+    className: "9-B",
+    school: "Misspelled Academy",
+    schoolCode: "canonical-school"
+  });
+
+  assert.equal(profile.school, "Canonical Academy");
+  assert.equal(db.users["canonical-student"].school, "Canonical Academy");
+});
+
 test("login signs out an Auth account that has no Firestore profile", async () => {
   let signOutCalls = 0;
   const auth = {
@@ -248,6 +372,40 @@ test("login signs out an Auth account that has no Firestore profile", async () =
       password: "secret123"
     }),
     /profile is missing/
+  );
+
+  assert.equal(signOutCalls, 1);
+});
+
+test("login rejects a school code that does not match the Firebase profile", async () => {
+  const db = createMockDb({
+    users: {
+      "school-student": {
+        uid: "school-student",
+        email: "school@example.com",
+        role: "student",
+        schoolId: "correct-school"
+      }
+    }
+  });
+  let signOutCalls = 0;
+  const auth = {
+    async signInWithEmailAndPassword() {
+      return { user: { uid: "school-student" } };
+    },
+    async signOut() {
+      signOutCalls += 1;
+    }
+  };
+  const service = createAuthService({ auth, db, firebase: fakeFirebase });
+
+  await assert.rejects(
+    service.login({
+      email: "school@example.com",
+      password: "secret123",
+      schoolCode: "wrong-school"
+    }),
+    error => error.code === "auth/school-code-mismatch"
   );
 
   assert.equal(signOutCalls, 1);

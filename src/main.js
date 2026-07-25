@@ -1,8 +1,8 @@
-import { createAuthService } from "./services/auth-service.js?v=20260724-electron-party2";
-import { createProjectService } from "./services/project-service.js?v=20260724-electron-party2";
-import { createGamificationService } from "./services/gamification-service.js?v=20260724-electron-party2";
-import { createAssignmentService } from "./services/assignment-service.js?v=20260724-electron-party2";
-import { bootstrapUpgrade, installVisualPolish } from "./ui/upgrade-controller.js?v=20260724-electron-party2";
+import { createAuthService } from "./services/auth-service.js?v=20260725-auth-integrity1";
+import { createProjectService } from "./services/project-service.js?v=20260725-auth-integrity1";
+import { createGamificationService } from "./services/gamification-service.js?v=20260725-auth-integrity1";
+import { createAssignmentService } from "./services/assignment-service.js?v=20260725-auth-integrity1";
+import { bootstrapUpgrade, installVisualPolish } from "./ui/upgrade-controller.js?v=20260725-auth-integrity1";
 
 async function waitForLegacyApp() {
   if (typeof window === "undefined") {

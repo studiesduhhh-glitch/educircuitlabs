@@ -48,9 +48,17 @@ test("all static buttons have an event binding path", () => {
     const aiPrompt = getAttr(button.attrs, "data-ai-prompt");
     const landingLab = getAttr(button.attrs, "data-landing-lab");
     const scrollTarget = getAttr(button.attrs, "data-scroll-target");
+    const formId = getAttr(button.attrs, "form");
+    const isSubmit = getAttr(button.attrs, "type") === "submit";
     const themeToggle = button.attrs.includes("data-theme-toggle");
 
     if (id && hasIdListener(id)) return false;
+    if (
+      isSubmit &&
+      formId &&
+      allJs.includes(`const ${formId} = document.getElementById("${formId}")`) &&
+      allJs.includes(`${formId}?.addEventListener("submit"`)
+    ) return false;
     if (uiAction && runtimeJs.includes(`"${uiAction}"`)) return false;
     if (aiPrompt && runtimeJs.includes("[data-ai-prompt]")) return false;
     if (landingLab && fallbackJs.includes("[data-landing-lab]")) return false;
@@ -74,10 +82,10 @@ test("deployed html stays clean and modular", () => {
   assert.match(indexHtml, /<link rel="icon" href="\/favicon\.ico" sizes="any" \/>/);
   assert.match(indexHtml, /<link rel="icon" type="image\/png" sizes="32x32" href="\/favicon-32x32\.png" \/>/);
   assert.match(indexHtml, /<link rel="apple-touch-icon" sizes="180x180" href="\/apple-touch-icon\.png" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260724-electron-party2" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260724-electron-party2" \/>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260724-electron-party2"><\/script>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260724-electron-party2"><\/script>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260725-auth-integrity1" \/>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260725-auth-integrity1" \/>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260725-auth-integrity1"><\/script>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260725-auth-integrity1"><\/script>/);
   assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
   assert.match(mainJs, /createAssignmentService/);
 });
@@ -108,9 +116,13 @@ test("active app code does not write browser storage", () => {
 test("production app avoids blocking browser dialogs and global Firestore scans", () => {
   assert.doesNotMatch(allJs, /\balert\(/);
   assert.doesNotMatch(allJs, /window\.alert/);
+  assert.doesNotMatch(allJs, /\bprompt\(/);
+  assert.doesNotMatch(allJs, /\bconfirm\(/);
   assert.doesNotMatch(allJs, /db\.collection\("projects"\)\.add/);
   assert.doesNotMatch(upgradeJs, /db\.collection\("users"\)\.get/);
   assert.match(runtimeJs, /db\.collection\("schools"\)\.doc\(schoolId\)\.collection\("projects"\)\.add/);
+  assert.match(indexHtml, /id="projectRenameModal"/);
+  assert.match(runtimeJs, /function closeProjectRenameModal/);
 });
 
 test("Firebase deployment files are present and scoped", () => {
@@ -123,6 +135,9 @@ test("Firebase deployment files are present and scoped", () => {
   assert.match(firestoreRules, /match \/projects\/\{projectId\}/);
   assert.match(firestoreRules, /preservesTeacherAssessment/);
   assert.match(firestoreRules, /publicLikeOnly\(schoolId\)/);
+  assert.match(firestoreRules, /hasMatchingMembershipAfter\(userId\)/);
+  assert.match(firestoreRules, /request\.resource\.data\.email == request\.auth\.token\.email/);
+  assert.match(firestoreRules, /allow get: if signedIn\(\)/);
   assert.match(firestoreRules, /allow delete: if false/);
   assert.deepEqual(indexes.indexes[0].fields, [
     { fieldPath: "ownerId", order: "ASCENDING" },
