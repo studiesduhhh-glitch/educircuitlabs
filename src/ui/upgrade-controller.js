@@ -1,6 +1,6 @@
-import { analyzeCircuit } from "../core/circuit-engine.js?v=20260725-auth-integrity1";
-import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260725-auth-integrity1";
-import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260725-auth-integrity1";
+import { analyzeCircuit } from "../core/circuit-engine.js?v=20260729-ga4fix1";
+import { buildCoachFeedback, buildHumanReadableDebugReport, buildTeacherStyleReply } from "../core/ai-debugger.js?v=20260729-ga4fix1";
+import { LEARNING_CHALLENGES, evaluateLearningState } from "../core/learning-engine.js?v=20260729-ga4fix1";
 import {
   buildGuidedLabSteps,
   buildMultimeterReading,
@@ -8,14 +8,14 @@ import {
   buildSnapshotSignature,
   getGuidedLabNextFix,
   replayEntriesDiffer
-} from "../core/classroom-engine.js?v=20260725-auth-integrity1";
+} from "../core/classroom-engine.js?v=20260729-ga4fix1";
 import {
   buildVivaQuestions,
   evaluateVivaAnswer,
   summarizeVivaSession
-} from "../core/viva-engine.js?v=20260725-auth-integrity1";
-import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260725-auth-integrity1";
-import { formatAuthError } from "../services/auth-service.js?v=20260725-auth-integrity1";
+} from "../core/viva-engine.js?v=20260729-ga4fix1";
+import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260729-ga4fix1";
+import { formatAuthError } from "../services/auth-service.js?v=20260729-ga4fix1";
 
 const EXPLORE_MODERATOR_EMAIL = "studiesduhhh@gmail.com";
 
@@ -1103,6 +1103,11 @@ function ensureExplorePage() {
   document.body.appendChild(page);
   page.querySelector("#closeExploreProjectsBtn").addEventListener("click", () => {
     page.classList.add("hidden");
+    window.EducircuitAnalytics?.trackPageView({
+      pagePath: "/lab",
+      pageTitle: "Educircuit | Circuit Lab",
+      force: true
+    });
   });
   return page;
 }
@@ -2539,6 +2544,11 @@ function installProjectSharing(app, services) {
           app.state.currentProjectMeta = project;
           setProjectVisibility();
           explorePage.classList.add("hidden");
+          window.EducircuitAnalytics?.trackPageView({
+            pagePath: "/lab",
+            pageTitle: "Educircuit | Circuit Lab",
+            force: true
+          });
           app.showToast(`${project.name} preview loaded`);
         });
       });
@@ -2556,6 +2566,11 @@ function installProjectSharing(app, services) {
           };
           setProjectVisibility();
           explorePage.classList.add("hidden");
+          window.EducircuitAnalytics?.trackPageView({
+            pagePath: "/lab",
+            pageTitle: "Educircuit | Circuit Lab",
+            force: true
+          });
           app.showToast("Project cloned into your workspace");
         });
       });
@@ -2629,6 +2644,11 @@ function installProjectSharing(app, services) {
 
   exploreBtn.addEventListener("click", async () => {
     explorePage.classList.remove("hidden");
+    window.EducircuitAnalytics?.trackPageView({
+      pagePath: "/explore",
+      pageTitle: "Educircuit | Explore Projects",
+      force: true
+    });
     await publishCurrentScope();
     await renderExploreProjects();
   });
@@ -2967,6 +2987,11 @@ function installSavedProjectsPortal(app, services) {
 
   async function openPage() {
     page?.classList.remove("hidden");
+    window.EducircuitAnalytics?.trackPageView({
+      pagePath: "/my-projects",
+      pageTitle: "Educircuit | My Projects",
+      force: true
+    });
     await refresh({ force: true });
   }
 
@@ -3040,6 +3065,11 @@ function installStudentProjectPortal(app, services) {
         app.state.currentProjectMeta = project;
         setProjectVisibility();
         page?.classList.add("hidden");
+        window.EducircuitAnalytics?.trackPageView({
+          pagePath: "/lab",
+          pageTitle: "Educircuit | Circuit Lab",
+          force: true
+        });
         app.showToast(`${project.name} loaded with teacher feedback`);
       });
     });
@@ -3064,6 +3094,11 @@ function installStudentProjectPortal(app, services) {
 
   async function openPage() {
     page?.classList.remove("hidden");
+    window.EducircuitAnalytics?.trackPageView({
+      pagePath: "/student-projects",
+      pageTitle: "Educircuit | Student Projects",
+      force: true
+    });
     legacyRender();
     await refresh();
   }

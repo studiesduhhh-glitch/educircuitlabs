@@ -5,6 +5,7 @@ import fs from "node:fs";
 const indexHtml = fs.readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const appCss = fs.readFileSync(new URL("../styles/app.css", import.meta.url), "utf8");
 const upgradeCss = fs.readFileSync(new URL("../styles/upgrade.css", import.meta.url), "utf8");
+const analyticsJs = fs.readFileSync(new URL("../src/app/analytics.js", import.meta.url), "utf8");
 const runtimeJs = fs.readFileSync(new URL("../src/app/runtime.js", import.meta.url), "utf8");
 const fallbackJs = fs.readFileSync(new URL("../src/app/landing-fallback.js", import.meta.url), "utf8");
 const upgradeJs = fs.readFileSync(new URL("../src/ui/upgrade-controller.js", import.meta.url), "utf8");
@@ -18,7 +19,7 @@ const mainJs = fs.readFileSync(new URL("../src/main.js", import.meta.url), "utf8
 const firebaseJson = fs.readFileSync(new URL("../firebase.json", import.meta.url), "utf8");
 const firestoreIndexes = fs.readFileSync(new URL("../firestore.indexes.json", import.meta.url), "utf8");
 const firestoreRules = fs.readFileSync(new URL("../firestore.rules", import.meta.url), "utf8");
-const allJs = `${runtimeJs}\n${fallbackJs}\n${upgradeJs}\n${assignmentServiceJs}\n${vivaEngineJs}\n${classroomEngineJs}\n${mainJs}`;
+const allJs = `${analyticsJs}\n${runtimeJs}\n${fallbackJs}\n${upgradeJs}\n${assignmentServiceJs}\n${vivaEngineJs}\n${classroomEngineJs}\n${mainJs}`;
 
 function getAttr(attrs, name) {
   const match = attrs.match(new RegExp(`${name}="([^"]*)"`, "i"));
@@ -82,12 +83,31 @@ test("deployed html stays clean and modular", () => {
   assert.match(indexHtml, /<link rel="icon" href="\/favicon\.ico" sizes="any" \/>/);
   assert.match(indexHtml, /<link rel="icon" type="image\/png" sizes="32x32" href="\/favicon-32x32\.png" \/>/);
   assert.match(indexHtml, /<link rel="apple-touch-icon" sizes="180x180" href="\/apple-touch-icon\.png" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260725-auth-integrity1" \/>/);
-  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260725-auth-integrity1" \/>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260725-auth-integrity1"><\/script>/);
-  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260725-auth-integrity1"><\/script>/);
+  assert.match(indexHtml, /<meta name="educircuit-ga4-measurement-id" content="[^"]+" \/>/);
+  assert.match(indexHtml, /<script async src="https:\/\/www\.googletagmanager\.com\/gtag\/js\?id=G-[A-Z0-9]+"><\/script>/);
+  assert.match(indexHtml, /window\.EDUCIRCUIT_GA4_MEASUREMENT_ID = "G-[A-Z0-9]+"/);
+  assert.match(indexHtml, /window\.gtag\("config", "G-[A-Z0-9]+", \{\s*send_page_view: false\s*\}\)/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/analytics\.js\?v=20260729-ga4fix1"><\/script>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/app\.css\?v=20260729-ga4fix1" \/>/);
+  assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260729-ga4fix1" \/>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260729-ga4fix1"><\/script>/);
+  assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260729-ga4fix1"><\/script>/);
   assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
   assert.match(mainJs, /createAssignmentService/);
+});
+
+test("ga4 is installed once and uses manual spa pageviews", () => {
+  assert.match(analyticsJs, /googletagmanager\.com\/gtag\/js\?id=/);
+  assert.match(analyticsJs, /send_page_view:\s*false/);
+  assert.match(analyticsJs, /gtag\("event", "page_view"/);
+  assert.match(analyticsJs, /installHistoryTracking/);
+  assert.match(analyticsJs, /script\[data-educircuit-ga4\]/);
+  assert.match(analyticsJs, /window\.__educircuitGa4Configured/);
+  assert.match(runtimeJs, /syncEducircuitPageView/);
+  assert.match(runtimeJs, /Educircuit \| AI Teacher/);
+  assert.match(runtimeJs, /Educircuit \| My Projects/);
+  assert.match(upgradeJs, /Educircuit \| Explore Projects/);
+  assert.match(upgradeJs, /Educircuit \| Circuit Lab/);
 });
 
 test("hidden Electron Party easter egg is accessible and self-contained", () => {

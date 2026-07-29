@@ -712,6 +712,50 @@ const teacherPanel = document.getElementById("teacherPanel");
 const studentModeBtn = document.getElementById("studentModeBtn");
 const teacherModeBtn = document.getElementById("teacherModeBtn");
 
+function trackEducircuitPage(pagePath, pageTitle, options = {}) {
+  window.EducircuitAnalytics?.trackPageView({
+    pagePath,
+    pageTitle,
+    force: Boolean(options.force)
+  });
+}
+
+function getCurrentEducircuitView() {
+  const landingPage = document.getElementById("landingPage");
+  const guidePage = document.getElementById("guidePage");
+  const projectsPage = document.getElementById("projectsPage");
+  const studentProjectsPage = document.getElementById("studentProjectsPage");
+  const exploreProjectsPage = document.getElementById("exploreProjectsPage");
+
+  if (guidePage && !guidePage.classList.contains("hidden")) {
+    return { path: "/guide", title: "Educircuit | Guide" };
+  }
+  if (exploreProjectsPage && !exploreProjectsPage.classList.contains("hidden")) {
+    return { path: "/explore", title: "Educircuit | Explore Projects" };
+  }
+  if (projectsPage && !projectsPage.classList.contains("hidden")) {
+    return { path: "/my-projects", title: "Educircuit | My Projects" };
+  }
+  if (studentProjectsPage && !studentProjectsPage.classList.contains("hidden")) {
+    return { path: "/student-projects", title: "Educircuit | Student Projects" };
+  }
+  if (aiTeacherPage && !aiTeacherPage.classList.contains("hidden")) {
+    return { path: "/ai-teacher", title: "Educircuit | AI Teacher" };
+  }
+  if (loginScreen && !loginScreen.classList.contains("hidden")) {
+    return { path: "/login", title: "Educircuit | Login" };
+  }
+  if (landingPage && !landingPage.classList.contains("hidden")) {
+    return { path: "/landing", title: "Educircuit | Landing" };
+  }
+  return { path: "/lab", title: "Educircuit | Circuit Lab" };
+}
+
+function syncEducircuitPageView(options = {}) {
+  const view = getCurrentEducircuitView();
+  trackEducircuitPage(view.path, view.title, options);
+}
+
 const statusText = document.getElementById("statusText");
 const gradeText = document.getElementById("gradeText");
 const projectNameText = document.getElementById("projectNameText");
@@ -843,6 +887,7 @@ function showLoginChooser(){
   document.getElementById("loginStepOne")?.classList.add("active");
   document.getElementById("loginStepTwo")?.classList.remove("active");
   syncRoleFields();
+  syncEducircuitPageView({ force: true });
 }
 
 async function configureAuthPersistence(remember = false){
@@ -992,6 +1037,7 @@ function applyAuthenticatedProfile(uid, profile, options = {}){
   loginScreen.classList.add("hidden");
   setMode(profile.role);
   projectNameText.textContent = state.projectName;
+  syncEducircuitPageView({ force: true });
 }
 
 async function fetchUserProfile(uid){
@@ -1665,6 +1711,7 @@ function sendAiTeacherMessage(){
 function openAiTeacherPage(){
   aiTeacherPage.classList.remove("hidden");
   updateAiTeacherContext();
+  syncEducircuitPageView({ force: true });
 
   if(state.aiTeacherMessages.length === 0){
     addAiTeacherMessage(
@@ -1678,6 +1725,7 @@ function openAiTeacherPage(){
 
 function closeAiTeacherPage(){
   aiTeacherPage.classList.add("hidden");
+  syncEducircuitPageView({ force: true });
 }
 
 function isGradedProject(project = {}) {
@@ -2795,6 +2843,7 @@ function enterLanding(){
   document.getElementById("landingPage").classList.add("hidden");
   if(state.user.uid || state.demoMode){
     loginScreen.classList.add("hidden");
+    syncEducircuitPageView({ force: true });
     return;
   }
   showLoginChooser();
@@ -2803,10 +2852,12 @@ function enterLanding(){
 // 📘 GUIDE CONTROL
 function openGuide(){
   document.getElementById("guidePage").classList.remove("hidden");
+  syncEducircuitPageView({ force: true });
 }
 
 function closeGuide(){
   document.getElementById("guidePage").classList.add("hidden");
+  syncEducircuitPageView({ force: true });
 }
 
 // 🔥 AUTO HIDE LANDING DURING THIS RUNTIME ONLY
@@ -2960,19 +3011,23 @@ function enterPlatform(){
 function openProjectsPage(){
   document.getElementById("projectsPage").classList.remove("hidden");
   renderProjectsPage();
+  syncEducircuitPageView({ force: true });
 }
 
 function closeProjectsPage(){
   document.getElementById("projectsPage").classList.add("hidden");
+  syncEducircuitPageView({ force: true });
 }
 
 function openStudentProjectsPage(){
   document.getElementById("studentProjectsPage").classList.remove("hidden");
   renderStudentProjectsPage();
+  syncEducircuitPageView({ force: true });
 }
 
 function closeStudentProjectsPage(){
   document.getElementById("studentProjectsPage").classList.add("hidden");
+  syncEducircuitPageView({ force: true });
 }
 
 function installDelegatedUiActions(){
@@ -3358,3 +3413,4 @@ updateTeacherStats();
 updateOutputs();
 updateZoom();
 loadProject();
+syncEducircuitPageView({ force: true });
