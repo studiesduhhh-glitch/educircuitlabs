@@ -1438,22 +1438,106 @@ button,
   flex:0 0 auto;
   width:64px;
   height:64px;
-  background:#111827;
+  overflow:hidden;
+  background:linear-gradient(180deg,#1f2937,#0f172a);
   color:#fff;
   font-size:30px;
   display:flex;
   align-items:center;
   justify-content:center;
   border-radius:15px;
+  border:1px solid rgba(148,163,184,.22);
   box-shadow:0 14px 28px rgba(15,23,42,.18);
   pointer-events:none;
   user-select:none;
-  transition:background-color .18s ease, transform .18s ease, box-shadow .18s ease;
+  transition:background-color .18s ease, transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+#deleteBin::before{
+  content:"";
+  position:absolute;
+  inset:8px;
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0));
+  opacity:.65;
+  transition:opacity .18s ease, transform .18s ease;
+}
+
+#deleteBin::after{
+  content:"";
+  position:absolute;
+  inset:-10px;
+  border-radius:18px;
+  border:2px solid rgba(248,113,113,0);
+  opacity:0;
 }
 
 #deleteBin.active{
-  background:red;
-  transform:scale(1.05);
+  background:linear-gradient(180deg,#ef4444,#b91c1c);
+  border-color:rgba(254,202,202,.8);
+  box-shadow:0 18px 34px rgba(220,38,38,.34), 0 0 0 6px rgba(248,113,113,.14);
+  transform:translateY(-2px) scale(1.08) rotate(-6deg);
+}
+
+#deleteBin.active::before{
+  opacity:.92;
+  transform:translateY(-1px);
+}
+
+#deleteBin.active::after{
+  opacity:1;
+  animation:trashRing .7s ease infinite;
+}
+
+#deleteBin.consuming{
+  animation:trashGulp .32s cubic-bezier(.22,1,.36,1);
+}
+
+.canvas-item.trash-hover{
+  border-color:rgba(239,68,68,.35);
+  box-shadow:0 28px 42px rgba(239,68,68,.16);
+  transform:translateY(-4px) scale(.98) rotate(-2deg);
+}
+
+.canvas-item.trash-dropping{
+  pointer-events:none;
+  z-index:16;
+  animation:trashSink .32s cubic-bezier(.2,.88,.32,1) forwards;
+}
+
+@keyframes trashRing{
+  0%{
+    transform:scale(.92);
+    opacity:.7;
+  }
+  100%{
+    transform:scale(1.16);
+    opacity:0;
+  }
+}
+
+@keyframes trashGulp{
+  0%{transform:translateY(-2px) scale(1.08) rotate(-6deg)}
+  45%{transform:translateY(1px) scale(.94) rotate(4deg)}
+  100%{transform:translateY(0) scale(1) rotate(0)}
+}
+
+@keyframes trashSink{
+  0%{
+    opacity:1;
+    transform:translate3d(0,0,0) scale(1) rotate(0);
+    filter:blur(0);
+  }
+  60%{
+    opacity:1;
+    transform:translate3d(calc(var(--trash-shift-x, 0px) * .78), calc(var(--trash-shift-y, 0px) * .78), 0) scale(.54) rotate(-12deg);
+    filter:blur(.2px);
+  }
+  100%{
+    opacity:0;
+    transform:translate3d(var(--trash-shift-x, 0px), var(--trash-shift-y, 0px), 0) scale(.12) rotate(-22deg);
+    filter:blur(1.4px);
+  }
 }
 
 input.error {

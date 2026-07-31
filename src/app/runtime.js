@@ -2036,6 +2036,39 @@ function deleteProject(index){
   showToast("Project deleted ❌");
 }
 
+function isInsideRect(x, y, rect){
+  return x > rect.left && x < rect.right && y > rect.top && y < rect.bottom;
+}
+
+function setDeleteBinHoverState(target, isActive){
+  deleteBin.classList.toggle("active", Boolean(isActive));
+  target?.classList.toggle("trash-hover", Boolean(isActive));
+}
+
+function animateItemIntoBin(target, binRect){
+  if(!target || !binRect){
+    return Promise.resolve();
+  }
+
+  const itemRect = target.getBoundingClientRect();
+  const shiftX = ((binRect.left + binRect.width / 2) - (itemRect.left + itemRect.width / 2)) / state.zoom;
+  const shiftY = ((binRect.top + binRect.height / 2) - (itemRect.top + itemRect.height / 2)) / state.zoom;
+
+  target.style.setProperty("--trash-shift-x", `${shiftX}px`);
+  target.style.setProperty("--trash-shift-y", `${shiftY}px`);
+  target.classList.remove("trash-hover");
+  target.classList.add("trash-dropping");
+  deleteBin.classList.remove("active");
+  deleteBin.classList.add("consuming");
+
+  return wait(320).then(() => {
+    deleteBin.classList.remove("consuming");
+    target.classList.remove("trash-dropping");
+    target.style.removeProperty("--trash-shift-x");
+    target.style.removeProperty("--trash-shift-y");
+  });
+}
+
 function startDragItem(e){
   e.preventDefault();
   document.body.style.userSelect = "none";
@@ -2066,49 +2099,35 @@ item.y = y;
 target.style.left = x + "px";
 target.style.top = y + "px";
 
-// ✅ BIN DETECTION (RESTORED)
 const bin = deleteBin.getBoundingClientRect();
-
-if(
-  ev.clientX > bin.left &&
-  ev.clientX < bin.right &&
-  ev.clientY > bin.top &&
-  ev.clientY < bin.bottom
-){
-  deleteBin.classList.add("active");
-} else {
-  deleteBin.classList.remove("active");
-}
+setDeleteBinHoverState(target, isInsideRect(ev.clientX, ev.clientY, bin));
 
 scheduleWireDraw();
   }
 
-  function onUp(ev){
+  async function onUp(ev){
 const bin = deleteBin.getBoundingClientRect();
-
-// ✅ DELETE LOGIC (RESTORED)
-if(
-  ev.clientX > bin.left &&
-  ev.clientX < bin.right &&
-  ev.clientY > bin.top &&
-  ev.clientY < bin.bottom
-){
-  state.items = state.items.filter(i => i.id !== id);
-  state.wires = state.wires.filter(w =>
-    w.from.itemId !== id && w.to.itemId !== id
-  );
-  showToast("Deleted 🗑️");
-}
-
-deleteBin.classList.remove("active");
+const shouldDelete = isInsideRect(ev.clientX, ev.clientY, bin);
 
 target.classList.remove("dragging");
-workspaceArea?.classList.remove("workspace-item-dragging");
 window.removeEventListener("mousemove", onMove);
 window.removeEventListener("mouseup", onUp);
 
 state.drag = null;
 document.body.style.userSelect = "";
+
+  if(shouldDelete){
+    await animateItemIntoBin(target, bin);
+    state.items = state.items.filter(i => i.id !== id);
+    state.wires = state.wires.filter(w =>
+      w.from.itemId !== id && w.to.itemId !== id
+    );
+    showToast("Deleted 🗑️");
+  } else {
+    setDeleteBinHoverState(target, false);
+  }
+
+workspaceArea?.classList.remove("workspace-item-dragging");
 
 refreshSimulation();
 renderItems();

@@ -313,6 +313,8 @@ test("logic workspace stays outside the zoomed canvas and tracks resize", () => 
   assert.doesNotMatch(indexHtml, /<div class="canvas-world" id="canvasWorld">[\s\S]*<div id="deleteBin">🗑️<\/div>/);
   assert.match(runtimeJs, /const logicDock = document\.getElementById\("logicDock"\)/);
   assert.match(runtimeJs, /function syncWorkspaceDockLayout\(\)/);
+  assert.match(runtimeJs, /function setDeleteBinHoverState/);
+  assert.match(runtimeJs, /function animateItemIntoBin/);
   assert.match(runtimeJs, /workspaceArea\.style\.setProperty\("--logic-dock-height"/);
   assert.match(runtimeJs, /window\.addEventListener\("resize", syncWorkspaceDockLayout\)/);
   assert.match(runtimeJs, /new ResizeObserver\(\(\) => syncWorkspaceDockLayout\(\)\)/);
@@ -320,6 +322,9 @@ test("logic workspace stays outside the zoomed canvas and tracks resize", () => 
   assert.match(runtimeJs, /workspaceArea\?\.classList\.remove\("workspace-item-dragging"\)/);
   assert.match(appCss, /--logic-dock-height:180px/);
   assert.match(appCss, /\.workspace-area\.workspace-item-dragging \.canvas-world\{/);
+  assert.match(appCss, /\.canvas-item\.trash-hover\{/);
+  assert.match(appCss, /\.canvas-item\.trash-dropping\{/);
+  assert.match(appCss, /#deleteBin\.consuming\{/);
   assert.match(appCss, /\.logic-dock-header\{/);
   assert.match(appCss, /#deleteBin\{\s*position:relative/);
   assert.match(appCss, /pointer-events:none/);
