@@ -689,6 +689,7 @@ const itemsLayer = document.getElementById("itemsLayer");
 const deleteBin = document.getElementById("deleteBin");
 const wireLayer = document.getElementById("wireLayer");
 const logicList = document.getElementById("logicList");
+const logicDock = document.getElementById("logicDock");
 const canvasWorld = document.getElementById("canvasWorld");
 const workspaceArea = document.getElementById("workspaceArea");
 const zoomDisplay = document.getElementById("zoomDisplay");
@@ -2471,6 +2472,7 @@ function renderLogic(){
     chip.appendChild(remove);
     logicList.appendChild(chip);
   });
+  syncWorkspaceDockLayout();
 } 
 
 function setMode(mode){
@@ -2648,6 +2650,12 @@ function resetOutputs(showMessage = true){
 
 function wait(ms){
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function syncWorkspaceDockLayout(){
+  if(!workspaceArea || !logicDock) return;
+  const dockHeight = Math.ceil(logicDock.getBoundingClientRect().height);
+  workspaceArea.style.setProperty("--logic-dock-height", `${Math.max(dockHeight, 120)}px`);
 }
 
 function updateZoom(){
@@ -3271,6 +3279,13 @@ workspaceArea.addEventListener("wheel", (e) => {
   updateZoom();
 }, { passive:false });
 
+window.addEventListener("resize", syncWorkspaceDockLayout);
+
+if(typeof ResizeObserver === "function" && logicDock){
+  const logicDockObserver = new ResizeObserver(() => syncWorkspaceDockLayout());
+  logicDockObserver.observe(logicDock);
+}
+
 function captureText(){
   document.querySelectorAll("h1, h2, h3, button, label, span, p, b, small").forEach(el => {
     const text = el.textContent.trim();
@@ -3288,6 +3303,7 @@ renderComponentCards();
 renderLogicCards();
 renderVoltageGuide();
 renderLogic();
+syncWorkspaceDockLayout();
 renderItems();
 installDelegatedUiActions();
 syncBatteryVoltageControls();

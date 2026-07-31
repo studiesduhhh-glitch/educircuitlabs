@@ -29,6 +29,14 @@ function humanizeEmailName(email = "") {
     .join(" ");
 }
 
+function resolveProfileSchoolId(profile = {}) {
+  return (
+    profile.schoolId
+    || profile.schoolKey
+    || slugify(profile.schoolCode || profile.schoolUsername || profile.school || "")
+  );
+}
+
 export function formatAuthError(error, { mode = "login", role = "student" } = {}) {
   const code = error?.code || "";
   const message = error?.message || "";
@@ -178,6 +186,8 @@ export function createAuthService({ auth, db, firebase }) {
       school: payload.school,
       schoolId: payload.schoolId,
       schoolKey: payload.schoolId,
+      schoolCode: payload.schoolCode,
+      schoolUsername: payload.schoolCode,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       stats: payload.stats || {
@@ -289,6 +299,8 @@ export function createAuthService({ auth, db, firebase }) {
       role: "admin",
       school: schoolName,
       schoolId,
+      schoolCode: payload.schoolCode,
+      schoolUsername: payload.schoolCode,
       className: payload.className,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
@@ -329,6 +341,8 @@ export function createAuthService({ auth, db, firebase }) {
       role: payload.role,
       school: schoolName,
       schoolId,
+      schoolCode: payload.schoolCode,
+      schoolUsername: payload.schoolCode,
       className: payload.className,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -412,7 +426,8 @@ export function createAuthService({ auth, db, firebase }) {
       throw new Error("This account exists, but its Educircuit classroom profile is missing. Create the account again or ask the school admin to repair it.");
     }
     const suppliedSchoolId = buildSchoolId("", payload.schoolCode);
-    if (!payload.schoolCode || suppliedSchoolId !== profile.schoolId) {
+    const profileSchoolId = resolveProfileSchoolId(profile);
+    if (!payload.schoolCode || !profileSchoolId || suppliedSchoolId !== profileSchoolId) {
       await auth.signOut();
       throw authError("auth/school-code-mismatch", "The supplied school code does not match this account.");
     }

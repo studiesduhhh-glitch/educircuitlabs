@@ -572,6 +572,8 @@ button.amber{
 }
 
 .workspace-area{
+  --logic-dock-gap:16px;
+  --logic-dock-height:180px;
   position:relative;
   flex:1;
   min-height:0;
@@ -608,9 +610,9 @@ button.amber{
 
 .logic-dock{
   position:absolute;
-  left:16px;
-  right:16px;
-  bottom:16px;
+  left:var(--logic-dock-gap);
+  right:var(--logic-dock-gap);
+  bottom:var(--logic-dock-gap);
   min-height:148px;
   border:1px solid rgba(75,95,130,.12);
   border-radius:26px;
@@ -1421,7 +1423,7 @@ button,
 #deleteBin{
   position:absolute;
   right:20px;
-  bottom:20px;
+  bottom:calc(var(--logic-dock-height) + var(--logic-dock-gap) + 12px);
   width:70px;
   height:70px;
   background:#111827;

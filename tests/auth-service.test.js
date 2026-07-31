@@ -173,6 +173,8 @@ test("student account creation bootstraps a new school code", async () => {
   assert.equal(profile.uid, "student-1");
   assert.equal(profile.role, "student");
   assert.equal(profile.schoolId, "kundy-acsdmy");
+  assert.equal(db.users["student-1"].schoolCode, "kundy acsdmy");
+  assert.equal(db.users["student-1"].schoolUsername, "kundy acsdmy");
   assert.equal(db.schools["kundy-acsdmy"].selfServiceSignup, true);
   assert.deepEqual(db.schools["kundy-acsdmy"].adminIds, []);
   assert.equal(db.users["student-1"].profilePath, "schools/kundy-acsdmy/students/student-1");
@@ -465,6 +467,34 @@ test("login rejects a school code that does not match the Firebase profile", asy
   );
 
   assert.equal(signOutCalls, 1);
+});
+
+test("login accepts legacy profiles that still use schoolKey", async () => {
+  const db = createMockDb({
+    users: {
+      "legacy-school-student": {
+        uid: "legacy-school-student",
+        email: "legacy-school@example.com",
+        role: "student",
+        schoolKey: "legacy-school",
+        schoolUsername: "legacy school"
+      }
+    }
+  });
+  const auth = {
+    async signInWithEmailAndPassword() {
+      return { user: { uid: "legacy-school-student" } };
+    }
+  };
+  const service = createAuthService({ auth, db, firebase: fakeFirebase });
+
+  const profile = await service.login({
+    email: "legacy-school@example.com",
+    password: "secret123",
+    schoolCode: "legacy school"
+  });
+
+  assert.equal(profile.uid, "legacy-school-student");
 });
 
 test("progress sync succeeds when a legacy member mirror is missing", async () => {

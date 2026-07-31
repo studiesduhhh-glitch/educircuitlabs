@@ -1045,6 +1045,8 @@ function profileForLegacy(profile) {
     school: profile.school,
     schoolKey: profile.schoolId || profile.schoolKey || "",
     schoolId: profile.schoolId || profile.schoolKey || "",
+    schoolCode: profile.schoolCode || profile.schoolUsername || profile.schoolId || profile.schoolKey || "",
+    schoolUsername: profile.schoolUsername || profile.schoolCode || profile.schoolId || profile.schoolKey || "",
     email: profile.email || ""
   };
 }
@@ -2497,10 +2499,10 @@ function installProjectSharing(app, services) {
     return services.auth.getAuthenticatedEmail() === EXPLORE_MODERATOR_EMAIL;
   }
 
-  async function publishCurrentScope() {
+  async function publishCurrentScope({ force = false } = {}) {
     if (app.state.demoMode || !app.state.user.uid || !app.state.user.schoolKey) return 0;
     const scopeKey = `${app.state.user.schoolKey}:${app.state.user.uid}`;
-    if (app.state.publicGalleryMigrationKey === scopeKey) return 0;
+    if (!force && app.state.publicGalleryMigrationKey === scopeKey) return 0;
     const publishedCount = await services.projects.publishSavedProjects({
       schoolId: app.state.user.schoolKey,
       ownerId: app.state.user.uid
@@ -2649,7 +2651,7 @@ function installProjectSharing(app, services) {
       pageTitle: "Educircuit | Explore Projects",
       force: true
     });
-    await publishCurrentScope();
+    await publishCurrentScope({ force: true });
     await renderExploreProjects();
   });
 
@@ -2673,8 +2675,12 @@ function installAuthUpgrade(app, services) {
   const rememberLogin = document.getElementById("rememberLogin");
   const authFormTitle = document.getElementById("authFormTitle");
   const authModeNote = document.getElementById("authModeNote");
-  const authCreateModeBtn = document.getElementById("authCreateModeBtn");
-  const authLoginModeBtn = document.getElementById("authLoginModeBtn");
+  const authCreateModeBtn = replaceButton(document.getElementById("authCreateModeBtn"), () => {
+    void handleAuthModeSwitch("create");
+  });
+  const authLoginModeBtn = replaceButton(document.getElementById("authLoginModeBtn"), () => {
+    void handleAuthModeSwitch("login");
+  });
   const enterBtn = replaceButton(document.getElementById("enterBtn"), handlePrimaryAccess);
   const googleAuthBtn = replaceButton(document.getElementById("googleAuthBtn"), handleGoogleLogin);
   const demoStudentBtn = replaceButton(document.getElementById("demoStudentBtn"), async () => {
@@ -2688,15 +2694,18 @@ function installAuthUpgrade(app, services) {
   replaceButton(document.getElementById("logoutBtn"), handleLogout);
 
   ensureRoleOption(loginRole, "admin", "School Admin");
-  const authFlow = window.EducircuitAuthFlow || {};
   const googleAvailable = Boolean(window.firebase?.auth?.GoogleAuthProvider && app.auth?.signInWithPopup);
   let pendingGoogleUser = null;
   if (googleAuthBtn) {
     googleAuthBtn.hidden = !googleAvailable;
   }
 
+  function getAuthFlow() {
+    return window.EducircuitAuthFlow || {};
+  }
+
   function getAuthMode() {
-    return authFlow.getMode?.() || loginCard?.dataset.authMode || "create";
+    return getAuthFlow().getMode?.() || loginCard?.dataset.authMode || "create";
   }
 
   function isGoogleUser(user) {
@@ -2790,6 +2799,7 @@ function installAuthUpgrade(app, services) {
     pendingGoogleUser = user;
     loginName.value = loginName.value.trim() || humanizeGoogleName(user);
     loginEmail.value = String(user?.email || "").trim().toLowerCase();
+    const authFlow = getAuthFlow();
     authFlow.setMode?.("create");
     authFlow.goToLoginStep?.(2);
     syncRoleFields();
@@ -2798,6 +2808,33 @@ function installAuthUpgrade(app, services) {
       app.showToast?.("Google account verified. Finish your school details to create the Educircuit profile.");
     }
     setTimeout(() => focusNextGoogleField(), 80);
+  }
+
+  function openAuthModeStep(mode) {
+    const nextMode = mode === "login" ? "login" : "create";
+    const authFlow = getAuthFlow();
+    if (typeof authFlow.openAuthMode === "function") {
+      authFlow.openAuthMode(nextMode);
+      return;
+    }
+
+    loginCard?.setAttribute("data-auth-mode", nextMode);
+    loginCard?.setAttribute("data-step", "2");
+    document.querySelectorAll(".login-step").forEach(panel => {
+      panel.classList.toggle("active", panel.dataset.loginStep === "2");
+    });
+    document.getElementById("loginStepOne")?.classList.remove("active");
+    document.getElementById("loginStepTwo")?.classList.add("active");
+  }
+
+  async function handleAuthModeSwitch(mode) {
+    if (mode === "login") {
+      await clearPendingGoogleSignup({ signOut: true });
+    }
+    getAuthFlow().setMode?.(mode);
+    openAuthModeStep(mode);
+    syncRoleFields();
+    syncGoogleSignupUi();
   }
 
   function formatGoogleAuthError(error) {
@@ -3048,16 +3085,9 @@ function installAuthUpgrade(app, services) {
   });
 
   loginRole.addEventListener("change", syncRoleFields);
-  authCreateModeBtn?.addEventListener("click", () => {
-    syncGoogleSignupUi();
-  });
-  authLoginModeBtn?.addEventListener("click", async () => {
-    await clearPendingGoogleSignup({ signOut: true });
-    syncGoogleSignupUi();
-  });
 
   syncRoleFields();
-  authFlow.setMode?.(getAuthMode());
+  getAuthFlow().setMode?.(getAuthMode());
   syncGoogleSignupUi();
   void (async () => {
     const currentUser = app.auth?.currentUser;
@@ -3351,6 +3381,7 @@ function installActionOverrides(app, services, sharing, teacherDashboard, gamifi
         console.warn("Project saved, but progress could not be synchronized", error);
       }
 
+      await sharing.publishCurrentScope({ force: true });
       const refreshResults = await Promise.allSettled([
         sharing.renderExploreProjects(),
         services.refreshAll()

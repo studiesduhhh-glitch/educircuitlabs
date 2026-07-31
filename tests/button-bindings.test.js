@@ -208,6 +208,8 @@ test("project pages split saved, graded, and explore-visible work", () => {
   assert.match(upgradeJs, /visibility === "public"/);
   assert.match(upgradeJs, /Every saved circuit is shared in Explore/);
   assert.match(upgradeJs, /services\.projects\.publishSavedProjects/);
+  assert.match(upgradeJs, /async function publishCurrentScope\(\{\s*force = false\s*\} = \{\}\)/);
+  assert.match(upgradeJs, /publishCurrentScope\(\{\s*force:\s*true\s*\}\)/);
   assert.match(upgradeJs, /services\.projects\.listPublicProjects\(\)/);
   assert.match(upgradeJs, /escapeHtml\(project\.name/);
   assert.match(projectServiceJs, /PUBLIC_GALLERY_SCHOOL_ID = "public-gallery"/);
@@ -258,6 +260,10 @@ test("login step is explicit and demo buttons open the simulator directly", () =
   assert.match(upgradeJs, /completeGoogleRegistration/);
   assert.match(upgradeJs, /Finish Google Signup/);
   assert.match(upgradeJs, /Google account connected/);
+  assert.match(upgradeJs, /replaceButton\(document\.getElementById\("authCreateModeBtn"\)/);
+  assert.match(upgradeJs, /replaceButton\(document\.getElementById\("authLoginModeBtn"\)/);
+  assert.match(upgradeJs, /async function handleAuthModeSwitch\(mode\)/);
+  assert.match(upgradeJs, /function openAuthModeStep\(mode\)/);
   assert.match(upgradeJs, /auth\/popup-blocked/);
   assert.match(upgradeJs, /services\.auth\.configurePersistence\(Boolean\(rememberLogin\?\.checked\)\)/);
   assert.match(upgradeJs, /aria-busy/);
@@ -300,6 +306,18 @@ test("legacy auth fallback does not store shared school passwords", () => {
   assert.doesNotMatch(runtimeJs, /buildSchoolAuthEmail/);
   assert.match(runtimeJs, /createUserWithEmailAndPassword\(payload\.email,\s*payload\.schoolPassword\)/);
   assert.match(runtimeJs, /selfServiceSignup/);
+});
+
+test("logic workspace stays outside the zoomed canvas and tracks resize", () => {
+  assert.match(indexHtml, /<div class="canvas-world" id="canvasWorld">[\s\S]*<div id="deleteBin">🗑️<\/div>[\s\S]*<\/div>\s*<div class="logic-dock" id="logicDock">/);
+  assert.match(runtimeJs, /const logicDock = document\.getElementById\("logicDock"\)/);
+  assert.match(runtimeJs, /function syncWorkspaceDockLayout\(\)/);
+  assert.match(runtimeJs, /workspaceArea\.style\.setProperty\("--logic-dock-height"/);
+  assert.match(runtimeJs, /window\.addEventListener\("resize", syncWorkspaceDockLayout\)/);
+  assert.match(runtimeJs, /new ResizeObserver\(\(\) => syncWorkspaceDockLayout\(\)\)/);
+  assert.match(appCss, /--logic-dock-height:180px/);
+  assert.match(appCss, /bottom:calc\(var\(--logic-dock-height\) \+ var\(--logic-dock-gap\) \+ 12px\)/);
+  assert.match(upgradeCss, /inset:86px 22px calc\(var\(--logic-dock-height\) \+ var\(--logic-dock-gap\) \+ 14px\)/);
 });
 
 test("manual switch controls and voice coach are wired", () => {

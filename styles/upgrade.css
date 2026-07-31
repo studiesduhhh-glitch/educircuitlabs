@@ -2197,7 +2197,7 @@ body.upgrade-ready .upgrade-submission-card:hover {
 
 #workspaceEmptyState {
   position:absolute;
-  inset:86px 22px 190px;
+  inset:86px 22px calc(var(--logic-dock-height) + var(--logic-dock-gap) + 14px);
   z-index:8;
   display:grid;
   place-items:center;
@@ -2861,7 +2861,7 @@ body {
   }
 
   #workspaceEmptyState {
-    inset:68px 16px 142px;
+    inset:68px 16px calc(var(--logic-dock-height) + var(--logic-dock-gap) + 12px);
   }
 
   .workspace-empty-copy {
@@ -2886,9 +2886,9 @@ body {
   }
 
   .logic-dock {
-    left:12px;
-    right:12px;
-    bottom:12px;
+    left:var(--logic-dock-gap);
+    right:var(--logic-dock-gap);
+    bottom:var(--logic-dock-gap);
     min-height:118px;
     padding:12px;
     border-radius:18px;
@@ -2924,7 +2924,7 @@ body {
     width:56px;
     height:56px;
     right:14px;
-    bottom:120px;
+    bottom:calc(var(--logic-dock-height) + var(--logic-dock-gap) - 6px);
     font-size:24px;
     border-radius:12px;
   }
@@ -2982,6 +2982,7 @@ body {
   }
 
   .workspace-area {
+    --logic-dock-gap:10px;
     min-height:0;
   }
 
@@ -3167,7 +3168,7 @@ body {
   }
 
   #workspaceEmptyState {
-    inset:78px 12px 210px;
+    inset:78px 12px calc(var(--logic-dock-height) + var(--logic-dock-gap) + 22px);
   }
 
   .workspace-empty-copy b {
@@ -3184,9 +3185,9 @@ body {
   }
 
   .logic-dock {
-    left:10px;
-    right:10px;
-    bottom:10px;
+    left:var(--logic-dock-gap);
+    right:var(--logic-dock-gap);
+    bottom:var(--logic-dock-gap);
     min-height:0;
     max-height:42%;
     overflow:auto;
@@ -3206,7 +3207,7 @@ body {
     width:54px;
     height:54px;
     right:14px;
-    bottom:168px;
+    bottom:calc(var(--logic-dock-height) + var(--logic-dock-gap) + 4px);
     font-size:24px;
     border-radius:12px;
   }
@@ -3502,7 +3503,7 @@ body {
   }
 
   #workspaceEmptyState {
-    inset:70px 10px 230px;
+    inset:70px 10px calc(var(--logic-dock-height) + var(--logic-dock-gap) + 28px);
   }
 
   .mini-actions {
