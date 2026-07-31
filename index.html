@@ -503,10 +503,12 @@
           <div class="canvas-world" id="canvasWorld">
             <svg class="wire-layer" id="wireLayer"></svg>
             <div class="items-layer" id="itemsLayer"></div>
-            <div id="deleteBin">🗑️</div>
           </div>
           <div class="logic-dock" id="logicDock">
-            <h3>Logic Workspace</h3>
+            <div class="logic-dock-header">
+              <h3>Logic Workspace</h3>
+              <div id="deleteBin" aria-hidden="true">🗑️</div>
+            </div>
             <div class="logic-list" id="logicList"></div>
             <div class="mini-actions">
               <button class="secondary" id="clearLogicBtn">Clear Logic</button>

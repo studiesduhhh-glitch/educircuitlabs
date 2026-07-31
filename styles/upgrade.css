@@ -2899,6 +2899,10 @@ body {
     margin-bottom:8px;
   }
 
+  .logic-dock-header {
+    margin-bottom:8px;
+  }
+
   .logic-list {
     min-height:48px;
   }
@@ -2923,8 +2927,6 @@ body {
   #deleteBin {
     width:56px;
     height:56px;
-    right:14px;
-    bottom:calc(var(--logic-dock-height) + var(--logic-dock-gap) - 6px);
     font-size:24px;
     border-radius:12px;
   }
@@ -3199,6 +3201,10 @@ body {
     font-size:16px;
   }
 
+  .logic-dock-header {
+    margin-bottom:8px;
+  }
+
   .logic-list {
     min-height:48px;
   }
@@ -3206,8 +3212,6 @@ body {
   #deleteBin {
     width:54px;
     height:54px;
-    right:14px;
-    bottom:calc(var(--logic-dock-height) + var(--logic-dock-gap) + 4px);
     font-size:24px;
     border-radius:12px;
   }

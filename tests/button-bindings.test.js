@@ -309,14 +309,17 @@ test("legacy auth fallback does not store shared school passwords", () => {
 });
 
 test("logic workspace stays outside the zoomed canvas and tracks resize", () => {
-  assert.match(indexHtml, /<div class="canvas-world" id="canvasWorld">[\s\S]*<div id="deleteBin">🗑️<\/div>[\s\S]*<\/div>\s*<div class="logic-dock" id="logicDock">/);
+  assert.match(indexHtml, /<div class="canvas-world" id="canvasWorld">[\s\S]*<\/div>\s*<div class="logic-dock" id="logicDock">[\s\S]*<div class="logic-dock-header">[\s\S]*<div id="deleteBin" aria-hidden="true">🗑️<\/div>/);
+  assert.doesNotMatch(indexHtml, /<div class="canvas-world" id="canvasWorld">[\s\S]*<div id="deleteBin">🗑️<\/div>/);
   assert.match(runtimeJs, /const logicDock = document\.getElementById\("logicDock"\)/);
   assert.match(runtimeJs, /function syncWorkspaceDockLayout\(\)/);
   assert.match(runtimeJs, /workspaceArea\.style\.setProperty\("--logic-dock-height"/);
   assert.match(runtimeJs, /window\.addEventListener\("resize", syncWorkspaceDockLayout\)/);
   assert.match(runtimeJs, /new ResizeObserver\(\(\) => syncWorkspaceDockLayout\(\)\)/);
   assert.match(appCss, /--logic-dock-height:180px/);
-  assert.match(appCss, /bottom:calc\(var\(--logic-dock-height\) \+ var\(--logic-dock-gap\) \+ 12px\)/);
+  assert.match(appCss, /\.logic-dock-header\{/);
+  assert.match(appCss, /#deleteBin\{\s*position:relative/);
+  assert.match(appCss, /pointer-events:none/);
   assert.match(upgradeCss, /inset:86px 22px calc\(var\(--logic-dock-height\) \+ var\(--logic-dock-gap\) \+ 14px\)/);
 });
 

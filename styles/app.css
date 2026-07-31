@@ -623,8 +623,16 @@ button.amber{
   z-index:4;
 }
 
+.logic-dock-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+
 .logic-dock h3{
-  margin:0 0 10px;
+  margin:0;
   font-size:18px;
 }
 
@@ -1421,11 +1429,10 @@ button,
   }
 }
 #deleteBin{
-  position:absolute;
-  right:20px;
-  bottom:calc(var(--logic-dock-height) + var(--logic-dock-gap) + 12px);
-  width:70px;
-  height:70px;
+  position:relative;
+  flex:0 0 auto;
+  width:64px;
+  height:64px;
   background:#111827;
   color:#fff;
   font-size:30px;
@@ -1433,11 +1440,15 @@ button,
   align-items:center;
   justify-content:center;
   border-radius:15px;
-  z-index:999; /* 🔥 ADD THIS */
+  box-shadow:0 14px 28px rgba(15,23,42,.18);
+  pointer-events:none;
+  user-select:none;
+  transition:background-color .18s ease, transform .18s ease, box-shadow .18s ease;
 }
 
 #deleteBin.active{
   background:red;
+  transform:scale(1.05);
 }
 
 input.error {
