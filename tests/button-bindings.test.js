@@ -316,7 +316,10 @@ test("logic workspace stays outside the zoomed canvas and tracks resize", () => 
   assert.match(runtimeJs, /workspaceArea\.style\.setProperty\("--logic-dock-height"/);
   assert.match(runtimeJs, /window\.addEventListener\("resize", syncWorkspaceDockLayout\)/);
   assert.match(runtimeJs, /new ResizeObserver\(\(\) => syncWorkspaceDockLayout\(\)\)/);
+  assert.match(runtimeJs, /workspaceArea\?\.classList\.add\("workspace-item-dragging"\)/);
+  assert.match(runtimeJs, /workspaceArea\?\.classList\.remove\("workspace-item-dragging"\)/);
   assert.match(appCss, /--logic-dock-height:180px/);
+  assert.match(appCss, /\.workspace-area\.workspace-item-dragging \.canvas-world\{/);
   assert.match(appCss, /\.logic-dock-header\{/);
   assert.match(appCss, /#deleteBin\{\s*position:relative/);
   assert.match(appCss, /pointer-events:none/);

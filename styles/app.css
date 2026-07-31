@@ -594,6 +594,11 @@ button.amber{
   position:absolute;
   inset:0;
   transform-origin:0 0;
+  z-index:1;
+}
+
+.workspace-area.workspace-item-dragging .canvas-world{
+  z-index:6;
 }
 
 .wire-layer{

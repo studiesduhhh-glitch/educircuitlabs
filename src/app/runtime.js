@@ -2054,6 +2054,7 @@ function startDragItem(e){
   state.drag = { id, offsetX, offsetY };
 
   target.classList.add("dragging");
+  workspaceArea?.classList.add("workspace-item-dragging");
 
   function onMove(ev){
 const x = (ev.clientX - worldRect.left) / state.zoom - offsetX;
@@ -2102,6 +2103,7 @@ if(
 deleteBin.classList.remove("active");
 
 target.classList.remove("dragging");
+workspaceArea?.classList.remove("workspace-item-dragging");
 window.removeEventListener("mousemove", onMove);
 window.removeEventListener("mouseup", onUp);
 
