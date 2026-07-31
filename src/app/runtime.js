@@ -699,6 +699,12 @@ const projectRenameForm = document.getElementById("projectRenameForm");
 const projectRenameInput = document.getElementById("projectRenameInput");
 const projectRenameCloseBtn = document.getElementById("projectRenameCloseBtn");
 const projectRenameCancelBtn = document.getElementById("projectRenameCancelBtn");
+const waitDurationModal = document.getElementById("waitDurationModal");
+const waitDurationForm = document.getElementById("waitDurationForm");
+const waitDurationInput = document.getElementById("waitDurationInput");
+const waitDurationCloseBtn = document.getElementById("waitDurationCloseBtn");
+const waitDurationCancelBtn = document.getElementById("waitDurationCancelBtn");
+const waitDurationSaveBtn = document.getElementById("waitDurationSaveBtn");
 const batteryVoltageValue = document.getElementById("batteryVoltageValue");
 const batteryVoltageRange = document.getElementById("batteryVoltageRange");
 const voltageGuideList = document.getElementById("voltageGuideList");
@@ -1515,7 +1521,13 @@ function renderLogicCards(){
   logicBlockList.innerHTML = "";
   logicCatalog.forEach(name => {
     const item = UI.logicCard(name);
-    bindTileAction(item, () => addLogic(name), `Add ${name} logic block`);
+    bindTileAction(item, () => {
+      if(name === "WAIT 1s"){
+        openWaitDurationModal();
+        return;
+      }
+      addLogic(name);
+    }, `Add ${name} logic block`);
     logicBlockList.appendChild(item);
   });
 }
@@ -2461,12 +2473,45 @@ const scheduleWireDraw = performanceTools.rafThrottle
   ? performanceTools.rafThrottle(() => drawWires())
   : () => drawWires();
 
+function clampWaitSeconds(seconds){
+  return Math.max(1, Math.min(60, Math.round(Number(seconds) || 1)));
+}
+
+function parseWaitSeconds(step){
+  const match = String(step || "").trim().match(/^WAIT\s+(\d{1,2}|60)s$/i);
+  if(!match) return null;
+  const seconds = Number(match[1]);
+  return seconds >= 1 && seconds <= 60 ? seconds : null;
+}
+
+function createWaitLogicStep(seconds){
+  return `WAIT ${clampWaitSeconds(seconds)}s`;
+}
+
+function getLogicStepLabel(step){
+  const waitSeconds = parseWaitSeconds(step);
+  if(waitSeconds !== null){
+    return `WAIT ${waitSeconds}s`;
+  }
+  return translateText(step);
+}
+
+function getDefaultWaitSeconds(){
+  for(let index = state.logic.length - 1; index >= 0; index -= 1){
+    const seconds = parseWaitSeconds(state.logic[index]);
+    if(seconds !== null){
+      return seconds;
+    }
+  }
+  return 1;
+}
+
 
 function addLogic(name){
   state.logic.push(name);
   renderLogic();
   updateTeacherStats();
-  const label = translateText(name);
+  const label = getLogicStepLabel(name);
   showToast(label + (state.lang === "ta" ? " சேர்க்கப்பட்டது" : " added"));
 }
 
@@ -2477,7 +2522,7 @@ function renderLogic(){
     const chip = document.createElement("div");
     chip.className = "logic-chip";
 
-    const label = translateText(step);
+    const label = getLogicStepLabel(step);
 
     chip.innerHTML = `<span>${index + 1}. ${label}</span>`;
 
@@ -2638,9 +2683,9 @@ async function runLogic(){
       state.burstItems = [];
     }
 
-    else if(step === "WAIT 1s"){
+    else if(parseWaitSeconds(step) !== null){
       updateOutputs();
-      await wait(1000);
+      await wait(parseWaitSeconds(step) * 1000);
     }
 
     updateOutputs();
@@ -2819,11 +2864,38 @@ function renameProject(){
   }, 40);
 }
 
+function openWaitDurationModal(){
+  if(!waitDurationModal || !waitDurationInput){
+    addLogic("WAIT 1s");
+    return;
+  }
+
+  waitDurationInput.value = String(getDefaultWaitSeconds());
+  waitDurationInput.classList.remove("error");
+  waitDurationModal.classList.remove("hidden");
+  waitDurationModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+  setTimeout(() => {
+    waitDurationInput.focus();
+    waitDurationInput.select();
+  }, 40);
+}
+
 function closeProjectRenameModal(){
   projectRenameModal.classList.add("hidden");
   projectRenameModal.setAttribute("aria-hidden", "true");
   document.body.classList.remove("modal-open");
   document.getElementById("renameBtn")?.focus();
+}
+
+function closeWaitDurationModal({ restoreFocus = true } = {}){
+  if(!waitDurationModal) return;
+  waitDurationModal.classList.add("hidden");
+  waitDurationModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+  if(restoreFocus){
+    document.getElementById("addWaitBtn")?.focus();
+  }
 }
 
 function saveProjectName(event){
@@ -2840,6 +2912,22 @@ function saveProjectName(event){
   projectNameText.textContent = state.projectName;
   closeProjectRenameModal();
   showToast("Project renamed");
+}
+
+function saveWaitDuration(event){
+  event.preventDefault();
+  const seconds = Number(waitDurationInput?.value);
+
+  if(!Number.isInteger(seconds) || seconds < 1 || seconds > 60){
+    waitDurationInput?.classList.add("error");
+    waitDurationInput?.focus();
+    showToast("Enter 1 to 60 seconds");
+    return;
+  }
+
+  waitDurationInput.classList.remove("error");
+  addLogic(createWaitLogicStep(seconds));
+  closeWaitDurationModal();
 }
 
 function copyProjectSummary(){
@@ -3184,7 +3272,20 @@ projectRenameModal?.addEventListener("click", event => {
     closeProjectRenameModal();
   }
 });
+waitDurationForm?.addEventListener("submit", saveWaitDuration);
+waitDurationCloseBtn?.addEventListener("click", () => closeWaitDurationModal());
+waitDurationCancelBtn?.addEventListener("click", () => closeWaitDurationModal());
+waitDurationInput?.addEventListener("input", () => waitDurationInput.classList.remove("error"));
+waitDurationModal?.addEventListener("click", event => {
+  if(event.target === waitDurationModal){
+    closeWaitDurationModal();
+  }
+});
 document.addEventListener("keydown", event => {
+  if(event.key === "Escape" && !waitDurationModal?.classList.contains("hidden")){
+    closeWaitDurationModal();
+    return;
+  }
   if(event.key === "Escape" && !projectRenameModal?.classList.contains("hidden")){
     closeProjectRenameModal();
   }
@@ -3201,7 +3302,7 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
   logoutUser();
 });
 
-document.getElementById("addWaitBtn").addEventListener("click", () => addLogic("WAIT 1s"));
+document.getElementById("addWaitBtn").addEventListener("click", openWaitDurationModal);
 document.getElementById("addLedOnBtn").addEventListener("click", () => addLogic("ON"));
 document.getElementById("addLedOffBtn").addEventListener("click", () => addLogic("OFF"));
 

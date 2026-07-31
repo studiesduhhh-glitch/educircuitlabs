@@ -331,6 +331,19 @@ test("logic workspace stays outside the zoomed canvas and tracks resize", () => 
   assert.match(upgradeCss, /inset:86px 22px calc\(var\(--logic-dock-height\) \+ var\(--logic-dock-gap\) \+ 14px\)/);
 });
 
+test("logic workspace wait step is customizable up to 60 seconds", () => {
+  assert.match(indexHtml, /id="waitDurationModal"/);
+  assert.match(indexHtml, /id="waitDurationForm"/);
+  assert.match(indexHtml, /id="waitDurationInput" type="number" min="1" max="60" step="1"/);
+  assert.match(runtimeJs, /function openWaitDurationModal/);
+  assert.match(runtimeJs, /function saveWaitDuration/);
+  assert.match(runtimeJs, /function parseWaitSeconds/);
+  assert.match(runtimeJs, /function createWaitLogicStep/);
+  assert.match(runtimeJs, /document\.getElementById\("addWaitBtn"\)\.addEventListener\("click", openWaitDurationModal\)/);
+  assert.match(runtimeJs, /waitDurationForm\?\.addEventListener\("submit", saveWaitDuration\)/);
+  assert.match(runtimeJs, /await wait\(parseWaitSeconds\(step\) \* 1000\)/);
+});
+
 test("manual switch controls and voice coach are wired", () => {
   assert.match(runtimeJs, /function toggleSwitchItem/);
   assert.match(runtimeJs, /switch-toggle-control/);

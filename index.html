@@ -258,6 +258,25 @@
     </form>
   </div>
 
+  <div class="app-modal hidden" id="waitDurationModal" role="dialog" aria-modal="true" aria-labelledby="waitDurationTitle" aria-hidden="true">
+    <form class="app-modal-panel" id="waitDurationForm">
+      <div class="app-modal-heading">
+        <div>
+          <span class="app-modal-kicker">Logic workspace</span>
+          <h2 id="waitDurationTitle">Add WAIT step</h2>
+        </div>
+        <button type="button" class="app-modal-close" id="waitDurationCloseBtn" aria-label="Close wait duration dialog">×</button>
+      </div>
+      <label for="waitDurationInput">Duration in seconds</label>
+      <input id="waitDurationInput" type="number" min="1" max="60" step="1" inputmode="numeric" autocomplete="off" required>
+      <p class="small-note">Choose any whole number from 1 to 60 seconds.</p>
+      <div class="app-modal-actions">
+        <button type="button" class="secondary" id="waitDurationCancelBtn">Cancel</button>
+        <button type="submit" id="waitDurationSaveBtn" form="waitDurationForm">Add WAIT</button>
+      </div>
+    </form>
+  </div>
+
   <!-- 📘 GUIDE PAGE -->
    <div id="guidePage" class="hidden guide-page">
 
