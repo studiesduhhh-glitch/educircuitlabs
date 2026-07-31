@@ -15,7 +15,7 @@ import {
   summarizeVivaSession
 } from "../core/viva-engine.js?v=20260729-ga4fix1";
 import { autoGradeProject, summarizeClassPerformance } from "../services/dashboard-service.js?v=20260729-ga4fix1";
-import { formatAuthError } from "../services/auth-service.js?v=20260729-ga4fix1";
+import { formatAuthError } from "../services/auth-service.js?v=20260731-auth-competition1";
 
 const EXPLORE_MODERATOR_EMAIL = "studiesduhhh@gmail.com";
 
@@ -2669,22 +2669,161 @@ function installAuthUpgrade(app, services) {
   const loginSchool = document.getElementById("loginSchool");
   const loginSchoolUser = document.getElementById("loginSchoolUser");
   const loginSchoolPass = document.getElementById("loginSchoolPass");
+  const passwordField = loginSchoolPass?.closest(".field");
   const rememberLogin = document.getElementById("rememberLogin");
+  const authFormTitle = document.getElementById("authFormTitle");
+  const authModeNote = document.getElementById("authModeNote");
+  const authCreateModeBtn = document.getElementById("authCreateModeBtn");
+  const authLoginModeBtn = document.getElementById("authLoginModeBtn");
   const enterBtn = replaceButton(document.getElementById("enterBtn"), handlePrimaryAccess);
   const googleAuthBtn = replaceButton(document.getElementById("googleAuthBtn"), handleGoogleLogin);
-  const demoStudentBtn = replaceButton(document.getElementById("demoStudentBtn"), () => fillDemoCredentials("student"));
-  const demoTeacherBtn = replaceButton(document.getElementById("demoTeacherBtn"), () => fillDemoCredentials("teacher"));
+  const demoStudentBtn = replaceButton(document.getElementById("demoStudentBtn"), async () => {
+    await clearPendingGoogleSignup({ signOut: true });
+    fillDemoCredentials("student");
+  });
+  const demoTeacherBtn = replaceButton(document.getElementById("demoTeacherBtn"), async () => {
+    await clearPendingGoogleSignup({ signOut: true });
+    fillDemoCredentials("teacher");
+  });
   replaceButton(document.getElementById("logoutBtn"), handleLogout);
 
   ensureRoleOption(loginRole, "admin", "School Admin");
   const authFlow = window.EducircuitAuthFlow || {};
   const googleAvailable = Boolean(window.firebase?.auth?.GoogleAuthProvider && app.auth?.signInWithPopup);
+  let pendingGoogleUser = null;
   if (googleAuthBtn) {
     googleAuthBtn.hidden = !googleAvailable;
   }
 
   function getAuthMode() {
     return authFlow.getMode?.() || loginCard?.dataset.authMode || "create";
+  }
+
+  function isGoogleUser(user) {
+    return Boolean(
+      user?.providerId === "google.com"
+      || user?.providerData?.some(entry => entry?.providerId === "google.com")
+    );
+  }
+
+  function humanizeGoogleName(user) {
+    const explicitName = String(user?.displayName || "").trim();
+    if (explicitName) return explicitName;
+    const localPart = String(user?.email || "").split("@")[0] || "";
+    const normalized = localPart.replace(/[._-]+/g, " ").trim();
+    if (!normalized) return "Educircuit User";
+    return normalized
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(chunk => chunk.charAt(0).toUpperCase() + chunk.slice(1))
+      .join(" ");
+  }
+
+  function getPrimaryAccessLabel() {
+    if (getAuthMode() === "login") return "Log In";
+    return pendingGoogleUser ? "Finish Google Signup" : "Create Account";
+  }
+
+  function syncGoogleSignupUi() {
+    const isLogin = getAuthMode() === "login";
+    const isPendingGoogleSignup = Boolean(pendingGoogleUser) && !isLogin;
+
+    if (authFormTitle) {
+      authFormTitle.textContent = isLogin
+        ? "Log In"
+        : isPendingGoogleSignup ? "Finish Google Signup" : "Create Account";
+    }
+    if (authModeNote) {
+      authModeNote.textContent = isLogin
+        ? "Enter your school code, email, and password to open your lab."
+        : isPendingGoogleSignup
+          ? "Google account connected. Add your school details below to create the full Educircuit profile."
+          : "Fill this once to create your Educircuit classroom account.";
+    }
+    if (enterBtn) {
+      const primaryLabel = getPrimaryAccessLabel();
+      enterBtn.textContent = primaryLabel;
+      enterBtn.setAttribute("aria-label", primaryLabel);
+    }
+    if (loginEmail) {
+      loginEmail.readOnly = isPendingGoogleSignup;
+      loginEmail.setAttribute("aria-readonly", isPendingGoogleSignup ? "true" : "false");
+    }
+    if (passwordField) {
+      passwordField.hidden = isPendingGoogleSignup;
+    }
+    if (googleAuthBtn) {
+      googleAuthBtn.textContent = isPendingGoogleSignup ? "Switch Google Account" : "Continue with Google";
+    }
+  }
+
+  async function clearPendingGoogleSignup({ signOut = false } = {}) {
+    const activePendingUid = pendingGoogleUser?.uid || "";
+    pendingGoogleUser = null;
+    syncGoogleSignupUi();
+
+    if (
+      signOut
+      && activePendingUid
+      && app.auth?.currentUser?.uid === activePendingUid
+      && !app.state.user.uid
+    ) {
+      try {
+        await services.auth.logout();
+      } catch (error) {
+        console.warn("Could not clear the pending Google session cleanly", error);
+      }
+    }
+  }
+
+  function focusNextGoogleField() {
+    const candidates = [
+      !loginSchool.value.trim() ? loginSchool : null,
+      !loginSchoolUser.value.trim() ? loginSchoolUser : null,
+      loginRole.value === "student" && !loginClass.value.trim() ? loginClass : null,
+      enterBtn
+    ].filter(Boolean);
+    candidates[0]?.focus?.();
+  }
+
+  function primeGoogleSignup(user, { showToast = true } = {}) {
+    pendingGoogleUser = user;
+    loginName.value = loginName.value.trim() || humanizeGoogleName(user);
+    loginEmail.value = String(user?.email || "").trim().toLowerCase();
+    authFlow.setMode?.("create");
+    authFlow.goToLoginStep?.(2);
+    syncRoleFields();
+    syncGoogleSignupUi();
+    if (showToast) {
+      app.showToast?.("Google account verified. Finish your school details to create the Educircuit profile.");
+    }
+    setTimeout(() => focusNextGoogleField(), 80);
+  }
+
+  function formatGoogleAuthError(error) {
+    const code = error?.code || "";
+    if (code === "auth/operation-not-allowed") {
+      return "Google sign-in is not enabled in Firebase yet.";
+    }
+    if (code === "auth/popup-closed-by-user") {
+      return "Google sign-in was closed before it finished.";
+    }
+    if (code === "auth/popup-blocked") {
+      return "The browser blocked the Google sign-in popup. Allow popups for Educircuit and try again.";
+    }
+    if (code === "auth/cancelled-popup-request") {
+      return "Google sign-in was interrupted. Try once more.";
+    }
+    if (code === "auth/account-exists-with-different-credential") {
+      return "This email already exists with another sign-in method. Log in with email and password first, then try Google again.";
+    }
+    if (code === "auth/unauthorized-domain") {
+      return "This website domain is not approved for Google sign-in in Firebase Authentication yet.";
+    }
+    if (code === "auth/network-request-failed") {
+      return "Network interrupted Google sign-in. Check the connection and try again.";
+    }
+    return error?.message || "Google sign-in could not finish.";
   }
 
   function getPayload() {
@@ -2724,6 +2863,8 @@ function installAuthUpgrade(app, services) {
     }
 
     function validatePassword() {
+      const needsPassword = !(payload.accessModel === "create" && pendingGoogleUser);
+      if (!needsPassword) return;
       if (!payload.password) {
         loginSchoolPass.classList.add("error");
         errors.push("Enter your password.");
@@ -2780,8 +2921,9 @@ function installAuthUpgrade(app, services) {
   async function handlePrimaryAccess() {
     if (enterBtn?.disabled) return;
     const payload = getPayload();
-    const pendingLabel = payload.accessModel === "create" ? "Creating account..." : "Logging in...";
-    const idleLabel = payload.accessModel === "create" ? "Create Account" : "Log In";
+    const pendingLabel = payload.accessModel === "create" && pendingGoogleUser
+      ? "Finishing Google signup..."
+      : payload.accessModel === "create" ? "Creating account..." : "Logging in...";
     enterBtn.disabled = true;
     enterBtn.setAttribute("aria-busy", "true");
     enterBtn.textContent = pendingLabel;
@@ -2794,7 +2936,7 @@ function installAuthUpgrade(app, services) {
     } finally {
       enterBtn.disabled = false;
       enterBtn.removeAttribute("aria-busy");
-      enterBtn.textContent = idleLabel;
+      syncGoogleSignupUi();
     }
   }
 
@@ -2802,10 +2944,13 @@ function installAuthUpgrade(app, services) {
     const payload = getPayload();
     try {
       validatePayload(payload);
-      await services.auth.configurePersistence(false);
-      const profile = payload.role === "admin"
-        ? await services.auth.registerSchoolAdmin(payload)
-        : await services.auth.registerMember(payload);
+      await services.auth.configurePersistence(Boolean(rememberLogin?.checked));
+      const profile = pendingGoogleUser
+        ? await services.auth.completeGoogleRegistration(pendingGoogleUser, payload)
+        : payload.role === "admin"
+          ? await services.auth.registerSchoolAdmin(payload)
+          : await services.auth.registerMember(payload);
+      await clearPendingGoogleSignup();
       app.applyAuthenticatedProfile(profile.uid, profileForLegacy(profile));
       app.state.demoMode = false;
       app.showToast(`${payload.role === "admin" ? "School admin" : "Member"} account created`);
@@ -2820,6 +2965,7 @@ function installAuthUpgrade(app, services) {
     const payload = getPayload();
     try {
       validatePayload(payload);
+      await clearPendingGoogleSignup({ signOut: true });
       await services.auth.configurePersistence(Boolean(rememberLogin?.checked));
       const profile = await services.auth.login(payload);
       app.applyAuthenticatedProfile(profile.uid, profileForLegacy(profile));
@@ -2838,24 +2984,25 @@ function installAuthUpgrade(app, services) {
       return;
     }
     try {
-      await services.auth.configurePersistence(false);
+      await services.auth.configurePersistence(Boolean(rememberLogin?.checked));
       const provider = new window.firebase.auth.GoogleAuthProvider();
+      if (typeof provider.setCustomParameters === "function") {
+        provider.setCustomParameters({ prompt: "select_account" });
+      }
       const credential = await app.auth.signInWithPopup(provider);
       const profile = await services.auth.fetchUserProfile(credential.user.uid);
-      if (!profile) {
-        await services.auth.logout();
-        throw new Error("No Educircuit profile is linked to this Google account yet. Create an account with email and password first.");
+      if (profile) {
+        await clearPendingGoogleSignup();
+        app.applyAuthenticatedProfile(profile.uid, profileForLegacy(profile));
+        app.state.demoMode = false;
+        app.showToast(`Welcome back, ${profile.name}`);
+        await wait(120);
+        await services.refreshAll();
+        return;
       }
-      app.applyAuthenticatedProfile(profile.uid, profileForLegacy(profile));
-      app.state.demoMode = false;
-      app.showToast(`Welcome back, ${profile.name}`);
-      await wait(120);
-      await services.refreshAll();
+      primeGoogleSignup(credential.user);
     } catch (error) {
-      const message = error?.code === "auth/operation-not-allowed"
-        ? "Google sign-in is not enabled in Firebase yet."
-        : error.message || "Google sign-in could not finish.";
-      app.showToast?.(message);
+      app.showToast?.(formatGoogleAuthError(error));
     }
   }
 
@@ -2882,6 +3029,7 @@ function installAuthUpgrade(app, services) {
   }
 
   async function handleLogout() {
+    await clearPendingGoogleSignup();
     if (app.state.demoMode) {
       app.state.demoMode = false;
       app.resetAuthenticatedUser();
@@ -2900,9 +3048,29 @@ function installAuthUpgrade(app, services) {
   });
 
   loginRole.addEventListener("change", syncRoleFields);
+  authCreateModeBtn?.addEventListener("click", () => {
+    syncGoogleSignupUi();
+  });
+  authLoginModeBtn?.addEventListener("click", async () => {
+    await clearPendingGoogleSignup({ signOut: true });
+    syncGoogleSignupUi();
+  });
 
   syncRoleFields();
   authFlow.setMode?.(getAuthMode());
+  syncGoogleSignupUi();
+  void (async () => {
+    const currentUser = app.auth?.currentUser;
+    if (!currentUser || !isGoogleUser(currentUser) || app.state.user.uid) return;
+    try {
+      const profile = await services.auth.fetchUserProfile(currentUser.uid);
+      if (!profile) {
+        primeGoogleSignup(currentUser, { showToast: false });
+      }
+    } catch (error) {
+      console.warn("Could not resume the pending Google sign-up flow", error);
+    }
+  })();
 
   return { enterBtn, googleAuthBtn, demoStudentBtn, demoTeacherBtn };
 }

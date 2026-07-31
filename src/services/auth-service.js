@@ -18,6 +18,17 @@ function authError(code, message) {
   return error;
 }
 
+function humanizeEmailName(email = "") {
+  const localPart = String(email || "").split("@")[0] || "";
+  const normalized = localPart.replace(/[._-]+/g, " ").trim();
+  if (!normalized) return "Educircuit User";
+  return normalized
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(chunk => chunk.charAt(0).toUpperCase() + chunk.slice(1))
+    .join(" ");
+}
+
 export function formatAuthError(error, { mode = "login", role = "student" } = {}) {
   const code = error?.code || "";
   const message = error?.message || "";
@@ -96,7 +107,7 @@ export function createAuthService({ auth, db, firebase }) {
     return slugify(schoolCode || schoolName) || "default-school";
   }
 
-  function normalizeRegistrationPayload(payload = {}) {
+  function normalizeProfilePayload(payload = {}, { requirePassword = true } = {}) {
     const normalized = {
       ...payload,
       name: String(payload.name || "").trim(),
@@ -110,7 +121,9 @@ export function createAuthService({ auth, db, firebase }) {
 
     assert(normalized.name.length >= 2, "Enter the full name for this account.");
     assert(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized.email), "Enter a valid email address.");
-    assert(normalized.password.length >= 6, "Use a password with at least 6 characters.");
+    if (requirePassword) {
+      assert(normalized.password.length >= 6, "Use a password with at least 6 characters.");
+    }
     assert(["student", "teacher", "admin"].includes(normalized.role), "Choose a valid account role.");
     assert(normalized.school, "Enter the school name.");
     assert(normalized.schoolCode, "Enter the school code.");
@@ -119,6 +132,40 @@ export function createAuthService({ auth, db, firebase }) {
     }
 
     return normalized;
+  }
+
+  function normalizeRegistrationPayload(payload = {}) {
+    return normalizeProfilePayload(payload, { requirePassword: true });
+  }
+
+  function normalizeGoogleRegistrationPayload(user, payload = {}) {
+    const googleEmail = String(user?.email || payload.email || "").trim().toLowerCase();
+    const googleName = String(
+      payload.name
+      || user?.displayName
+      || humanizeEmailName(googleEmail)
+      || "Educircuit User"
+    ).trim();
+
+    return normalizeProfilePayload({
+      ...payload,
+      name: googleName,
+      email: googleEmail,
+      password: ""
+    }, { requirePassword: false });
+  }
+
+  function buildStarterStats() {
+    return {
+      xp: 0,
+      level: 1,
+      weeklyXp: 0,
+      weekKey: "",
+      projectsSaved: 0,
+      projectsSubmitted: 0,
+      projectsGraded: 0,
+      publicProjects: 0
+    };
   }
 
   function buildRootProfile(uid, payload) {
@@ -206,142 +253,155 @@ export function createAuthService({ auth, db, firebase }) {
     }
   }
 
+  async function createAdminProfileForUser(user, payload) {
+    const schoolId = buildSchoolId(payload.school, payload.schoolCode);
+    const schoolRef = db.collection("schools").doc(schoolId);
+    const existingSchool = await schoolRef.get();
+    const existingSchoolData = existingSchool.exists ? existingSchool.data() : null;
+    const hasAdmin = Array.isArray(existingSchoolData?.adminIds) && existingSchoolData.adminIds.length > 0;
+    assert(!hasAdmin, "School already exists. Use the member sign-up flow or log in.");
+
+    const schoolName = String(existingSchoolData?.name || payload.school).trim();
+    const adminRef = schoolRef.collection("admins").doc(user.uid);
+    const profilePath = adminRef.path;
+    const batch = db.batch();
+    const schoolPayload = {
+      id: schoolId,
+      name: schoolName,
+      adminIds: existingSchool.exists ? appendToArray(user.uid) : [user.uid],
+      updatedAt: serverTimestamp(),
+      leaderboardEnabled: true
+    };
+
+    if (existingSchool.exists) {
+      batch.set(schoolRef, schoolPayload, { merge: true });
+    } else {
+      batch.set(schoolRef, {
+        ...schoolPayload,
+        createdAt: serverTimestamp()
+      });
+    }
+
+    batch.set(adminRef, {
+      uid: user.uid,
+      name: payload.name,
+      email: payload.email,
+      role: "admin",
+      school: schoolName,
+      schoolId,
+      className: payload.className,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+
+    const rootProfile = buildRootProfile(user.uid, {
+      ...payload,
+      role: "admin",
+      school: schoolName,
+      schoolId,
+      profilePath
+    });
+    batch.set(db.collection("users").doc(user.uid), rootProfile);
+    await batch.commit();
+    return {
+      ...rootProfile,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+  }
+
+  async function createMemberProfileForUser(user, payload) {
+    const schoolId = buildSchoolId(payload.school, payload.schoolCode);
+    const schoolRef = db.collection("schools").doc(schoolId);
+    const schoolDoc = await schoolRef.get();
+    const schoolData = schoolDoc.exists ? schoolDoc.data() : null;
+    const schoolName = String(schoolData?.name || payload.school).trim();
+    const collectionName = payload.role === "teacher" ? "teachers" : "students";
+    const memberRef = schoolRef.collection(collectionName).doc(user.uid);
+    const profilePath = memberRef.path;
+    const batch = db.batch();
+    const stats = buildStarterStats();
+
+    batch.set(memberRef, {
+      uid: user.uid,
+      name: payload.name,
+      email: payload.email,
+      role: payload.role,
+      school: schoolName,
+      schoolId,
+      className: payload.className,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      stats,
+      badges: []
+    });
+
+    const rootProfile = buildRootProfile(user.uid, {
+      ...payload,
+      school: schoolName,
+      schoolId,
+      profilePath,
+      stats,
+      badges: []
+    });
+    batch.set(db.collection("users").doc(user.uid), rootProfile);
+
+    if (schoolDoc.exists) {
+      batch.update(schoolRef, {
+        updatedAt: serverTimestamp()
+      });
+    } else {
+      batch.set(schoolRef, {
+        id: schoolId,
+        name: schoolName,
+        adminIds: [],
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        leaderboardEnabled: true,
+        selfServiceSignup: true,
+        createdBy: user.uid,
+        createdByRole: payload.role
+      });
+    }
+
+    await batch.commit();
+    return {
+      ...rootProfile,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+  }
+
   async function registerSchoolAdmin(rawPayload) {
     const payload = normalizeRegistrationPayload({
       ...rawPayload,
       role: "admin"
     });
-    const schoolId = buildSchoolId(payload.school, payload.schoolCode);
-    const schoolRef = db.collection("schools").doc(schoolId);
-    return runRegistration(payload, async user => {
-      const existingSchool = await schoolRef.get();
-      const existingSchoolData = existingSchool.exists ? existingSchool.data() : null;
-      const hasAdmin = Array.isArray(existingSchoolData?.adminIds) && existingSchoolData.adminIds.length > 0;
-      assert(!hasAdmin, "School already exists. Use the member sign-up flow or log in.");
-
-      const schoolName = String(existingSchoolData?.name || payload.school).trim();
-      const adminRef = schoolRef.collection("admins").doc(user.uid);
-      const profilePath = adminRef.path;
-      const batch = db.batch();
-      const schoolPayload = {
-        id: schoolId,
-        name: schoolName,
-        adminIds: existingSchool.exists ? appendToArray(user.uid) : [user.uid],
-        updatedAt: serverTimestamp(),
-        leaderboardEnabled: true
-      };
-
-      if (existingSchool.exists) {
-        batch.set(schoolRef, schoolPayload, { merge: true });
-      } else {
-        batch.set(schoolRef, {
-          ...schoolPayload,
-          createdAt: serverTimestamp()
-        });
-      }
-
-      batch.set(adminRef, {
-        uid: user.uid,
-        name: payload.name,
-        email: payload.email,
-        role: "admin",
-        school: schoolName,
-        schoolId,
-        className: payload.className,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      });
-
-      const rootProfile = buildRootProfile(user.uid, {
-        ...payload,
-        role: "admin",
-        school: schoolName,
-        schoolId,
-        profilePath
-      });
-      batch.set(db.collection("users").doc(user.uid), rootProfile);
-      await batch.commit();
-      return {
-        ...rootProfile,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-    });
+    return runRegistration(payload, user => createAdminProfileForUser(user, payload));
   }
 
   async function registerMember(rawPayload) {
     const payload = normalizeRegistrationPayload(rawPayload);
     assert(payload.role === "teacher" || payload.role === "student", "Members must be teachers or students.");
-    const schoolId = buildSchoolId(payload.school, payload.schoolCode);
-    const schoolRef = db.collection("schools").doc(schoolId);
-    return runRegistration(payload, async user => {
-      const schoolDoc = await schoolRef.get();
-      const schoolData = schoolDoc.exists ? schoolDoc.data() : null;
-      const schoolName = String(schoolData?.name || payload.school).trim();
-      const collectionName = payload.role === "teacher" ? "teachers" : "students";
-      const memberRef = schoolRef.collection(collectionName).doc(user.uid);
-      const profilePath = memberRef.path;
-      const batch = db.batch();
-      const stats = {
-        xp: 0,
-        level: 1,
-        weeklyXp: 0,
-        weekKey: "",
-        projectsSaved: 0,
-        projectsSubmitted: 0,
-        projectsGraded: 0,
-        publicProjects: 0
-      };
+    return runRegistration(payload, user => createMemberProfileForUser(user, payload));
+  }
 
-      batch.set(memberRef, {
-        uid: user.uid,
-        name: payload.name,
-        email: payload.email,
-        role: payload.role,
-        school: schoolName,
-        schoolId,
-        className: payload.className,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        stats,
-        badges: []
-      });
+  async function completeGoogleRegistration(user, rawPayload) {
+    assert(user?.uid, "Google sign-in did not return a valid Educircuit user session.");
+    const existingProfile = await fetchUserProfile(user.uid);
+    if (existingProfile) {
+      return existingProfile;
+    }
 
-      const rootProfile = buildRootProfile(user.uid, {
+    const payload = normalizeGoogleRegistrationPayload(user, rawPayload);
+    if (payload.role === "admin") {
+      return createAdminProfileForUser(user, {
         ...payload,
-        school: schoolName,
-        schoolId,
-        profilePath,
-        stats,
-        badges: []
+        role: "admin"
       });
-      batch.set(db.collection("users").doc(user.uid), rootProfile);
-
-      if (schoolDoc.exists) {
-        batch.update(schoolRef, {
-          updatedAt: serverTimestamp()
-        });
-      } else {
-        batch.set(schoolRef, {
-          id: schoolId,
-          name: schoolName,
-          adminIds: [],
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-          leaderboardEnabled: true,
-          selfServiceSignup: true,
-          createdBy: user.uid,
-          createdByRole: payload.role
-        });
-      }
-
-      await batch.commit();
-      return {
-        ...rootProfile,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-    });
+    }
+    assert(payload.role === "teacher" || payload.role === "student", "Members must be teachers or students.");
+    return createMemberProfileForUser(user, payload);
   }
 
   async function login(payload) {
@@ -398,6 +458,7 @@ export function createAuthService({ auth, db, firebase }) {
     fetchUserProfile,
     registerSchoolAdmin,
     registerMember,
+    completeGoogleRegistration,
     login,
     logout,
     getAuthenticatedEmail,

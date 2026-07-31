@@ -92,8 +92,11 @@ test("deployed html stays clean and modular", () => {
   assert.match(indexHtml, /<link rel="stylesheet" href="\.\/styles\/upgrade\.css\?v=20260729-ga4fix1" \/>/);
   assert.match(indexHtml, /<script src="\.\/src\/app\/storage-guard\.js\?v=20260729-ga4fix1"><\/script>/);
   assert.match(indexHtml, /<script src="\.\/src\/app\/runtime\.js\?v=20260729-ga4fix1"><\/script>/);
+  assert.match(indexHtml, /<script type="module" src="\.\/src\/main\.js\?v=20260731-auth-competition1"><\/script>/);
   assert.match(upgradeJs, /applyTheme\(savedTheme \|\| "light"\)/);
   assert.match(mainJs, /createAssignmentService/);
+  assert.match(mainJs, /auth-service\.js\?v=20260731-auth-competition1/);
+  assert.match(mainJs, /upgrade-controller\.js\?v=20260731-auth-competition1/);
 });
 
 test("ga4 is installed once and uses manual spa pageviews", () => {
@@ -252,6 +255,10 @@ test("login step is explicit and demo buttons open the simulator directly", () =
   assert.match(runtimeJs, /String\(uid \|\| ""\)\.startsWith\("demo-"\)/);
   assert.match(upgradeJs, /fillDemoCredentials/);
   assert.match(upgradeJs, /handleGoogleLogin/);
+  assert.match(upgradeJs, /completeGoogleRegistration/);
+  assert.match(upgradeJs, /Finish Google Signup/);
+  assert.match(upgradeJs, /Google account connected/);
+  assert.match(upgradeJs, /auth\/popup-blocked/);
   assert.match(upgradeJs, /services\.auth\.configurePersistence\(Boolean\(rememberLogin\?\.checked\)\)/);
   assert.match(upgradeJs, /aria-busy/);
   assert.match(upgradeJs, /loginEmail\.classList\.add\("error"\)/);

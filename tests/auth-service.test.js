@@ -323,6 +323,62 @@ test("create account does not overwrite a complete existing profile", async () =
   assert.deepEqual(db.writes, []);
 });
 
+test("google account completion creates a classroom profile without asking for a password", async () => {
+  const db = createMockDb();
+  const service = createAuthService({ auth: {}, db, firebase: fakeFirebase });
+
+  const profile = await service.completeGoogleRegistration(
+    {
+      uid: "google-student",
+      email: "google.student@example.com",
+      displayName: "Google Student"
+    },
+    {
+      role: "student",
+      className: "8-A",
+      school: "Google Academy",
+      schoolCode: "google-academy"
+    }
+  );
+
+  assert.equal(profile.uid, "google-student");
+  assert.equal(profile.email, "google.student@example.com");
+  assert.equal(profile.profilePath, "schools/google-academy/students/google-student");
+  assert.equal(db.users["google-student"].role, "student");
+  assert.equal(db.schools["google-academy"].selfServiceSignup, true);
+});
+
+test("google account completion reuses an existing Educircuit profile", async () => {
+  const db = createMockDb({
+    users: {
+      "google-existing": {
+        uid: "google-existing",
+        email: "existing@example.com",
+        role: "teacher",
+        schoolId: "existing-school",
+        school: "Existing School"
+      }
+    }
+  });
+  const service = createAuthService({ auth: {}, db, firebase: fakeFirebase });
+
+  const profile = await service.completeGoogleRegistration(
+    {
+      uid: "google-existing",
+      email: "existing@example.com",
+      displayName: "Existing Teacher"
+    },
+    {
+      role: "teacher",
+      school: "Wrong School",
+      schoolCode: "wrong-school"
+    }
+  );
+
+  assert.equal(profile.schoolId, "existing-school");
+  assert.deepEqual(db.writes, []);
+});
+
 test("existing school membership uses the canonical Firebase school name", async () => {
   const db = createMockDb({
     schools: {

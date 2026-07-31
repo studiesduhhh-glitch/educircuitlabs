@@ -1,8 +1,8 @@
-import { createAuthService } from "./services/auth-service.js?v=20260729-ga4fix1";
+import { createAuthService } from "./services/auth-service.js?v=20260731-auth-competition1";
 import { createProjectService } from "./services/project-service.js?v=20260729-ga4fix1";
 import { createGamificationService } from "./services/gamification-service.js?v=20260729-ga4fix1";
 import { createAssignmentService } from "./services/assignment-service.js?v=20260729-ga4fix1";
-import { bootstrapUpgrade, installVisualPolish } from "./ui/upgrade-controller.js?v=20260729-ga4fix1";
+import { bootstrapUpgrade, installVisualPolish } from "./ui/upgrade-controller.js?v=20260731-auth-competition1";
 
 async function waitForLegacyApp() {
   if (typeof window === "undefined") {
